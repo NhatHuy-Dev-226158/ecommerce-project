@@ -1,0 +1,36 @@
+.sidebar .scroll {
+    max-height: 200px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-radius: 8px !important;
+    background-color: #fff;
+}
+
+.sidebar .scroll::-webkit-scrollbar-button:start,
+.sidebar .scroll::-webkit-scrollbar-button:end {
+    display: none;
+}
+
+.sidebar ::-webkit-scrollbar-thumb {
+    border-radius: 30px !important;
+    background: #9b9b9b;
+    cursor: pointer;
+}
+
+.sidebar ::-webkit-scrollbar-thumb:hover {
+    background: #818181;
+    cursor: pointer;
+}
+
+.sidebar ::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.sidebar ::-webkit-scrollbar-track:hover {
+    background: #f5f5f5;
+}

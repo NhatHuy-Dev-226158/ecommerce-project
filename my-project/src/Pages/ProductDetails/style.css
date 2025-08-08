@@ -1,0 +1,31 @@
+.product-reviews .scroll-area {
+    max-height: 300px !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+}
+
+.product-reviews .scroll-area::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+.product-reviews .scroll-area::-webkit-scrollbar-thumb {
+    background: #9b9b9b !important;
+    border-radius: 30px !important;
+    cursor: pointer !important;
+}
+
+.product-reviews .scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #818181 !important;
+}
+
+.product-reviews .scroll-area::-webkit-scrollbar-track {
+    background: #efeeee !important;
+}
+
+.product-reviews .scroll-area::-webkit-scrollbar-button:start,
+.product-reviews .scroll-area::-webkit-scrollbar-button:end {
+    display: none !important;
+}

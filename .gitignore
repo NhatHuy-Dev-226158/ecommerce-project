@@ -1,0 +1,25 @@
+# Bỏ qua các thư mục node_modules trong tất cả các dự án con
+my-project/node_modules/
+server/node_modules/
+admin/node_modules/
+
+# Bỏ qua các tệp biến môi trường nhạy cảm
+.env
+server/.env
+my-project/.env
+admin/.env
+
+# Bỏ qua các thư mục build/dist của các dự án React/Vue/Angular
+my-project/dist/
+my-project/build/
+admin/dist/
+admin/build/
+
+# Bỏ qua các tệp log của npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Bỏ qua các tệp hệ thống
+.DS_Store
+Thumbs.db

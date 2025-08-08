@@ -1,0 +1,30 @@
+body {
+    font-family: "Montserrat", sans-serif;
+}
+
+.ReactCollapse--collapse {
+    transition: height 400ms;
+}
+
+.btn-blue {
+    background: #004cff !important;
+    color: #fff !important;
+    padding: 8px 20px !important;
+}
+
+.btn-blue:hover {
+    background: #0044e2 !important;
+}
+
+.MuiButton-icon svg {
+    font-size: 22px !important;
+}
+
+.fb .MuiButton-icon svg {
+    color: #0044e2 !important;
+}
+
+
+.css-1r0fybh-MuiPaper-root {
+    padding: 24px !important;
+}

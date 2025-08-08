@@ -1,0 +1,15 @@
+.productItemlist .title {
+    line-height: 18px;
+}
+
+.productItemlist .actions button:hover svg {
+    color: #fff !important;
+}
+
+.productItemlist .actions button svg {
+    pointer-events: none;
+}
+
+.productItemlist .info .org-btn {
+    padding: 7px 15px !important;
+}
