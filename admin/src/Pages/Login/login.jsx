@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Box, Button, Button as MuiButton } from '@mui/material';
 import { FiLogIn, FiUserPlus } from "react-icons/fi";
 import { FaFacebook } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
+import { MyContext } from '../../App';
+import { useContext } from 'react';
+import { postData } from '../../utils/api';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Component cho các nút Đăng nhập Social
 const SocialButton = ({ onClick, loading, icon, children }) => (
@@ -32,12 +36,89 @@ const SocialButton = ({ onClick, loading, icon, children }) => (
 
 // === COMPONENT CHÍNH ===
 const Login = () => {
+    const [isLoading, setIsLoading] = useState(false);
     const [loadingGoogle, setLoadingGoogle] = useState(false);
     const [loadingFacebook, setLoadingFacebook] = useState(false);
     const [isShowPassWord, setIsShowPassWord] = useState(false);
+    const [formFields, setFormFields] = useState({ email: '', password: '' });
+    const context = useContext(MyContext);
+    const history = useNavigate();
 
     function handleClickGoogle() { setLoadingGoogle(true); }
     function handleClickFacebook() { setLoadingFacebook(true); }
+
+    const onChangeInput = (e) => {
+        const { name, value } = e.target;
+        setFormFields(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    const forgotPassword = () => {
+        if (formFields.email == "") {
+            context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
+            return false;
+        } else {
+
+            localStorage.setItem("userEmail", formFields.email)
+            localStorage.setItem("actionType", 'forgot-password')
+
+            postData("/api/user/forgot-password", {
+                email: formFields.email
+            }).then((res) => {
+                if (res?.error === false) {
+                    context.openAlerBox("success", res?.message);
+                    history('/verify');
+                } else {
+                    context.openAlerBox("error", res?.message);
+                }
+            });
+
+        }
+
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        setIsLoading(true);
+        const { email, password } = formFields;
+        if (!email && !password) {
+            context.openAlerBox("error", "Vui lòng điền đầy đủ thông tin để đăng ký.");
+            setIsLoading(false);
+            return;
+        }
+        if (!email) {
+            context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
+            setIsLoading(false);
+            return;
+        }
+        if (!password) {
+            context.openAlerBox("error", "Bạn chưa nhập mật khẩu.");
+            setIsLoading(false);
+            return;
+        }
+
+
+        postData("/api/user/login", formFields, { withCredentials: true }).then((res) => {
+            console.log(res);
+            if (res?.error !== true) {
+                setIsLoading(false);
+                context.openAlerBox("success", res?.message);
+                localStorage.setItem("accesstoken", res?.data?.accesstoken)
+                localStorage.setItem("refreshtoken", res?.data?.refreshtoken)
+                setFormFields({
+                    email: '',
+                    password: ''
+                })
+                context.setIslogin(true);
+                history("/")
+            } else {
+                context.openAlerBox("error", res?.message);
+                setIsLoading(false);
+            }
+        });
+    };
 
     return (
         <section className='w-full min-h-screen flex items-center justify-center p-4'>
@@ -101,11 +182,16 @@ const Login = () => {
                     Hoặc
                 </div>
 
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                     <div>
                         <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-800">Email</label>
                         <input
-                            type="email" id="email"
+                            type="email"
+                            id="email"
+                            name='email'
+                            value={formFields.email}
+                            onChange={onChangeInput}
+                            disabled={isLoading === true ? true : false}
                             className="bg-gray-50/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition"
                             placeholder="name@example.com" required
                         />
@@ -116,6 +202,10 @@ const Login = () => {
                             <input
                                 type={isShowPassWord ? 'text' : 'password'}
                                 id="password"
+                                name='password'
+                                value={formFields.password}
+                                onChange={onChangeInput}
+                                disabled={isLoading === true ? true : false}
                                 className="bg-gray-50/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition"
                                 required
                             />
@@ -132,14 +222,19 @@ const Login = () => {
                             <input id="remember" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" />
                             <label htmlFor="remember" className="ml-2 text-sm font-medium text-gray-900 cursor-pointer">Ghi nhớ tôi</label>
                         </div>
-                        <Link to='/forgot-password' className="text-sm font-medium text-blue-600 hover:underline">Quên mật khẩu?</Link>
-                    </div>
+                        <a className='link cursor-pointer text-sm text-blue-600 hover:underline'
+
+                            onClick={forgotPassword}>
+                            Quên mật khẩu?
+                        </a>                    </div>
                     <button
                         type="submit"
+                        disabled={isLoading}
                         className="w-full flex items-center justify-center gap-2 text-white bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 font-medium rounded-lg text-base px-5 py-3 text-center transition-all duration-200"
                     >
                         <FiLogIn className='text-[17px]' />
-                        Đăng Nhập
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Đăng nhập'}
+
                     </button>
                 </form>
             </Box>

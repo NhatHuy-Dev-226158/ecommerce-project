@@ -35,6 +35,8 @@ function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [userData, setUserData] = useState(null);
 
+
+
   const toggleCartPanel = (isOpen) => () => {
     setOpenCartPanel(isOpen);
   };
@@ -43,9 +45,14 @@ function App() {
     const token = localStorage.getItem('accesstoken')
     if (token !== undefined && token !== null && token !== "") {
       setIsLogin(true);
-      fetchDataFromApi(`/api/user/user-details?token=${token}`).then((res) => {
+      fetchDataFromApi(`/api/user/user-details`).then((res) => {
         setUserData(res.data);
-        console.log(res);
+        if (res?.response?.data?.message === "Chưa đăng nhập") {
+          localStorage.removeItem("accesstoken")
+          localStorage.removeItem("refreshtoken")
+          openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
+          setIsLogin(false);
+        }
       });
     } else {
       setIsLogin(false);

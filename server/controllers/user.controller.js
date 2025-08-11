@@ -20,7 +20,7 @@ export async function registerUserController(request, response) {
     try {
         let user;
 
-        const { name, email, password } = request.body;
+        const { name, email, password, mobile, birthday, gender } = request.body;
         if (!name || !email || !password) {
             return response.status(400).json({
                 message: "Provide email, name, password",
@@ -46,6 +46,9 @@ export async function registerUserController(request, response) {
             name: name,
             email: email,
             password: hashPassword,
+            mobile: mobile,
+            birthday: birthday,
+            gender: gender,
             otp: verifyCode,
             otpExpires: Date.now() + 600000
         });
@@ -69,7 +72,7 @@ export async function registerUserController(request, response) {
             success: true,
             error: false,
             message: "User registered successfully! Please verify your email.",
-            token: token, // Optional: include this if needed for verification
+            token: token,
         });
 
     } catch (error) {
@@ -288,10 +291,9 @@ export async function userAvatarController(request, response) {
         return response.status(200).json({
             message: "Avatar uploaded successfully.",
             success: true,
-            data: {
-                _id: userId,
-                avatar: imagesArr[0]
-            }
+            _id: userId,
+            avatar: imagesArr[0]
+
         });
 
     } catch (error) {
@@ -370,7 +372,7 @@ export async function removeImageFromCloudinary(request, response) {
 export async function updateUserDeteils(request, response) {
     try {
         const userId = request.userId //auth middleware
-        const { name, email, mobile, password } = request.body;
+        const { name, email, mobile, password, birthday, gender } = request.body;
 
         const userExist = await UserModel.findById(userId);
         if (!userExist) {
@@ -398,6 +400,8 @@ export async function updateUserDeteils(request, response) {
                 name: name,
                 mobile: mobile,
                 email: email,
+                birthday: birthday,
+                gender: gender,
                 verify_email: email !== userExist.email ? false : true,
                 password: hashPassword,
                 otp: verifyCode !== "" ? verifyCode : null,
@@ -418,7 +422,14 @@ export async function updateUserDeteils(request, response) {
             message: "User Updated Successfully",
             error: false,
             success: true,
-            user: updateUser
+            user: {
+                name: updateUser?.name,
+                email: updateUser?.email,
+                mobile: updateUser?.mobile,
+                avatar: updateUser?.avatar,
+                birthday: updateUser?.birthday,
+                gender: updateUser?.gender
+            }
         })
 
     } catch (error) {
@@ -456,10 +467,10 @@ export async function forgotPasswordController(request, response) {
                 verificationEmail(user.name, verifyCode)
             )
 
-            return response.json({
+            return response.status(200).json({
                 message: "Check your email",
-                error: true,
-                success: false
+                error: false,
+                success: true
             })
         }
 
@@ -493,7 +504,7 @@ export async function verifyforgotPasswordController(request, response) {
         }
         if (otp !== user.otp) {
             return response.status(400).json({
-                message: "Invailid OTP",
+                message: "Invalid OTP",
                 error: true,
                 success: false
             })
@@ -512,11 +523,69 @@ export async function verifyforgotPasswordController(request, response) {
         user.otpExpires = "";
         await user.save();
 
-        return response.json({
-            message: "Verify otp successfully",
+        return response.status(200).json({
+            message: "OTP verified successfully. You can now reset your password.",
+            error: false,
+            success: true
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
             error: true,
             success: false
         })
+    }
+}
+
+export async function changePassword(request, response) {
+    try {
+        const { email, oldPassword, newPassword, confirmPassword } = request.body;
+        if (!email || !newPassword || !confirmPassword) {
+            return response.status(400).json({
+                error: true,
+                success: false,
+                message: "provide required fields email, newPassword, confirmPassword"
+            })
+        }
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return response.status(400).json({
+                message: "Email is not available",
+                error: true,
+                success: false
+            })
+        }
+
+        const checkPassword = await bcryptjs.compare(oldPassword, user.password);
+
+        if (!checkPassword) {
+            return response.status(400).json({
+                message: "Mật khẩu hiện tại không chính xác",
+                error: true,
+                success: false
+            })
+        }
+
+        if (newPassword !== confirmPassword) {
+            return response.status(400).json({
+                message: "Mật khẩu mới và mật khẩu xác nhận không khớp",
+                error: true,
+                success: false
+            })
+        }
+
+        const salt = await bcryptjs.genSalt(10);
+        const hashPassword = await bcryptjs.hash(confirmPassword, salt)
+
+        user.password = hashPassword;
+        await user.save();
+
+        return response.status(200).json({
+            message: "Password updated successfully",
+            error: false,
+            success: true
+        })
+
     } catch (error) {
         return response.status(500).json({
             message: error.message || error,
@@ -531,6 +600,8 @@ export async function resetPassword(request, response) {
         const { email, newPassword, confirmPassword } = request.body;
         if (!email || !newPassword || !confirmPassword) {
             return response.status(400).json({
+                error: true,
+                success: false,
                 message: "provide required fields email, newPassword, confirmPassword"
             })
         }
@@ -542,9 +613,10 @@ export async function resetPassword(request, response) {
                 success: false
             })
         }
+
         if (newPassword !== confirmPassword) {
             return response.status(400).json({
-                message: "newPassword and confirmPassword must be same",
+                message: "Mật khẩu mới và mật khẩu xác nhận không khớp",
                 error: true,
                 success: false
             })
@@ -556,10 +628,10 @@ export async function resetPassword(request, response) {
         user.password = hashPassword;
         await user.save();
 
-        return response.json({
+        return response.status(200).json({
             message: "Password updated successfully",
-            error: true,
-            success: false
+            error: false,
+            success: true
         })
 
     } catch (error) {

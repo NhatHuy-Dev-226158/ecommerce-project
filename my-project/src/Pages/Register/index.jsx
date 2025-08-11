@@ -18,7 +18,7 @@ const Register = () => {
     const history = useNavigate();
     const [formFields, setFormFields] = useState({
         name: '',
-        phone: '',
+        mobile: '',
         email: '',
         password: ''
     });
@@ -40,26 +40,31 @@ const Register = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        setIsLoading(false);
-        const { name, email, phone, password } = formFields;
-        if (!name && !email && !phone && !password) {
+        setIsLoading(true);
+        const { name, email, mobile, password } = formFields;
+        if (!name && !email && !mobile && !password) {
             context.openAlerBox("error", "Vui lòng điền đầy đủ thông tin để đăng ký.");
+            setIsLoading(false);
             return;
         }
         if (!name) {
             context.openAlerBox("error", "Bạn chưa nhập họ và tên.");
+            setIsLoading(false);
             return;
         }
         if (!email) {
             context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
+            setIsLoading(false);
             return;
         }
-        if (!phone) {
+        if (!mobile) {
             context.openAlerBox("error", "Bạn chưa nhập số điện thoại.");
+            setIsLoading(false);
             return;
         }
         if (!password) {
             context.openAlerBox("error", "Bạn chưa nhập mật khẩu.");
+            setIsLoading(false);
             return;
         }
 
@@ -72,7 +77,7 @@ const Register = () => {
                 localStorage.setItem("userEmail", formFields.email)
                 setFormFields({
                     name: '',
-                    phone: '',
+                    mobile: '',
                     email: '',
                     password: ''
                 })
@@ -133,12 +138,12 @@ const Register = () => {
                         <motion.div variants={itemVariants} className="form-group w-full mb-5">
                             <TextField
                                 id="phone"
-                                name="phone"
+                                name="mobile"
                                 type='tel'
                                 label="Số điện thoại"
                                 variant="outlined"
                                 className='w-full'
-                                value={formFields.phone}
+                                value={formFields.mobile}
                                 disabled={isLoading === true ? true : false}
                                 onChange={onChangeInput}
                                 required

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FiGrid, FiUser, FiShoppingCart, FiMapPin, FiHeart,
     FiStar, FiTag, FiSettings, FiLogOut, FiEdit2, FiClock,
@@ -12,6 +12,9 @@ import AddressesContent from './AddressesContent';
 import ReviewsContent from './ReviewContent';
 import VouchersContent from './VouchersContent';
 import SettingsContent from './SettingContent';
+import { MyContext } from '../../App';
+import { CircularProgress } from '@mui/material';
+import { uploadImage } from '../../utils/api';
 
 
 
@@ -88,17 +91,78 @@ const MyAccountPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || 'dashboard';
     const [anchorEl, setAnchorEl] = React.useState(null);
-
+    const context = useContext(MyContext);
+    const history = useNavigate();
+    const [previews, setPreviews] = useState([]);
+    const [uploading, setUploading] = useState(false)
     // Hàm để thay đổi tab VÀ cập nhật URL
     const setActiveTab = (tabId) => {
         setSearchParams({ tab: tabId });
     };
 
-    const logout = () => {
-        setAnchorEl(null);
+    useEffect(() => {
+        const userAvtar = [];
+        if (context?.userData?.avatar !== "" && context?.userData?.avatar !== undefined) {
+            userAvtar.push(context?.userData?.avatar);
+            setPreviews(userAvtar);
+        }
+    }, [context?.userData])
+
+    useEffect(() => {
+        const token = localStorage.getItem('accesstoken');
+        if (token == null) {
+            history('/');
+            context.openAlerBox("error", "Bạn cần đăng nhập để truy cập trang này.");
+        }
+
+    }, [context?.isLogin, history])
+
+    if (context.isLogin === false) {
+        return null;
     }
 
-    const user = { name: 'Nguyễn Nhật Huy', avatar: 'https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-174669.jpg?semt=ais_hybrid&w=740' };
+    let selectedImages = [];
+    const formdata = new FormData();
+
+    const onChangeFile = async (e, apiEndPoint) => {
+        try {
+            setPreviews([]);
+            const files = e.target.files;
+            setUploading(true);
+
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i] && (files[i].type === "image/jpeg" || files[i].type === "image/jpg" ||
+                    files[i].type === "image/png" ||
+                    files[i].type === "image/webp")
+                ) {
+
+                    const file = files[i];
+                    selectedImages.push(file);
+                    formdata.append('avatar', file);
+                } else {
+                    context.openAlerBox('error', 'Vui lòng chọn ảnh JPG, PNG hoặc WEBP')
+                    setUploading(false)
+                    return false;
+                }
+            }
+
+
+            uploadImage('/api/user/user-avatar', formdata).then((res) => {
+                setUploading(false)
+                let avatar = [];
+                console.log(res?.data?.avatar);
+                avatar.push(res?.data?.avatar);
+                setPreviews(avatar);
+
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
     const navigationMenu = [
         { id: 'dashboard', title: 'Tổng quan', icon: <FiGrid /> },
         { id: 'profile', title: 'Thông tin cá nhân', icon: <FiUser /> },
@@ -139,14 +203,41 @@ const MyAccountPage = () => {
                     <aside className="lg:col-span-1">
                         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm h-fit sticky top-8">
                             <div className="flex flex-col items-center p-6 border-b border-slate-200">
-                                <div className="relative group w-28 h-28 mb-3">
-                                    <img src={user.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
+                                <div className="relative group w-28 h-28 mb-3 rounded-full bg-slate-300 flex items-center justify-center">
+                                    {
+                                        uploading === true ?
+                                            <CircularProgress color='inherit' ></CircularProgress>
+                                            :
+                                            <>
+                                                {
+                                                    previews?.length !== 0 ? previews?.map((img, index) => {
+                                                        return (
+                                                            <img src={img}
+                                                                key={index}
+                                                                alt='user avatar'
+                                                                className="w-full h-full rounded-full object-cover" />
+                                                        )
+                                                    }) :
+                                                        <img src='/user.png'
+                                                            alt='user avatar'
+                                                            className="w-full h-full rounded-full object-cover" />
+                                                }
+                                            </>
+                                    }
+
+
                                     <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                         <FiUploadCloud size={24} />
-                                        <input type="file" id="avatar-upload" className="hidden" />
+                                        <input type="file" id="avatar-upload" className="hidden"
+                                            onChange={(e) =>
+                                                onChangeFile(e, "/api/user/user-avatar")
+                                            }
+                                            name='avatar'
+                                            accept='image/*'
+                                        />
                                     </label>
                                 </div>
-                                <h3 className="font-bold text-xl text-gray-800">{user.name}</h3>
+                                <h3 className="font-bold text-xl text-gray-800">{context?.userData?.name}</h3>
                             </div>
 
                             <nav className="p-4 space-y-1 custom-scrollbar">

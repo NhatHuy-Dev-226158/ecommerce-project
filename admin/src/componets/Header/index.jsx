@@ -12,6 +12,9 @@ import { GrLogout } from "react-icons/gr";
 import { MyContext } from '../../App';
 import { NavLink } from 'react-router-dom';
 import { FiLogIn } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { fetchDataFromApi } from '../../utils/api';
+import { Link } from 'react-router-dom';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -34,6 +37,24 @@ const Header = () => {
     };
 
     const context = useContext(MyContext);
+    const history = useNavigate();
+
+    const handleLogout = () => {
+        handleCloseAccount();
+
+        setAnchorAccount(null)
+
+        fetchDataFromApi(`/api/user/logout?token=${localStorage.getItem('accesstoken')}`, { withCredentials: true }).then((res) => {
+            console.log(res);
+            if (res?.error == false) {
+                context.setIslogin(false);
+                localStorage.removeItem("accesstoken")
+                localStorage.removeItem("refreshtoken")
+                history('/')
+            }
+
+        });
+    };
 
     return (
         <header className=" w-full h-auto py-1.5 pr-7 bg-[#fff] shadow-md flex items-center justify-between sticky top-0 z-40">
@@ -62,10 +83,24 @@ const Header = () => {
                         (
                             <div className="relative flex items-center justify-center">
                                 <div className="rounded-full w-[35px] h-[35px] overflow-hidden cursor-pointer">
-                                    <img
-                                        src="https://static.vecteezy.com/system/resources/thumbnails/027/951/137/small_2x/stylish-spectacles-guy-3d-avatar-character-illustrations-png.png"
-                                        alt="avatar"
-                                        onClick={handleClickAccount} />
+                                    {
+                                        context?.userData?.avatar ? (
+
+                                            <img
+                                                src={context.userData.avatar}
+                                                alt="User Avatar"
+                                                onClick={handleClickAccount}
+                                                className='!w-full !h-full !rounded-full object-cover'
+                                            />
+                                        ) : (
+                                            <img
+                                                src="https://static.vecteezy.com/system/resources/thumbnails/027/951/137/small_2x/stylish-spectacles-guy-3d-avatar-character-illustrations-png.png"
+                                                alt='user avatar'
+                                                className="w-full h-full rounded-full object-cover"
+                                                onClick={handleClickAccount}
+                                            />
+                                        )
+                                    }
                                 </div>
                                 <Menu
                                     anchorEl={anchorAccount}
@@ -107,26 +142,42 @@ const Header = () => {
                                     <MenuItem onClick={handleCloseAccount}>
                                         <div className="flex items-center gap-3">
                                             <div className="rounded-full w-[35px] h-[35px] overflow-hidden cursor-pointer">
-                                                <img
-                                                    src="https://static.vecteezy.com/system/resources/thumbnails/027/951/137/small_2x/stylish-spectacles-guy-3d-avatar-character-illustrations-png.png"
-                                                    alt="avatar"
-                                                />
+                                                {
+
+                                                    context?.userData?.avatar ? (
+
+                                                        <img
+                                                            src={context.userData.avatar}
+                                                            alt="User Avatar"
+                                                            className='!w-full !h-full !rounded-full object-cover'
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src="https://static.vecteezy.com/system/resources/thumbnails/027/951/137/small_2x/stylish-spectacles-guy-3d-avatar-character-illustrations-png.png"
+                                                            alt="avatar"
+                                                        />
+                                                    )
+                                                }
+
+
                                             </div>
 
                                             <div className="info">
-                                                <h3 className='text-[15px] font-[500] leading-5'>Nguyen Nhat Huy</h3>
-                                                <p className='text-[13px] font-[400] opacity-70'>nhathuy@gmail.com</p>
+                                                <h3 className='text-[15px] font-[500] leading-5'>{context?.userData?.name}</h3>
+                                                <p className='text-[13px] font-[400] opacity-70'>{context?.userData?.email}</p>
                                                 <p className='text-[12px] font-[400] opacity-70'>Xin chào bạn là CEO của cửa hàng</p>
                                             </div>
                                         </div>
 
                                     </MenuItem>
                                     <Divider />
-                                    <MenuItem onClick={handleCloseAccount} className='flex items-center justify-center gap-3'>
-                                        <FaUserTie className='text-[18px]' />
-                                        <span className='text-[15px]'>Profile</span>
-                                    </MenuItem>
-                                    <MenuItem onClick={handleCloseAccount} className='flex items-center justify-center gap-3'>
+                                    <Link to='/profile'>
+                                        <MenuItem onClick={handleCloseAccount} className='flex items-center justify-center gap-3'>
+                                            <FaUserTie className='text-[18px]' />
+                                            <span className='text-[15px]'>Profile</span>
+                                        </MenuItem>
+                                    </Link>
+                                    <MenuItem onClick={handleLogout} className='flex items-center justify-center gap-3'>
                                         <GrLogout className='text-[18px]' />
                                         <span className='text-[15px]'>Logout</span>
                                     </MenuItem>

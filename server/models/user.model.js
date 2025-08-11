@@ -22,6 +22,13 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    birthday: {
+        type: Date
+    },
+    gender: {
+        type: String,
+        enum: ['Nam', 'Nữ', 'Khác']
+    },
     verify_email: {
         type: Boolean,
         default: false

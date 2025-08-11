@@ -11,12 +11,20 @@ import Products from './Pages/Products/products';
 import AddProductPage from './Pages/CreateProduct/createProduct';
 import OrderListPage from './Pages/Order/OrderListPage';
 import OrderDetailPage from './Pages/Order/OrderDetailPage';
+import toast, { Toaster } from 'react-hot-toast';
+import Verify from './Pages/Verify';
+import { useEffect } from 'react';
+import { fetchDataFromApi } from './utils/api';
+import ForgotPassword from './Pages/ForgotPassword';
+import ProfilePage from './Pages/ProfileContent';
 
 const MyContext = createContext();
 
 // 2. COMPONENT LAYOUT
 const RootLayout = () => {
   const { isSidebarOpen } = useContext(MyContext);
+
+
 
   return (
     <main className='relative bg-gray-50 min-h-screen w-full overflow-hidden'>
@@ -40,12 +48,45 @@ const RootLayout = () => {
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLogin, setIslogin] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  const openAlerBox = (type, msg) => {
+    if (type === "success") {
+      toast.success(msg);
+    }
+    if (type === "error") {
+      toast.error(msg);
+    }
+  }
+
+
+  useEffect(() => {
+    const token = localStorage.getItem('accesstoken')
+    if (token !== undefined && token !== null && token !== "") {
+      setIslogin(true);
+      fetchDataFromApi(`/api/user/user-details`).then((res) => {
+        setUserData(res.data);
+        if (res?.response?.data?.message === "Chưa đăng nhập") {
+          localStorage.removeItem("accesstoken")
+          localStorage.removeItem("refreshtoken")
+          openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
+          setIslogin(false);
+        }
+      });
+    } else {
+      setIslogin(false);
+    }
+  }, [isLogin])
+
 
   const values = {
     isSidebarOpen,
     isLogin,
     setIsSidebarOpen,
-    setIslogin
+    setIslogin,
+    openAlerBox,
+    setUserData,
+    userData
   };
 
   // 4. CẤU HÌNH ROUTER
@@ -77,6 +118,10 @@ function App() {
           path: "/orders-Detail",
           element: <OrderDetailPage />,
         },
+        {
+          path: "/profile",
+          element: <ProfilePage />,
+        },
       ]
     },
     {
@@ -87,11 +132,23 @@ function App() {
       path: "/register",
       element: <Register />,
     },
+    {
+      path: "/verify",
+      element: <Verify />,
+    },
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
+    },
+
   ]);
+
+
 
   return (
     <MyContext.Provider value={values}>
       <RouterProvider router={router} />
+      <Toaster></Toaster>
     </MyContext.Provider>
   );
 }

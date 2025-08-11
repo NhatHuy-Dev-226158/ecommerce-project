@@ -18,10 +18,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Avatar from '@mui/material/Avatar';
 
 // THƯ VIỆN ICON (REACT-ICONS)
-import { FaUserCheck } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 
 import { IoSettingsOutline } from "react-icons/io5";
@@ -44,7 +42,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 const Header = () => {
     // Lấy context và hook navigate
     const context = useContext(MyContext);
-    const navigate = useNavigate();
+    const history = useNavigate();
 
     // State và các hàm xử lý cho Menu dropdown
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -59,7 +57,7 @@ const Header = () => {
 
     // Hàm xử lý khi người dùng nhấn nút Logout
     const handleLogout = () => {
-        handleClose(); // Đóng menu trước
+        handleClose();
 
         setAnchorEl(null)
 
@@ -69,6 +67,7 @@ const Header = () => {
                 context.setIsLogin(false);
                 localStorage.removeItem("accesstoken")
                 localStorage.removeItem("refreshtoken")
+                history('/')
             }
 
         });
@@ -144,7 +143,9 @@ const Header = () => {
                                                                     className='!w-full !h-full !rounded-full object-cover'
                                                                 />
                                                             ) : (
-                                                                <FaUserCheck className='text-[20px] text-[rgba(0,0,0,0.7)]' />
+                                                                <img src='/user.png'
+                                                                    alt='user avatar'
+                                                                    className="w-full h-full rounded-full object-cover" />
                                                             )
                                                         }
                                                     </div>
@@ -194,26 +195,26 @@ const Header = () => {
                                                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                             >
-                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account'); }}>
+                                                <MenuItem onClick={() => { handleClose(); history('/my-account'); }}>
                                                     <ListItemIcon>
                                                         <RiDashboardLine />
                                                     </ListItemIcon>
                                                     Tổng quan
                                                 </MenuItem>
-                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=profile'); }}>
+                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=profile'); }}>
                                                     <ListItemIcon>
                                                         <CgProfile />
                                                     </ListItemIcon>
                                                     Thông tin cá nhân
                                                 </MenuItem>
 
-                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=wishlist'); }}>
+                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=wishlist'); }}>
                                                     <ListItemIcon>
                                                         <RiAccountCircleLine />
                                                     </ListItemIcon>
                                                     Sản phẩm yêu thích
                                                 </MenuItem>
-                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=orders'); }}>
+                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=orders'); }}>
                                                     <ListItemIcon>
                                                         <RiAccountCircleLine />
                                                     </ListItemIcon>
@@ -222,7 +223,7 @@ const Header = () => {
 
                                                 <Divider sx={{ my: 0.5 }} />
 
-                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=settings'); }}>
+                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=settings'); }}>
                                                     <ListItemIcon>
                                                         <IoSettingsOutline />
                                                     </ListItemIcon>

@@ -23,6 +23,30 @@ const Login = () => {
     const context = useContext(MyContext);
     const history = useNavigate();
 
+    const forgotPassword = () => {
+        if (formFields.email == "") {
+            context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
+            return false;
+        } else {
+
+            localStorage.setItem("userEmail", formFields.email)
+            localStorage.setItem("actionType", 'forgot-password')
+
+            postData("/api/user/forgot-password", {
+                email: formFields.email
+            }).then((res) => {
+                if (res?.error === false) {
+                    context.openAlerBox("success", res?.message);
+                    history('/verify');
+                } else {
+                    context.openAlerBox("error", res?.message);
+                }
+            });
+
+        }
+
+    }
+
     const onChangeInput = (e) => {
         const { name, value } = e.target;
         setFormFields(prevState => ({
@@ -37,18 +61,21 @@ const Login = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        setIsLoading(false);
+        setIsLoading(true);
         const { email, password } = formFields;
         if (!email && !password) {
             context.openAlerBox("error", "Vui lòng điền đầy đủ thông tin để đăng ký.");
+            setIsLoading(false);
             return;
         }
         if (!email) {
             context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
+            setIsLoading(false);
             return;
         }
         if (!password) {
             context.openAlerBox("error", "Bạn chưa nhập mật khẩu.");
+            setIsLoading(false);
             return;
         }
 
@@ -109,11 +136,11 @@ const Login = () => {
                             <TextField
                                 id="email"
                                 type='email'
-                                name='email'
                                 label="Email"
                                 variant="outlined"
                                 className='w-full'
-                                value={formFields.name}
+                                name='email'
+                                value={formFields.email}
                                 onChange={onChangeInput}
                                 disabled={isLoading === true ? true : false}
                                 required
@@ -152,12 +179,12 @@ const Login = () => {
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="flex justify-end w-full mb-5">
-                            <Link to='/forgot-password'>
-                                <a className='link cursor-pointer text-sm text-blue-600 hover:underline'
-                                >
-                                    Quên mật khẩu?
-                                </a>
-                            </Link>
+
+                            <a className='link cursor-pointer text-sm text-blue-600 hover:underline'
+
+                                onClick={forgotPassword}>
+                                Quên mật khẩu?
+                            </a>
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="w-full mb-4">

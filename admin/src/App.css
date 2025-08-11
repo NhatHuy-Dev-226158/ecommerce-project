@@ -28,3 +28,14 @@ body {
 .css-1r0fybh-MuiPaper-root {
     padding: 24px !important;
 }
+
+.react-international-phone-input {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 16px !important;
+}
+
+.react-international-phone-country-selector-button {
+    width: 55px !important;
+    height: 50px !important;
+}

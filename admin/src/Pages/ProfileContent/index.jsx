@@ -2,12 +2,15 @@ import React, { useContext, useEffect, useState } from 'react';
 import { FiMonitor, FiSmartphone } from 'react-icons/fi';
 import { CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
 import { IoIosEye, IoIosEyeOff } from 'react-icons/io';
+import { MyContext } from '../../App';
+import { PhoneInput } from 'react-international-phone';
+import { postData, updateData, uploadImage } from '../../utils/api';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import { MyContext } from '../../../App';
-import { postData, updateData } from '../../../utils/api';
+import { FiUploadCloud } from 'react-icons/fi';
+import 'react-international-phone/style.css';
 
 // --- CÁC COMPONENT CON TÙY CHỈNH (Không thay đổi về JSX, nhưng giờ sẽ nhận state) ---
 const CustomTextField = React.forwardRef((props, ref) => {
@@ -86,7 +89,8 @@ const ToggleSwitch = ({ enabled, setEnabled }) => (
 
 // === CÁC COMPONENT NỘI DUNG CHO TỪNG TAB (Giờ đã có logic) ===
 const ProfileInfoTab = () => {
-    const [previews, setPreviews] = useState([])
+    const [previews, setPreviews] = useState([]);
+    const [uploading, setUploading] = useState(false)
     const [userId, setUserId] = useState("")
     const context = useContext(MyContext)
     const [formFields, setFormFields] = useState({
@@ -116,15 +120,20 @@ const ProfileInfoTab = () => {
             setFormFields(prevState => ({ ...prevState, [name]: value }));
         }
     };
+    const handlePhoneChange = (phoneValue) => {
+        setFormFields(prevState => ({
+            ...prevState,
+            mobile: phoneValue
+        }));
+    };
 
     useEffect(() => {
         if (context?.userData?._id) {
             setUserId(context.userData._id);
             setFormFields({
-                name: context.userData.name || '',
-                email: context.userData.email || '',
-                mobile: context.userData.mobile || '',
-                birthday: context.userData.birthday || ''
+                name: context?.userData?.name || '',
+                email: context?.userData?.email || '',
+                mobile: context.userData.mobile ? String(context.userData.mobile) : '', birthday: context?.userData?.birthday || ''
             });
         }
     }, [context?.userData]);
@@ -166,64 +175,157 @@ const ProfileInfoTab = () => {
         });
     };
 
+
+    useEffect(() => {
+        const userAvtar = [];
+        if (context?.userData?.avatar !== "" && context?.userData?.avatar !== undefined) {
+            userAvtar.push(context?.userData?.avatar);
+            setPreviews(userAvtar);
+        }
+    }, [context?.userData])
+
+    useEffect(() => {
+        const token = localStorage.getItem('accesstoken');
+        if (token == null) {
+            history('/');
+            context.openAlerBox("error", "Bạn cần đăng nhập để truy cập trang này.");
+        }
+
+    }, [context?.isLogin, history])
+
+    if (context.isLogin === false) {
+        return null;
+    }
+
+    let selectedImages = [];
+    const formdata = new FormData();
+
+    const onChangeFile = async (e, apiEndPoint) => {
+        try {
+            setPreviews([]);
+            const files = e.target.files;
+            setUploading(true);
+
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i] && (files[i].type === "image/jpeg" || files[i].type === "image/jpg" ||
+                    files[i].type === "image/png" ||
+                    files[i].type === "image/webp")
+                ) {
+
+                    const file = files[i];
+                    selectedImages.push(file);
+                    formdata.append('avatar', file);
+                } else {
+                    context.openAlerBox('error', 'Vui lòng chọn ảnh JPG, PNG hoặc WEBP')
+                    setUploading(false)
+                    return false;
+                }
+            }
+
+
+            uploadImage('/api/user/user-avatar', formdata).then((res) => {
+                setUploading(false)
+                let avatar = [];
+                console.log(res?.data?.avatar);
+                avatar.push(res?.data?.avatar);
+                setPreviews(avatar);
+
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
+
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <form onSubmit={handleSubmit} noValidate className=" w-full grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
-                <div className="md:col-span-2 space-y-8 w-full">
-                    <div>
-                        <h3 className="font-bold text-lg mb-4">Thông tin cá nhân</h3>
+
+            <form onSubmit={handleSubmit} noValidate className="w-full pt-6 ">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+                    <div className=" flex-shrink-0 mx-auto md:mx-0">
+                        <div className="relative group w-32 h-32 rounded-full bg-slate-300 flex items-center justify-center">
+                            {
+                                uploading ? (
+                                    <CircularProgress color='inherit' />
+                                ) : (
+                                    <>
+                                        {previews?.length > 0 ? (
+                                            previews.map((img, index) => (
+                                                <img src={img} key={index} alt='user avatar' className="w-full h-full rounded-full object-cover" />
+                                            ))
+                                        ) : (
+                                            <img src='/user.png' alt='user avatar' className="w-full h-full rounded-full object-cover" />
+                                        )}
+                                    </>
+                                )
+                            }
+                            <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <FiUploadCloud size={32} />
+                                <input type="file" id="avatar-upload" className="hidden"
+                                    onChange={onChangeFile}
+                                    name='avatar'
+                                    accept='image/*'
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    <div className="flex-grow space-y-8 w-full">
+                        <div>
+                            <div className='flex items-center justify-between mb-4'>
+                                <h3 className="font-bold text-lg">Thông tin cá nhân</h3>
+                                <p className="text-[18px] text-right text-gray-500 mt-2"><a href="/login" className="text-indigo-600 hover:underline">Sử dụng tài khoản khác.</a></p>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <CustomTextField
+                                    id="fullName"
+                                    label="Họ và tên"
+                                    name='name'
+                                    value={formFields.name}
+                                    onChange={onChangeInput}
+                                    disabled={isLoading === true ? true : false}
+                                />
+                                <PhoneInput
+                                    defaultCountry="vn"
+                                    value={formFields.mobile}
+                                    disabled={isLoading === true ? true : false}
+                                    onChange={handlePhoneChange}
+                                />
+                            </div>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            <CustomTextField
-                                id="fullName"
-                                label="Họ và tên"
-                                name='name'
-                                value={formFields.name}
-                                onChange={onChangeInput}
-                                disabled={isLoading === true ? true : false}
+                            <DatePicker
+                                label="Ngày sinh"
+                                value={formFields.birthday ? dayjs(formFields.birthday) : null}
+                                onChange={handleDateChange}
+                                disabled={isLoading}
+                                format="DD/MM/YYYY"
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        variant: 'standard',
+                                    },
+                                }}
                             />
-                            <CustomTextField
-                                id="phone"
-                                label="Số điện thoại"
-                                type="tel"
-                                name='mobile'
-                                value={formFields.mobile}
-                                onChange={onChangeInput}
-                                disabled={isLoading === true ? true : false}
-                            />
+                            <div className="relative group">
+                                <input
+                                    id="email"
+                                    type="email"
+                                    disabled
+                                    name='email'
+                                    value={formFields.email}
+                                    onChange={onChangeInput}
+                                    className=" block w-full px-1 pt-4 pb-1 text-md bg-slate-300 text-gray-500 border-0 border-b-2 !rounded-tl-xl !rounded-tr-xl border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-indigo-600 peer transition" />
+                                <label htmlFor="email" className="absolute px-1 text-md text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] peer-focus:text-indigo-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4">Email</label>
+                            </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <DatePicker
-                            label="Ngày sinh"
-                            value={formFields.birthday ? dayjs(formFields.birthday) : null}
-                            onChange={handleDateChange}
-                            disabled={isLoading}
-                            format="DD/MM/YYYY"
-                            slotProps={{
-                                textField: {
-                                    fullWidth: true,
-                                    variant: 'standard',
-                                },
-                            }}
-                        />
-                        <div className="relative group">
-                            <input
-                                id="email"
-                                type="email"
-                                disabled
-                                name='email'
-                                value={formFields.email}
-                                onChange={onChangeInput}
-                                className=" block w-full px-1 pt-4 pb-1 text-md bg-slate-300 text-gray-500 border-0 border-b-2 !rounded-tl-xl !rounded-tr-xl border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-indigo-600 peer transition" />
-                            <label htmlFor="email" className="absolute px-1 text-md text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] peer-focus:text-indigo-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4">Email</label>
-                        </div>
-                    </div>
-                    <p className="text-[18px] text-right text-gray-500 mt-2"><a href="#" className="text-indigo-600 hover:underline">Sử dụng tài khoản khác.</a></p>
-                    <div className="flex items-center justify-center">
-                        <button type="submit" disabled={isLoading} className="bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed">
-                            {isLoading == true ? <CircularProgress size={24} color="inherit" /> : 'Cập Nhật Ngay'}
-                        </button>
-                    </div>
+                </div>
+                <div className="flex items-center justify-center mt-10">
+                    <button type="submit" disabled={isLoading} className="bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                        {isLoading == true ? <CircularProgress size={24} color="inherit" /> : 'Cập Nhật Ngay'}
+                    </button>
                 </div>
             </form>
         </LocalizationProvider>
@@ -430,7 +532,7 @@ const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('profile');
 
     return (
-        <div>
+        <div className='w-auto h-auto p-6 border-2  rounded-2xl !border-[#4b4b4b11] bg-[#fefcfc] shadow-lg'>
             <div>
                 <h2 className="text-2xl font-bold text-gray-800">Hồ sơ và Bảo mật</h2>
                 <p className="text-gray-500 mt-1">Quản lý thông tin và giúp tài khoản của bạn an toàn hơn.</p>

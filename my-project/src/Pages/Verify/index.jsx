@@ -97,18 +97,39 @@ const Verify = () => {
      */
     const handleSubmit = (e) => {
         e.preventDefault();
-        postData("/api/user/verify", {
-            email: localStorage.getItem("userEmail"),
-            otp: otp
-        }).then((res) => {
-            if (res?.error === false) {
-                context.openAlerBox("success", res?.message);
-                localStorage.removeItem("userEmail");
-                history('/login');
-            } else {
-                context.openAlerBox("error", res?.message);
-            }
-        });
+        setIsLoading(true);
+        const actionType = localStorage.getItem("actionType");
+
+        if (actionType !== "forgot-password") {
+            postData("/api/user/verify", {
+                email: localStorage.getItem("userEmail"),
+                otp: otp
+            }).then((res) => {
+                if (res?.error === false) {
+                    setIsLoading(true);
+                    context.openAlerBox("success", res?.message);
+                    localStorage.removeItem("userEmail");
+                    history('/login');
+                } else {
+                    setIsLoading(false);
+                    context.openAlerBox("error", res?.message);
+                }
+            });
+        } else {
+            postData("/api/user/verify-forgot-password-otp", {
+                email: localStorage.getItem("userEmail"),
+                otp: otp
+            }).then((res) => {
+                if (res?.error === false) {
+                    setIsLoading(true);
+                    context.openAlerBox("success", res?.message);
+                    history('/forgot-password');
+                } else {
+                    setIsLoading(false);
+                    context.openAlerBox("error", res?.message);
+                }
+            });
+        }
     };
 
     // --- SECTION: ANIMATION VARIANTS ---
