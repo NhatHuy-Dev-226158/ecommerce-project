@@ -8,7 +8,7 @@ import ProductsTable from './componets/Dashboard-Products';
 import Login from './Pages/Login/login';
 import Register from './Pages/Register/register';
 import Products from './Pages/Products/products';
-import AddProductPage from './Pages/CreateProduct/createProduct';
+import AddProductPage from './Pages/Products/createProduct';
 import OrderListPage from './Pages/Order/OrderListPage';
 import OrderDetailPage from './Pages/Order/OrderDetailPage';
 import toast, { Toaster } from 'react-hot-toast';
@@ -17,6 +17,11 @@ import { useEffect } from 'react';
 import { fetchDataFromApi } from './utils/api';
 import ForgotPassword from './Pages/ForgotPassword';
 import ProfilePage from './Pages/ProfileContent';
+import AddCategoryPage from './Pages/Category/AddCategoryPage';
+import CategoryListPage from './Pages/Category/CategoryListPage';
+import EditCategoryPage from './Pages/Category/EditCategoryPage';
+import UserListPage from './Pages/Users/UserListPage';
+import AddUserPage from './Pages/Users/AddUserPage';
 
 const MyContext = createContext();
 
@@ -70,6 +75,7 @@ function App() {
           localStorage.removeItem("accesstoken")
           localStorage.removeItem("refreshtoken")
           openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
+          window.location.href = '/login'
           setIslogin(false);
         }
       });
@@ -100,9 +106,26 @@ function App() {
           element: <Dashboard />,
         },
         {
-          path: "/product-lisst",
-          element: <ProductsTable />,
-        }, {
+          path: "/users",
+          element: <UserListPage />,
+        },
+        {
+          path: "/edit-user",
+          element: <AddUserPage />,
+        },
+        {
+          path: "/add-category",
+          element: <AddCategoryPage />,
+        },
+        {
+          path: "/list-category",
+          element: <CategoryListPage />,
+        },
+        {
+          path: "/edit-category",
+          element: <EditCategoryPage />,
+        }
+        , {
           path: "/product-list",
           element: <Products />,
         },

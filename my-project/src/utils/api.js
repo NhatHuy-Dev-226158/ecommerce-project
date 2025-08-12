@@ -7,7 +7,7 @@ export const postData = async (url, formData) => {
         const response = await fetch(apiUrl + url, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                'Authorization': `Bearer ${localStorage.getItem("accesstoken")}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(formData)
@@ -60,17 +60,26 @@ export const uploadImage = async (url, updateData) => {
     return response
 }
 
-export const updateData = async (url, updateData) => {
-    const params = {
+export const updateData = async (url, dataToUpdate) => {
+    const token = localStorage.getItem('accesstoken');
+    const response = await fetch(apiUrl + url, {
+        method: 'PUT',
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accesstoken')}`,
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         },
-    };
+        body: JSON.stringify(dataToUpdate)
+    });
+    return response.json();
+};
 
-    var response;
-    await axios.put(apiUrl + url, updateData, params).then((res) => {
-        response = res;
-    })
-    return response
-}
+export const deleteData = async (url) => {
+    const token = localStorage.getItem('accesstoken');
+    const response = await fetch(apiUrl + url, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return response.json();
+};

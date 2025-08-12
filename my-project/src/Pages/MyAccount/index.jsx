@@ -111,7 +111,7 @@ const MyAccountPage = () => {
     useEffect(() => {
         const token = localStorage.getItem('accesstoken');
         if (token == null) {
-            history('/');
+            history('/login');
             context.openAlerBox("error", "Bạn cần đăng nhập để truy cập trang này.");
         }
 
@@ -168,7 +168,6 @@ const MyAccountPage = () => {
         { id: 'profile', title: 'Thông tin cá nhân', icon: <FiUser /> },
         { id: 'wishlist', title: 'Sản phẩm yêu thích', icon: <FiHeart /> },
         { id: 'orders', title: 'Quản lý đơn hàng', icon: <FiShoppingCart /> },
-        { id: 'addresses', title: 'Sổ địa chỉ', icon: <FiMapPin /> },
         { kind: 'divider' },
         { id: 'reviews', title: 'Nhận xét của tôi', icon: <FiStar /> },
         { id: 'vouchers', title: 'Ví voucher', icon: <FiTag /> },

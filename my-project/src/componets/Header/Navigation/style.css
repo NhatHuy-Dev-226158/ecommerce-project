@@ -1,37 +1,38 @@
-.categoryMenu button {
-    text-transform: capitalize !important;
+.nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.nav li .submenu {
-    visibility: hidden;
-    z-index: 1000;
+.nav>li {
+    position: relative;
 }
 
-.nav li:hover .submenu {
-    opacity: 1 !important;
-    visibility: inherit;
+.submenu {
+    position: absolute;
     top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    min-width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 0.5rem;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-50%, 10px);
+    transition: all 0.25s ease;
 }
 
-.nav li .submenu li:hover button {
-    color: #ff4646 !important;
+.nav>li:hover>.submenu {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, 0);
 }
 
-.nav li .submenu li .submenu {
-    top: 0px !important;
-    left: 120% !important;
-    opacity: 0 !important;
-}
-
-.nav li .submenu li:hover .submenu {
-    left: 100% !important;
-    opacity: 1 !important;
-}
-
-.nav li .submenu li .submenu button {
-    color: rgba(0, 0, 0, 0.8) !important;
-}
-
-.nav li .submenu li .submenu button:hover {
-    color: #ff4646 !important;
+.submenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }

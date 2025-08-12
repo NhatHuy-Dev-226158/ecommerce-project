@@ -158,18 +158,10 @@ const Sidebar = () => {
                                     </Link>
                                 </li>
                                 <li className='w-full'>
-                                    <Link to='/sub-category'>
+                                    <Link to='/edit-category'>
                                         <Button className='!text-[rgba(0,0,0,0.7)] !capitalize !justify-start w-full !text-[13px] !font-[450] !pl-8 flex gap-2 group hover:!bg-[#ebf2fe]'>
                                             <span className='block w-[5px] h-[5px] rounded-full bg-[#919191] group-hover:bg-indigo-600'></span>
-                                            Danh mục phụ
-                                        </Button>
-                                    </Link>
-                                </li>
-                                <li className='w-full'>
-                                    <Link to='/add-sub-category'>
-                                        <Button className='!text-[rgba(0,0,0,0.7)] !capitalize !justify-start w-full !text-[13px] !font-[450] !pl-8 flex gap-2 group hover:!bg-[#ebf2fe]'>
-                                            <span className='block w-[5px] h-[5px] rounded-full bg-[#919191] group-hover:bg-indigo-600'></span>
-                                            Thêm danh mục phụ
+                                            Sửa danh mục
                                         </Button>
                                     </Link>
                                 </li>

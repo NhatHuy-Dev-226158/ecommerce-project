@@ -51,6 +51,7 @@ function App() {
           localStorage.removeItem("accesstoken")
           localStorage.removeItem("refreshtoken")
           openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
+          window.location.href = '/login'
           setIsLogin(false);
         }
       });

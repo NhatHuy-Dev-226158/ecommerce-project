@@ -1,436 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { FiMonitor, FiSmartphone } from 'react-icons/fi';
-import { CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
-import { IoIosEye, IoIosEyeOff } from 'react-icons/io';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import 'react-international-phone/style.css';
+import ProfileInfoTab from './Info';
+import SecurityTab from './Security';
+import AddressManagementSection from './AddAddress';
 import { MyContext } from '../../../App';
-import { postData, updateData } from '../../../utils/api';
 
-// --- CÁC COMPONENT CON TÙY CHỈNH (Không thay đổi về JSX, nhưng giờ sẽ nhận state) ---
-const CustomTextField = React.forwardRef((props, ref) => {
-    const {
-        id,
-        label,
-        type = 'text',
-        value,
-        onChange,
-        name,
-        InputProps,
-        inputProps,
-        focused,
-        ownerState,
-        error,
-        ...other
-    } = props;
-
-    return (
-        <div ref={ref} className="relative group flex items-center" {...other}>
-            <input
-                id={id}
-                name={name || id}
-                type={type}
-                required
-                value={value}
-                onChange={onChange}
-                className="block w-full px-1 pt-4 pb-1 text-md text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-indigo-600 peer transition"
-                placeholder=" "
-            />
-            <label
-                htmlFor={id}
-                className="absolute text-md text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] peer-focus:text-indigo-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
-            >
-                {label}
-            </label>
-            {InputProps?.endAdornment}
-        </div>
-    );
-});
-const CustomPassTextField = ({
-    id,
-    label,
-    name,
-    type,
-    value,
-    onChange,
-    disabled,
-    required,
-    ...props
-}) => {
-    return (
-        <TextField
-            fullWidth
-            id={id}
-            label={label}
-            name={name}
-            type={type}
-            value={value}
-            onChange={onChange}
-            disabled={disabled}
-            required={required}
-            variant="standard"
-
-            {...props}
-        />
-    );
-};
-
-const ToggleSwitch = ({ enabled, setEnabled }) => (
-    <button onClick={() => setEnabled(!enabled)}
-        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${enabled ? 'bg-indigo-600' : 'bg-gray-300'}`}>
-        <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
-    </button>
-);
-
-// === CÁC COMPONENT NỘI DUNG CHO TỪNG TAB (Giờ đã có logic) ===
-const ProfileInfoTab = () => {
-    const [previews, setPreviews] = useState([])
-    const [userId, setUserId] = useState("")
-    const context = useContext(MyContext)
-    const [formFields, setFormFields] = useState({
-        name: '',
-        email: '',
-        mobile: '',
-        birthday: ''
-    });
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleDateChange = (newValue) => {
-        setFormFields(prevState => ({
-            ...prevState,
-            birthday: newValue ? newValue.format('YYYY-MM-DD') : ''
-        }));
-    };
-
-    const onChangeInput = (e) => {
-        const { name, value } = e.target;
-
-        if (name === 'mobile') {
-            const numericValue = /^[0-9]*$/;
-            if (value === '' || numericValue.test(value)) {
-                setFormFields(prevState => ({ ...prevState, [name]: value }));
-            }
-        } else {
-            setFormFields(prevState => ({ ...prevState, [name]: value }));
-        }
-    };
-
-    useEffect(() => {
-        if (context?.userData?._id) {
-            setUserId(context.userData._id);
-            setFormFields({
-                name: context.userData.name || '',
-                email: context.userData.email || '',
-                mobile: context.userData.mobile || '',
-                birthday: context.userData.birthday || ''
-            });
-        }
-    }, [context?.userData]);
-
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        setIsLoading(true);
-        const { name, email, mobile } = formFields;
-        if (!name && !email && !mobile) {
-            context.openAlerBox("error", "Vui lòng điền đầy đủ thông tin để đăng ký.");
-            setIsLoading(false);
-            return;
-        }
-        if (!name) {
-            context.openAlerBox("error", "Bạn chưa nhập tên.");
-            setIsLoading(false);
-            return;
-        }
-        if (!email) {
-            context.openAlerBox("error", "Bạn chưa nhập địa chỉ email.");
-            setIsLoading(false);
-            return;
-        }
-        if (!mobile) {
-            context.openAlerBox("error", "Bạn chưa nhập số điện thoại.");
-            setIsLoading(false);
-            return;
-        }
-        updateData(`/api/user/${userId}`, formFields, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error !== true) {
-                setIsLoading(false);
-                context.openAlerBox("success", res?.data?.message);
-            } else {
-                context.openAlerBox("error", res?.data?.message);
-                setIsLoading(false);
-            }
-        });
-    };
-
-    return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <form onSubmit={handleSubmit} noValidate className=" w-full grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
-                <div className="md:col-span-2 space-y-8 w-full">
-                    <div>
-                        <h3 className="font-bold text-lg mb-4">Thông tin cá nhân</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            <CustomTextField
-                                id="fullName"
-                                label="Họ và tên"
-                                name='name'
-                                value={formFields.name}
-                                onChange={onChangeInput}
-                                disabled={isLoading === true ? true : false}
-                            />
-                            <CustomTextField
-                                id="phone"
-                                label="Số điện thoại"
-                                type="tel"
-                                name='mobile'
-                                value={formFields.mobile}
-                                onChange={onChangeInput}
-                                disabled={isLoading === true ? true : false}
-                            />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <DatePicker
-                            label="Ngày sinh"
-                            value={formFields.birthday ? dayjs(formFields.birthday) : null}
-                            onChange={handleDateChange}
-                            disabled={isLoading}
-                            format="DD/MM/YYYY"
-                            slotProps={{
-                                textField: {
-                                    fullWidth: true,
-                                    variant: 'standard',
-                                },
-                            }}
-                        />
-                        <div className="relative group">
-                            <input
-                                id="email"
-                                type="email"
-                                disabled
-                                name='email'
-                                value={formFields.email}
-                                onChange={onChangeInput}
-                                className=" block w-full px-1 pt-4 pb-1 text-md bg-slate-300 text-gray-500 border-0 border-b-2 !rounded-tl-xl !rounded-tr-xl border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-indigo-600 peer transition" />
-                            <label htmlFor="email" className="absolute px-1 text-md text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] peer-focus:text-indigo-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4">Email</label>
-                        </div>
-                    </div>
-                    <p className="text-[18px] text-right text-gray-500 mt-2"><a href="#" className="text-indigo-600 hover:underline">Sử dụng tài khoản khác.</a></p>
-                    <div className="flex items-center justify-center">
-                        <button type="submit" disabled={isLoading} className="bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed">
-                            {isLoading == true ? <CircularProgress size={24} color="inherit" /> : 'Cập Nhật Ngay'}
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </LocalizationProvider>
-    );
-};
-
-const SecurityTab = () => {
-    const context = useContext(MyContext)
-    const [isShowPassword, setIsShowPassword] = useState(false);
-    const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
-    const [isShowNewPassword, setIsShowNewPassword] = useState(false);
-    const handleClickShowPassword = () => setIsShowPassword((show) => !show);
-    const handleClickShowConfirmPassword = () => setIsShowConfirmPassword((show) => !show);
-    const handleClickShowNewPassword = () => setIsShowNewPassword((show) => !show);
-    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [changePassword, setChangePassword] = useState({
-        email: '',
-        oldPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    });
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
-
-    const onChangeInput = (e) => {
-        const { name, value } = e.target;
-        setChangePassword(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    };
-
-    useEffect(() => {
-        if (context?.userData?._id) {
-            setChangePassword(prevState => ({
-                ...prevState,
-                email: context.userData.email || ''
-            }));
-        }
-    }, [context?.userData]);
-
-    const handlePasswordSubmit = (event) => {
-        event.preventDefault();
-        setIsLoading(true);
-        const { oldPassword, newPassword, confirmPassword } = changePassword;
-        if (!oldPassword && !newPassword && !confirmPassword) {
-            context.openAlerBox("error", "Vui lòng điền đầy đủ thông tin để đăng ký.");
-            setIsLoading(false);
-            return;
-        }
-        if (!oldPassword) {
-            context.openAlerBox("error", "Vui lòng nhập mật khẩu cũ.");
-            setIsLoading(false);
-            return;
-        }
-        if (!newPassword) {
-            context.openAlerBox("error", "Bạn chưa nhập mật khẩu mới.");
-            setIsLoading(false);
-            return;
-        }
-        if (!confirmPassword) {
-            context.openAlerBox("error", "Bạn chưa xác nhân mật khẩu mới.");
-            setIsLoading(false);
-            return;
-        }
-        if (!newPassword !== !confirmPassword) {
-            context.openAlerBox("error", "Mật khẩu mới và mật khẩu xác nhận không khớp.");
-            setIsLoading(false);
-            return;
-        }
-        postData(`/api/user/change-password`, changePassword, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error !== true) {
-                setIsLoading(false);
-                context.openAlerBox("success", res?.message);
-            } else {
-                context.openAlerBox("error", res?.message);
-                setIsLoading(false);
-            }
-        });
-    };
-
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-6 ">
-            <div>
-                <h3 className="font-bold text-lg mb-4">Đổi mật khẩu</h3>
-                <form onSubmit={handlePasswordSubmit} noValidate className="p-6 bg-slate-50 rounded-xl space-y-8">
-                    <CustomPassTextField
-                        id="oldPassword"
-                        label="Mật khẩu hiện tại"
-                        type={isShowPassword ? 'text' : 'password'}
-                        name='oldPassword'
-                        value={changePassword.oldPassword}
-                        onChange={onChangeInput}
-                        disabled={isLoading === true ? true : false}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    {changePassword.oldPassword && (
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                        >
-                                            {isShowPassword ? <IoIosEye /> : <IoIosEyeOff />}
-                                        </IconButton>
-                                    )}
-                                </InputAdornment>
-                            )
-                        }}
-                    />
-                    <CustomPassTextField
-                        id="newPassword"
-                        label="Mật khẩu mới"
-                        type={isShowNewPassword ? 'text' : 'password'}
-                        name='newPassword'
-                        value={changePassword.newPassword}
-                        onChange={onChangeInput}
-                        disabled={isLoading === true ? true : false}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    {changePassword.newPassword && (
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowNewPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                        >
-                                            {isShowNewPassword ? <IoIosEye /> : <IoIosEyeOff />}
-                                        </IconButton>
-                                    )}
-                                </InputAdornment>
-                            )
-                        }}
-                    />
-                    <CustomPassTextField
-                        id="confirmPassword"
-                        label="Xác nhận mật khẩu mới"
-                        type={isShowConfirmPassword ? 'text' : 'password'}
-                        name='confirmPassword'
-                        value={changePassword.confirmPassword}
-                        onChange={onChangeInput}
-                        disabled={isLoading === true ? true : false}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    {changePassword.confirmPassword && (
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowConfirmPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                        >
-                                            {isShowConfirmPassword ? <IoIosEye /> : <IoIosEyeOff />}
-                                        </IconButton>
-                                    )}
-                                </InputAdornment>
-                            )
-                        }}
-                    />
-                    <ul className="text-xs text-gray-500 list-disc list-inside space-y-1"><li>Ít nhất 8 ký tự, có chữ hoa, số...</li></ul>
-                    <div className="flex justify-end">
-                        <button type="submit" disabled={isLoading} className="bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-300">
-                            {isLoading ? 'Đang xử lý...' : 'Cập nhật mật khẩu'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div>
-                <h3 className="font-bold text-lg mb-4">Xác thực hai yếu tố (2FA)</h3>
-
-                <div>
-                    <div className="p-6 bg-slate-50 rounded-xl flex items-center justify-between">
-                        <div>
-                            <p className="font-medium text-gray-800">Bật xác thực hai yếu tố</p>
-                            <p className="text-sm text-gray-500">Trạng thái hiện tại: <span className={is2FAEnabled ? 'font-bold text-green-600' : 'font-bold text-red-600'}>{is2FAEnabled ? 'Đã bật' : 'Đã tắt'}</span></p>
-                        </div>
-                        <ToggleSwitch enabled={is2FAEnabled} setEnabled={setIs2FAEnabled} />
-                    </div>
-                </div>
-                <div>
-                    <h3 className="font-bold text-lg mb-4 mt-5">Thiết bị đã đăng nhập</h3>
-                    <div className="py-3 px-6 bg-slate-50 rounded-xl space-y-4">
-                        <div className="flex items-center justify-between"><div className="flex items-center gap-4"><FiMonitor size={24} className="text-gray-600" /><div><p className="font-medium">Windows 11, Chrome</p><p className="text-sm text-green-600">Active now</p></div></div></div><hr />
-                        <div className="flex items-center justify-between"><div className="flex items-center gap-4"><FiSmartphone size={24} className="text-gray-500" /><div><p className="font-medium">iPhone 15 Pro</p><p className="text-sm text-gray-500">Đăng nhập 2 ngày trước</p></div></div><button className="text-xs text-gray-500 hover:underline">Đăng xuất</button></div><hr />
-                        <div className="flex justify-end">
-                            <button className="text-sm font-medium text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg transition-colors">
-                                Đăng xuất khỏi tất cả thiết bị khác
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // === COMPONENT CHÍNH CỦA TRANG PROFILE ===
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('profile');
+    const context = useContext(MyContext);
+    const history = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('accesstoken');
+        if (token == null) {
+            history('/login');
+            context.openAlerBox("error", "Bạn cần đăng nhập để truy cập trang này.");
+        }
+
+    }, [context?.isLogin, history])
+
+
+    if (context.isLogin === false) {
+        return null;
+    }
 
     return (
-        <div>
+        <div className='w-auto h-auto'>
             <div>
                 <h2 className="text-2xl font-bold text-gray-800">Hồ sơ và Bảo mật</h2>
                 <p className="text-gray-500 mt-1">Quản lý thông tin và giúp tài khoản của bạn an toàn hơn.</p>
@@ -441,6 +39,10 @@ const ProfilePage = () => {
                         className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
                         Hồ sơ
                     </button>
+                    <button onClick={() => setActiveTab('address')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'address' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                        Địa chỉ
+                    </button>
                     <button onClick={() => setActiveTab('security')}
                         className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'security' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
                         Bảo mật
@@ -449,6 +51,7 @@ const ProfilePage = () => {
             </div>
             <div>
                 {activeTab === 'profile' && <ProfileInfoTab />}
+                {activeTab === 'address' && <AddressManagementSection />}
                 {activeTab === 'security' && <SecurityTab />}
             </div>
         </div>
