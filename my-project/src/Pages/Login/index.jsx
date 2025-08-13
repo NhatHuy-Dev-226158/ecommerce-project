@@ -12,7 +12,7 @@ import { IoIosEyeOff, IoIosEye } from "react-icons/io";
 import { FcGoogle } from "react-icons/fc";
 import { MyContext } from '../../App';
 import { useContext } from 'react';
-import { postData } from '../../utils/api';
+import { fetchDataFromApi, postData } from '../../utils/api';
 
 const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -79,24 +79,41 @@ const Login = () => {
             return;
         }
 
+        postData("/api/user/login", formFields).then((res) => {
+            // Log ra toàn bộ response để kiểm tra
+            console.log("LOGIN RESPONSE:", res);
 
-        postData("/api/user/login", formFields, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error !== true) {
-                setIsLoading(true);
-                context.openAlerBox("success", res?.message);
-                localStorage.setItem("accesstoken", res?.data?.accesstoken)
-                localStorage.setItem("refreshtoken", res?.data?.refreshtoken)
-                setFormFields({
-                    email: '',
-                    password: ''
-                })
-                context.setIsLogin(true);
-                history("/")
+            if (res.success) { // Kiểm tra `res.success`
+                context.openAlerBox("success", res.message);
+
+                // --- SỬA LỖI Ở ĐÂY ---
+                // Đọc token trực tiếp từ `res`, không phải từ `res.data`
+                localStorage.setItem("accesstoken", res.accesstoken);
+                localStorage.setItem("refreshtoken", res.refreshtoken);
+                // -----------------------
+
+                setFormFields({ email: '', password: '' });
+
+                // Gọi logic xác thực ngay lập tức để lấy user data
+                // (Như chúng ta đã làm ở Admin)
+                fetchDataFromApi('/api/user/user-details').then(userRes => {
+                    if (userRes.success) {
+                        context.setUserData(userRes.data);
+                        context.setIsLogin(true);
+                        history("/"); // Chỉ điều hướng sau khi đã có đầy đủ dữ liệu
+                    } else {
+                        throw new Error("Không thể lấy dữ liệu người dùng sau khi đăng nhập.");
+                    }
+                });
+
             } else {
-                context.openAlerBox("error", res?.message);
-                setIsLoading(false);
+                context.openAlerBox("error", res.message);
+                setIsLoading(false); // Tắt loading nếu thất bại
             }
+        }).catch(error => {
+            // Xử lý lỗi mạng hoặc các lỗi khác
+            context.openAlerBox("error", error.message);
+            setIsLoading(false);
         });
     };
 

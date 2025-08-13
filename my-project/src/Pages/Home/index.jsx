@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
@@ -15,13 +15,41 @@ import ProductsSlider from '../../componets/ProductsSlider';
 import BlogItem from '../../componets/BlogItem';
 import SmallSliderHome from '../../componets/SmallSliderHome';
 import BannerSmall from '../../componets/BannerSmall';
+import { MyContext } from '../../App';
+import { fetchDataFromApi } from '../../utils/api';
 
 const Home = () => {
+    const context = useContext(MyContext);
+
+    // State cho Tabs
+    const [tabCategories, setTabCategories] = useState([]);
+    const [isLoadingTabs, setIsLoadingTabs] = useState(true);
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [value, setValue] = React.useState(0);
 
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
+    const handleChange = (event, newIndex) => {
+        setSelectedTabIndex(newIndex);
+        // Tạm thời, chúng ta có thể log ra để xem ID của category được chọn
+        const selectedCategory = tabCategories[newIndex];
+        if (selectedCategory) {
+            console.log("Selected Category ID:", selectedCategory._id);
+        }
     };
+    useEffect(() => {
+        const fetchTabCategories = async () => {
+            setIsLoadingTabs(true);
+            const result = await fetchDataFromApi('/api/category/');
+            if (result.success && result.data.length > 0) {
+                const parentCategories = result.data.filter(cat => cat.isPublished !== false);
+                setTabCategories(parentCategories);
+            } else {
+                context.openAlerBox("error", "Không thể tải danh mục.");
+            }
+            setIsLoadingTabs(false);
+        };
+        fetchTabCategories();
+    }, []);
+
     return (
         <>
             <HomeSlider></HomeSlider>
@@ -36,23 +64,21 @@ const Home = () => {
 
 
                         <div className="section-right w-[60%]">
-                            <Tabs
-                                value={value}
-                                onChange={handleChange}
-                                variant="scrollable"
-                                scrollButtons="auto"
-                                aria-label="scrollable auto tabs example"
-                            >
-                                <Tab label="Thời Trang" />
-                                <Tab label="Điện Tử" />
-                                <Tab label="Túi Xách" />
-                                <Tab label="Giày Dép" />
-                                <Tab label="Trang Sức" />
-                                <Tab label="Phụ Kiện" />
-                                <Tab label="Nước Hoa" />
-                                <Tab label="Nội Thất" />
-                                <Tab label="Làm Đẹp" />
-                            </Tabs>
+                            {isLoadingTabs ? (
+                                <p>Đang tải danh mục...</p> // Hoặc một Skeleton component
+                            ) : (
+                                <Tabs
+                                    value={selectedTabIndex}
+                                    onChange={handleChange}
+                                    variant="scrollable"
+                                    scrollButtons="auto"
+                                    aria-label="scrollable auto tabs example"
+                                >
+                                    {tabCategories.map(category => (
+                                        <Tab key={category._id} label={category.name} />
+                                    ))}
+                                </Tabs>
+                            )}
                         </div>
                     </div>
 

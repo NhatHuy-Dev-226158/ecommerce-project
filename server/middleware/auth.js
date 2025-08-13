@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 
 
-const auth = async (request, response, next) => {
+const auth = (request, response, next) => {
     try {
         const token = request.cookies.accessToken || request?.headers?.authorization?.split(" ")
         [1];
@@ -13,11 +13,14 @@ const auth = async (request, response, next) => {
 
         if (!token) {
             return response.status(401).json({
-                message: "Provide token"
-            })
+                message: "A token is required for authentication.",
+                success: false
+            });
         }
 
-        const decode = await jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);
+        console.log("SECRET KEY BEING USED IN AUTH:", process.env.SECRET_KEY_ACCESS_TOKEN);
+
+        const decode = jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);
 
         if (!decode) {
             return response.status(401).json({
@@ -32,12 +35,26 @@ const auth = async (request, response, next) => {
         next()
 
     } catch (error) {
-        return response.status(500).json({
-            message: "You have not login", //// error.message || error
+
+        console.error('--- AUTH MIDDLEWARE FAILED ---');
+        console.error('ERROR NAME:', error.name);
+        console.error('ERROR MESSAGE:', error.message);
+
+        // console.error("ERROR IN AUTH MIDDLEWARE:", error.name, error.message);
+        if (error.name === 'TokenExpiredError') {
+            return response.status(401).json({
+                message: "Token has expired.",
+                error: true,
+                success: false,
+                expired: true
+            });
+        }
+        return response.status(401).json({
+            message: "Invalid Token.",
             error: true,
             success: false
-        })
+        });
     }
 }
 
-export default auth
+export default auth;

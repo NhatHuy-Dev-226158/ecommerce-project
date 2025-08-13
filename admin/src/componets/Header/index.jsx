@@ -13,7 +13,7 @@ import { MyContext } from '../../App';
 import { NavLink } from 'react-router-dom';
 import { FiLogIn } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { fetchDataFromApi } from '../../utils/api';
+import { postData } from '../../utils/api';
 import { Link } from 'react-router-dom';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -29,6 +29,9 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 const Header = () => {
     const [anchorAccount, setAnchorAccount] = useState(null);
     const openAccount = Boolean(anchorAccount);
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
+
     const handleClickAccount = (event) => {
         setAnchorAccount(event.currentTarget);
     };
@@ -36,24 +39,26 @@ const Header = () => {
         setAnchorAccount(null);
     };
 
-    const context = useContext(MyContext);
-    const history = useNavigate();
-
-    const handleLogout = () => {
+    const handleLogout = async () => {
         handleCloseAccount();
+        try {
+            const res = await postData('/api/user/logout', {});
 
-        setAnchorAccount(null)
-
-        fetchDataFromApi(`/api/user/logout?token=${localStorage.getItem('accesstoken')}`, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error == false) {
-                context.setIslogin(false);
-                localStorage.removeItem("accesstoken")
-                localStorage.removeItem("refreshtoken")
-                history('/')
+            if (res.success) {
+                context.openAlerBox("success", res.message || "Đăng xuất thành công!");
+            } else {
+                throw new Error(res.message || "Đăng xuất thất bại trên server.");
             }
-
-        });
+        } catch (error) {
+            console.error("Logout error:", error);
+            context.openAlerBox("error", "Có lỗi xảy ra, đã đăng xuất cục bộ.");
+        } finally {
+            localStorage.removeItem("accesstoken");
+            localStorage.removeItem("refreshtoken");
+            context.setIslogin(false);
+            context.setUserData(null);
+            navigate('/login');
+        }
     };
 
     return (

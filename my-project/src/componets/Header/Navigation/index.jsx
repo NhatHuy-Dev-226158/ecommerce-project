@@ -1,18 +1,57 @@
 import Button from '@mui/material/Button';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BsMenuButtonWideFill } from "react-icons/bs";
 import { TfiAngleDown } from "react-icons/tfi";
 import { IoHomeOutline, IoRocketOutline, IoChevronDownOutline } from "react-icons/io5";
 import CategoryMenu from './CategoryMenu';
 import '../Navigation/style.css';
+import { MyContext } from '../../../App';
+import { fetchDataFromApi } from '../../../utils/api';
+
+
+const createSlug = (name) => {
+    return name.toLowerCase()
+        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
+        .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
+        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+        .replace(/đ/g, "d")
+        .replace(/\s+/g, '-')
+        .replace(/&/g, 'va');
+};
+
 
 const Navigation = () => {
+    const context = useContext(MyContext);
+    const [navCategories, setNavCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isOpenCategoryMenu, setIsOpenCategoryMenu] = useState(false);
 
     const openCategoryMenu = () => {
         setIsOpenCategoryMenu(true);
     };
+
+    useEffect(() => {
+        const fetchNavCategories = async () => {
+            setIsLoading(true);
+            const result = await fetchDataFromApi('/api/category/');
+            if (result.success) {
+                // Lọc ra các danh mục được phép hiển thị và chỉ lấy các danh mục cha
+                const publishedParentCategories = result.data.filter(cat => cat.isPublished !== false);
+
+                // Cập nhật state với nhiều nhất 7 danh mục
+                setNavCategories(publishedParentCategories.slice(0, 7));
+            } else {
+                context.openAlerBox("error", "Không thể tải danh mục.");
+            }
+            setIsLoading(false);
+        };
+        fetchNavCategories();
+    }, []);
+
 
     const navButtonStyle = {
         color: 'rgba(0,0,0,0.7)',
@@ -69,8 +108,9 @@ const Navigation = () => {
         <>
             <nav>
                 <div className="container flex items-center justify-end gap-4">
+                    {/* Nút DANH MỤC */}
                     <div className="col_1 w-[20%]">
-                        <Button className='!text-black gap-2 w-full !bg-[#f7f7f7] !px-3' onClick={openCategoryMenu}>
+                        <Button className='!text-black gap-2 w-full !bg-[#f7f7f7] !px-3' onClick={() => setIsOpenCategoryMenu(true)}>
                             <BsMenuButtonWideFill className='text-[18px]' />
                             DANH MỤC
                             <TfiAngleDown className='text-[12px] ml-auto !font-bold' />
@@ -79,65 +119,57 @@ const Navigation = () => {
 
                     <div className="h-8 border-l-2 border-gray-200"></div>
 
+                    {/* --- THANH ĐIỀU HƯỚNG CHÍNH --- */}
                     <div className="col_2 w-[65%]">
                         <ul className="flex items-center gap-4 justify-center nav">
                             <li className="list-none relative">
                                 <Button component={Link} to="/" sx={navButtonStyle}><IoHomeOutline /></Button>
                             </li>
 
-                            <li className="list-none relative">
-                                <Button sx={navButtonStyle}>Tươi Sống <IoChevronDownOutline className="chevron-icon" /></Button>
-                                <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
-                                    <ul>
-                                        <li><Button component={Link} to='/category/rau-cu-qua' sx={subMenuButtonStyle}>Rau, Củ, Quả</Button></li>
-                                        <li><Button component={Link} to='/category/thit-hai-san' sx={subMenuButtonStyle}>Thịt, Hải Sản</Button></li>
-                                        <li><Button component={Link} to='/category/thuc-pham-che-bien' sx={subMenuButtonStyle}>Thực Phẩm Chế Biến Sẵn</Button></li>
-                                    </ul>
-                                </div>
-                            </li>
+                            {!isLoading && navCategories.map(category => {
+                                const isParent = category.children && category.children.length > 0;
+                                const categorySlug = createSlug(category.name);
 
-                            <li className="list-none relative">
-                                <Button sx={navButtonStyle}>Đồ Khô <IoChevronDownOutline className="chevron-icon" /></Button>
-                                <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
-                                    <ul>
-                                        <li><Button component={Link} to='/category/gao-mi-nong-san' sx={subMenuButtonStyle}>Gạo, Mì & Nông Sản Khô</Button></li>
-                                        <li><Button component={Link} to='/category/gia-vi' sx={subMenuButtonStyle}>Gia Vị & Nước Chấm</Button></li>
-                                        <li><Button component={Link} to='/category/do-hop' sx={subMenuButtonStyle}>Thực Phẩm Đóng Hộp</Button></li>
-                                    </ul>
-                                </div>
-                            </li>
+                                return (
+                                    <li key={category._id} className="list-none relative">
+                                        <Button
+                                            component={isParent ? 'div' : Link}
+                                            to={isParent ? undefined : `/product-list`}
+                                            // to={isParent ? undefined : `/category/${categorySlug}`}
+                                            sx={navButtonStyle}
+                                        >
+                                            {category.name}
+                                            {isParent && <IoChevronDownOutline className="chevron-icon" />}
+                                        </Button>
 
-                            <li className="list-none relative">
-                                <Button sx={navButtonStyle}>Đồ Uống <IoChevronDownOutline className="chevron-icon" /></Button>
-                                <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
-                                    <ul>
-                                        <li><Button component={Link} to='/category/nuoc-giai-khat' sx={subMenuButtonStyle}>Nước Giải Khát</Button></li>
-                                        <li><Button component={Link} to='/category/sua' sx={subMenuButtonStyle}>Sữa & Sản Phẩm Từ Sữa</Button></li>
-                                        <li><Button component={Link} to='/category/bia-ruou' sx={subMenuButtonStyle}>Bia, Rượu & Đồ Uống Có Cồn</Button></li>
-                                        <li><Button component={Link} to='/category/tra-ca-phe' sx={subMenuButtonStyle}>Trà, Cà Phê & Ca Cao</Button></li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li className="list-none relative">
-                                <Button component={Link} to="/category/an-vat" sx={navButtonStyle}>Ăn Vặt</Button>
-                            </li>
-
-                            <li className="list-none relative">
-                                <Button sx={navButtonStyle}>Hóa Mỹ Phẩm <IoChevronDownOutline className="chevron-icon" /></Button>
-                                <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
-                                    <ul>
-                                        <li><Button component={Link} to='/category/cham-soc-toc' sx={subMenuButtonStyle}>Chăm Sóc Tóc</Button></li>
-                                        <li><Button component={Link} to='/category/cham-soc-co-the' sx={subMenuButtonStyle}>Chăm Sóc Cơ Thể</Button></li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li className="list-none relative">
-                                <Button component={Link} to="/category/me-be" sx={navButtonStyle}>Mẹ & Bé</Button>
-                            </li>
+                                        {/* Nếu có danh mục con, tạo submenu */}
+                                        {isParent && (
+                                            <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
+                                                <ul>
+                                                    {category.children.map(child => {
+                                                        // hiển thị các danh mục con được publish
+                                                        if (child.isPublished === false) return null;
+                                                        const childSlug = createSlug(child.name);
+                                                        return (
+                                                            <li key={child._id}>
+                                                                <Button component={Link} to={`/product-list`} sx={subMenuButtonStyle}>
+                                                                    {child.name}
+                                                                </Button>
+                                                                {/* <Button component={Link} to={`/category/${childSlug}`} sx={subMenuButtonStyle}>
+                                                                    {child.name}
+                                                                </Button> */}
+                                                            </li>
+                                                        )
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
+                    {/* --------------------------------------------------- */}
 
                     <div className="h-8 border-l-2 border-gray-200"></div>
 

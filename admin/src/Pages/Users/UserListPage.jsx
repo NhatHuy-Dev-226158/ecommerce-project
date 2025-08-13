@@ -161,7 +161,7 @@ const UserListPage = () => {
                                         <TableCell>{row.joinDate}</TableCell>
                                         <TableCell align="right">
                                             <Tooltip title="Sửa người dùng">
-                                                <Link to='/edit-user'>
+                                                <Link to='/add-user'>
                                                     <IconButton size="small"><FiEdit /></IconButton>
                                                 </Link>
                                             </Tooltip>

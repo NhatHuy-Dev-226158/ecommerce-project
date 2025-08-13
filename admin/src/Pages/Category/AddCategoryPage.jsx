@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
     Typography, Button, Breadcrumbs, MenuItem, TextField, Select, FormControl,
-    InputLabel, Switch, InputAdornment, IconButton, CircularProgress
+    InputLabel, Switch, IconButton, CircularProgress,
+    InputAdornment
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiUploadCloud, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
-import { MyContext } from '../../App'; // Điều chỉnh đường dẫn nếu cần
-import { fetchDataFromApi, postData, uploadCategoryImages } from '../../utils/api'; // Điều chỉnh đường dẫn nếu cần
+import { MyContext } from '../../App';
+import { fetchDataFromApi, postData, uploadCategoryImages } from '../../utils/api';
 
 // --- COMPONENT GIAO DIỆN CON ---
 const FormSection = ({ title, children }) => (
@@ -19,7 +20,7 @@ const FormSection = ({ title, children }) => (
 
 const breadcrumbsData = [
     { name: 'Dashboard', link: '/' },
-    { name: 'Danh mục', link: '/list-category' },
+    { name: 'Danh mục', link: '/category-list' },
     { name: 'Thêm mới' }
 ];
 
@@ -29,8 +30,6 @@ const AddCategoryPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [existingCategories, setExistingCategories] = useState([]);
-
-    // State duy nhất để quản lý toàn bộ dữ liệu form
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -42,18 +41,14 @@ const AddCategoryPage = () => {
         slug: ''
     });
 
-    // State riêng để quản lý file ảnh và ảnh xem trước
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
     // --- LẤY DANH SÁCH DANH MỤC CHA ---
     useEffect(() => {
-        // Sử dụng URL đã thống nhất theo router của bạn: /api/category/
         fetchDataFromApi('/api/category/')
             .then(res => {
                 if (res.success) {
-                    // Backend trả về cấu trúc cây, chúng ta chỉ cần các danh mục gốc
-                    // Bạn có thể cần lọc lại ở đây nếu API trả về cả danh mục con
                     setExistingCategories(res.data);
                 }
             })
@@ -108,7 +103,6 @@ const AddCategoryPage = () => {
                 const imageFormData = new FormData();
                 imageFormData.append('images', imageFile);
 
-                // Sử dụng URL đã thống nhất: /api/category/uploadImages /api/category
                 const uploadResult = await uploadCategoryImages('/api/category/uploadImages', imageFormData);
                 if (uploadResult.success) {
                     imageUrls = uploadResult.data.images;
@@ -117,29 +111,26 @@ const AddCategoryPage = () => {
                 }
             }
 
-            // Tạo đối tượng dữ liệu cuối cùng để gửi đi
             const finalData = {
                 name: formData.name,
                 description: formData.description,
                 isPublished: formData.isPublished,
+                images: imageUrls,
                 seoTitle: formData.seoTitle,
                 seoDescription: formData.seoDescription,
-                slug: formData.slug,
-                images: imageUrls,
+                slug: formData.slug
             };
 
-            // Chỉ thêm parentId và parentCatName nếu nó có giá trị
             if (formData.parentId) {
                 finalData.parentId = formData.parentId;
                 finalData.parentCatName = formData.parentCatName;
             }
 
-            // Sử dụng URL đã thống nhất: /api/category/create-category
             const createResult = await postData('/api/category/create-category', finalData);
 
             if (createResult.success) {
                 context.openAlerBox("success", "Tạo danh mục thành công!");
-                navigate('/list-category'); // Điều hướng về trang danh sách
+                navigate('/category-list');
             } else {
                 throw new Error(createResult.message || 'Tạo danh mục thất bại');
             }
@@ -154,7 +145,6 @@ const AddCategoryPage = () => {
     return (
         <section className="bg-gray-50 p-4 md:p-6">
             <form onSubmit={handleSubmit} noValidate>
-                {/* Header và Breadcrumbs */}
                 <div className="flex flex-wrap justify-between items-center mb-6">
                     <div>
                         <Typography variant="h5" component="h1" fontWeight="bold">Thêm danh mục mới</Typography>
@@ -167,7 +157,7 @@ const AddCategoryPage = () => {
                         </Breadcrumbs>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outlined" color="secondary" onClick={() => navigate('/list-category')} sx={{ textTransform: 'none', borderRadius: '8px' }}>Hủy</Button>
+                        <Button variant="outlined" color="secondary" onClick={() => navigate('/category-list')} sx={{ textTransform: 'none', borderRadius: '8px' }}>Hủy</Button>
                         <Button type="submit" variant="contained" disabled={isLoading} sx={{ textTransform: 'none', borderRadius: '8px' }}>
                             {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Lưu danh mục'}
                         </Button>
@@ -190,7 +180,11 @@ const AddCategoryPage = () => {
                             <TextField fullWidth label="Mô tả" name="description" value={formData.description} onChange={handleInputChange} variant="outlined" multiline rows={6} placeholder="Mô tả ngắn về danh mục này..." />
                         </FormSection>
 
-
+                        <FormSection title="2. Tối ưu hóa SEO">
+                            <TextField fullWidth label="Tiêu đề SEO" name="seoTitle" value={formData.seoTitle} onChange={handleInputChange} helperText="Tiêu đề hiển thị trên Google." />
+                            <TextField fullWidth label="Mô tả meta" name="seoDescription" value={formData.seoDescription} onChange={handleInputChange} multiline rows={3} helperText="Mô tả ngắn hiển thị dưới tiêu đề." />
+                            <TextField fullWidth label="Đường dẫn tĩnh (URL Slug)" name="slug" value={formData.slug} onChange={handleInputChange} InputProps={{ startAdornment: <InputAdornment position="start">/danh-muc/</InputAdornment> }} />
+                        </FormSection>
                     </div>
 
                     {/* Cột phải */}

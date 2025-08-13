@@ -1,5 +1,5 @@
 import { Button } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useContext, useState } from 'react';
 import {
     RxDashboard,
@@ -18,11 +18,13 @@ import { LuLogOut } from "react-icons/lu";
 import { FaAngleDown } from "react-icons/fa6";
 import { Collapse } from 'react-collapse';
 import { MyContext } from '../../App';
+import { postData } from '../../utils/api';
 
 const Sidebar = () => {
     const [OpenSubMenu, setOpenSubMenu] = useState(null);
     const context = useContext(MyContext);
     const { isSidebarOpen } = useContext(MyContext);
+    const navigate = useNavigate();
     const isOpenSubMenu = (index) => {
         if (OpenSubMenu === index) {
             setOpenSubMenu(null);
@@ -31,7 +33,40 @@ const Sidebar = () => {
         }
     }
 
+    const handleLogout = async () => {
+        try {
+            // Bước 1: Gọi API để thông báo cho backend (tùy chọn nhưng khuyến khích)
+            const res = await postData('/api/user/logout', {}); // Gửi request POST rỗng
 
+            if (res.success) {
+                // Bước 2: Xóa token khỏi localStorage
+                localStorage.removeItem('accesstoken');
+                localStorage.removeItem('refreshtoken');
+
+                // Bước 3: Cập nhật state toàn cục
+                context.setIslogin(false);
+                context.setUserData(null);
+
+                // Bước 4: Điều hướng về trang đăng nhập
+                navigate('/login');
+
+                context.openAlerBox("success", "Đăng xuất thành công!");
+            } else {
+                // Nếu API thất bại, vẫn cho phép đăng xuất ở phía client
+                throw new Error(res.message || "Đăng xuất thất bại trên server.");
+            }
+
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Kể cả khi API lỗi, vẫn thực hiện các bước đăng xuất ở client để đảm bảo người dùng có thể thoát ra.
+            localStorage.removeItem('accesstoken');
+            localStorage.removeItem('refreshtoken');
+            context.setIslogin(false);
+            context.setUserData(null);
+            navigate('/login');
+            context.openAlerBox("error", "Có lỗi xảy ra, đã đăng xuất cục bộ.");
+        }
+    };
 
     return (
         <>
@@ -142,7 +177,7 @@ const Sidebar = () => {
                         <Collapse isOpened={OpenSubMenu === 3 ? true : false}>
                             <ul className='w-full'>
                                 <li className='w-full'>
-                                    <Link to='/list-category'>
+                                    <Link to='/category-list'>
                                         <Button className='!text-[rgba(0,0,0,0.7)] !capitalize !justify-start w-full !text-[13px] !font-[450] !pl-8 flex gap-2 group hover:!bg-[#ebf2fe]'>
                                             <span className='block w-[5px] h-[5px] rounded-full bg-[#919191] group-hover:bg-indigo-600'></span>
                                             Danh sách danh mục
@@ -154,14 +189,6 @@ const Sidebar = () => {
                                         <Button className='!text-[rgba(0,0,0,0.7)] !capitalize !justify-start w-full !text-[13px] !font-[450] !pl-8 flex gap-2 group hover:!bg-[#ebf2fe]'>
                                             <span className='block w-[5px] h-[5px] rounded-full bg-[#919191] group-hover:bg-indigo-600'></span>
                                             Thêm danh mục
-                                        </Button>
-                                    </Link>
-                                </li>
-                                <li className='w-full'>
-                                    <Link to='/edit-category'>
-                                        <Button className='!text-[rgba(0,0,0,0.7)] !capitalize !justify-start w-full !text-[13px] !font-[450] !pl-8 flex gap-2 group hover:!bg-[#ebf2fe]'>
-                                            <span className='block w-[5px] h-[5px] rounded-full bg-[#919191] group-hover:bg-indigo-600'></span>
-                                            Sửa danh mục
                                         </Button>
                                     </Link>
                                 </li>
@@ -223,12 +250,13 @@ const Sidebar = () => {
                     </div>
 
                     <li>
-                        <Link to='/logout'>
-                            <Button className='w-full !capitalize !items-center !justify-start gap-3 !text-[14px] !text-[rgba(0,0,0,0.8)] !font-[500] !py-2 hover:!bg-[#ebf2fe] group'>
-                                <LuLogOut className='text-[20px] group-hover:text-indigo-600' />
-                                <span>Đăng xuất</span>
-                            </Button>
-                        </Link>
+                        <Button
+                            className='w-full !capitalize !items-center !justify-start gap-3 !text-[14px] !text-[rgba(0,0,0,0.8)] !font-[500] !py-2 hover:!bg-[#ebf2fe] group'
+                            onClick={handleLogout}
+                        >
+                            <LuLogOut className='text-[20px] group-hover:text-indigo-600' />
+                            <span>Đăng xuất</span>
+                        </Button>
                     </li>
                 </ul>
             </div>

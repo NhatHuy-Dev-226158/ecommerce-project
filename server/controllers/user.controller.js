@@ -167,29 +167,31 @@ export async function loginUserController(request, response) {
             })
         }
 
-        const accesstoken = await generateAccessToken(user._id);
-        const refreshtoken = await generateRefreshToken(user._id);
+        const accesstoken = generateAccessToken(user._id);
+        const refreshtoken = generateRefreshToken(user._id);
 
         const updateUser = await UserModel.findByIdAndUpdate(user?._id, {
             last_login_date: new Date()
         })
 
-        const cookiesOption = {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None"
-        }
-        response.cookie('accesstoken', accesstoken, cookiesOption);
-        response.cookie('refreshtoken', refreshtoken, cookiesOption);
+        // const cookiesOption = {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "None"
+        // }
+        // response.cookie('accesstoken', accesstoken, cookiesOption);
+        // response.cookie('refreshtoken', refreshtoken, cookiesOption);
 
         return response.json({
             message: "Login successfully",
             error: false,
             success: true,
-            data: {
-                accesstoken,
-                refreshtoken
-            }
+            accesstoken: accesstoken,
+            refreshtoken: refreshtoken,
+            // data: {
+            //     accesstoken,
+            //     refreshtoken
+            // }
         })
     } catch (error) {
         return response.status(500).json({
@@ -694,8 +696,8 @@ export async function userDetails(request, response) {
         return response.json({
             message: 'User detail',
             data: user,
-            error: true,
-            success: false
+            error: false,
+            success: true
         })
 
     } catch (error) {

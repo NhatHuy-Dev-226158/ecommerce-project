@@ -5,7 +5,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 // Hàm chuẩn hóa lỗi để tái sử dụng
 const handleError = (error) => {
     console.error('API Error:', error);
-    // Nếu là lỗi từ axios, nó có thể có cấu trúc `error.response.data`
+    // Nếu là lỗi từ axios, nó có thể có cấu trúc `error.response.data`  
     if (error.response && error.response.data) {
         return error.response.data;
     }
@@ -13,7 +13,7 @@ const handleError = (error) => {
     return { success: false, error: true, message: error.message || 'An unknown error occurred.' };
 }
 
-// === HÀM POST DATA (SỬ DỤNG FETCH) ===
+// === HÀM POST DATA ===
 export const postData = async (url, formData) => {
     try {
         const token = localStorage.getItem("accesstoken");
@@ -26,19 +26,20 @@ export const postData = async (url, formData) => {
             body: JSON.stringify(formData)
         });
 
-        // Luôn parse JSON, dù response thành công hay thất bại
         return await response.json();
 
     } catch (error) {
-        // Trả về một đối tượng lỗi nhất quán
         return handleError(error);
     }
 }
 
-// === HÀM GET DATA (SỬ DỤNG AXIOS) ===
+// === HÀM GET DATA ===
 export const fetchDataFromApi = async (url) => {
     try {
         const token = localStorage.getItem('accesstoken');
+
+        // console.log("TOKEN GỬI ĐI TRONG HEADER:", token);
+
         const params = {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -47,14 +48,13 @@ export const fetchDataFromApi = async (url) => {
         };
 
         const { data } = await axios.get(apiUrl + url, params);
-        return data; // `data` từ axios đã là đối tượng JSON
+        return data;
     } catch (error) {
-        // Trả về một đối tượng lỗi nhất quán
         return handleError(error);
     }
 }
 
-// === HÀM UPLOAD ẢNH DANH MỤC (SỬ DỤNG FETCH) ===
+// === HÀM UPLOAD ẢNH DANH MỤC ===
 export const uploadCategoryImages = async (url, formData) => {
     try {
         const token = localStorage.getItem('accesstoken');
@@ -62,13 +62,11 @@ export const uploadCategoryImages = async (url, formData) => {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
-                // Không cần 'Content-Type' cho FormData
             },
             body: formData
         });
         return await response.json();
     } catch (error) {
-        // Trả về một đối tượng lỗi nhất quán
         return handleError(error);
     }
 };

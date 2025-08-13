@@ -7,7 +7,7 @@ import { FcGoogle } from "react-icons/fc";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import { MyContext } from '../../App';
 import { useContext } from 'react';
-import { postData } from '../../utils/api';
+import { fetchDataFromApi, postData } from '../../utils/api';
 import CircularProgress from '@mui/material/CircularProgress';
 
 // Component cho các nút Đăng nhập Social
@@ -42,7 +42,7 @@ const Login = () => {
     const [isShowPassWord, setIsShowPassWord] = useState(false);
     const [formFields, setFormFields] = useState({ email: '', password: '' });
     const context = useContext(MyContext);
-    const history = useNavigate();
+    const navigate = useNavigate();
 
     function handleClickGoogle() { setLoadingGoogle(true); }
     function handleClickFacebook() { setLoadingFacebook(true); }
@@ -69,7 +69,7 @@ const Login = () => {
             }).then((res) => {
                 if (res?.error === false) {
                     context.openAlerBox("success", res?.message);
-                    history('/verify');
+                    navigate('/verify');
                 } else {
                     context.openAlerBox("error", res?.message);
                 }
@@ -79,7 +79,7 @@ const Login = () => {
 
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
         const { email, password } = formFields;
@@ -98,26 +98,33 @@ const Login = () => {
             setIsLoading(false);
             return;
         }
+        try {
+            const loginRes = await postData("/api/user/login", formFields);
 
+            if (loginRes.success) {
+                // Đăng nhập thành công, lưu token
+                localStorage.setItem("accesstoken", loginRes.accesstoken);
+                localStorage.setItem("refreshtoken", loginRes.refreshtoken);
 
-        postData("/api/user/login", formFields, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error !== true) {
-                setIsLoading(false);
-                context.openAlerBox("success", res?.message);
-                localStorage.setItem("accesstoken", res?.data?.accesstoken)
-                localStorage.setItem("refreshtoken", res?.data?.refreshtoken)
-                setFormFields({
-                    email: '',
-                    password: ''
-                })
-                context.setIslogin(true);
-                history("/")
+                const userDetailsRes = await fetchDataFromApi('/api/user/user-details');
+
+                if (userDetailsRes.success) {
+                    context.setUserData(userDetailsRes.data);
+                    context.setIslogin(true);
+                    context.openAlerBox("success", loginRes.message);
+                    navigate("/");
+                } else {
+                    throw new Error("Xác thực thành công nhưng không thể lấy dữ liệu người dùng.");
+                }
+
             } else {
-                context.openAlerBox("error", res?.message);
-                setIsLoading(false);
+                throw new Error(loginRes.message || "Email hoặc mật khẩu không chính xác.");
             }
-        });
+        } catch (error) {
+            context.openAlerBox("error", error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

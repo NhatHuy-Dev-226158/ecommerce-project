@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import '../Sidebar/style.css';
@@ -9,12 +9,36 @@ import { FaAngleUp } from "react-icons/fa6";
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 import Rating from '@mui/material/Rating';
+import { MyContext } from '../../App';
+import { fetchDataFromApi } from '../../utils/api';
+import { Skeleton } from '@mui/material';
 
 const SideBar = () => {
+    const context = useContext(MyContext);
 
     const [isOpenCategoryFilter, setIsOpenCategoryFilter] = useState(true);
     const [isOpenAvailabiliyFilter, setIsOpenAvailabiliyFilter] = useState(true);
     const [isOpenSizeFilter, setIsOpenSizeFilter] = useState(true);
+    const [categories, setCategories] = useState([]);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            setIsLoadingCategories(true);
+            const result = await fetchDataFromApi('/api/category/');
+            if (result.success) {
+                // Lọc ra chỉ các danh mục cha (không có parentId) và được phép hiển thị
+                const parentCategories = result.data.filter(cat => cat.isPublished !== false);
+                setCategories(parentCategories);
+            } else {
+                console.error("Không thể tải danh mục cho sidebar.");
+            }
+            setIsLoadingCategories(false);
+        };
+        fetchCategories();
+    }, []);
+
+
     return (
         <aside className='sidebar py-5'>
             <div className="box">
@@ -29,20 +53,22 @@ const SideBar = () => {
                 </h3>
                 <Collapse isOpened={isOpenCategoryFilter}>
                     <div className="scroll px-4 relative -left-[13px] flex flex-col">
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label1" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label2" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label3" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label4" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label5" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label6" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label7" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label8" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label7" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label8" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label7" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label8" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label7" className='w-full' />
-                        <FormControlLabel control={<Checkbox size='small' />} label="Label8" className='w-full' />
+                        {isLoadingCategories ? (
+                            // Hiển thị Skeleton loading
+                            Array.from(new Array(5)).map((_, index) => (
+                                <Skeleton key={index} variant="text" width="80%" sx={{ marginBottom: '8px' }} />
+                            ))
+                        ) : (
+                            // Render động các danh mục
+                            categories.map(category => (
+                                <FormControlLabel
+                                    key={category._id}
+                                    control={<Checkbox size='small' />}
+                                    label={category.name}
+                                    className='w-full'
+                                />
+                            ))
+                        )}
                     </div>
                 </Collapse>
             </div>

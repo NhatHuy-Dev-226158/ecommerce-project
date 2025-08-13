@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
 import './App.css';
 import Header from './componets/Header';
 import Sidebar from './componets/Sidebar';
@@ -22,15 +22,15 @@ import CategoryListPage from './Pages/Category/CategoryListPage';
 import EditCategoryPage from './Pages/Category/EditCategoryPage';
 import UserListPage from './Pages/Users/UserListPage';
 import AddUserPage from './Pages/Users/AddUserPage';
+import AddBannerPage from './Pages/Banner/AddBannerPage';
+import BannerListPage from './Pages/Banner/BannerListPage';
+import EditBannerPage from './Pages/Banner/EditBannerPage';
 
 const MyContext = createContext();
 
 // 2. COMPONENT LAYOUT
 const RootLayout = () => {
   const { isSidebarOpen } = useContext(MyContext);
-
-
-
   return (
     <main className='relative bg-gray-50 min-h-screen w-full overflow-hidden'>
       <Sidebar />
@@ -48,11 +48,24 @@ const RootLayout = () => {
   );
 };
 
+const ProtectedRoute = () => {
+  const { isLogin, userData, authLoading } = useContext(MyContext);
+  if (authLoading) {
+    return <div>Loading Authentication...</div>;
+  }
+
+  if (!isLogin) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <RootLayout />;
+};
 
 // 3. COMPONENT CHÍNH
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isLogin, setIslogin] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isLogin, setIslogin] = useState(undefined);
   const [userData, setUserData] = useState(null);
 
   const openAlerBox = (type, msg) => {
@@ -64,26 +77,37 @@ function App() {
     }
   }
 
-
   useEffect(() => {
-    const token = localStorage.getItem('accesstoken')
-    if (token !== undefined && token !== null && token !== "") {
-      setIslogin(true);
-      fetchDataFromApi(`/api/user/user-details`).then((res) => {
-        setUserData(res.data);
-        if (res?.response?.data?.message === "Chưa đăng nhập") {
-          localStorage.removeItem("accesstoken")
-          localStorage.removeItem("refreshtoken")
-          openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
-          window.location.href = '/login'
-          setIslogin(false);
-        }
-      });
-    } else {
-      setIslogin(false);
-    }
-  }, [isLogin])
+    const authenticateUser = async () => {
+      const token = localStorage.getItem('accesstoken');
+      if (!token) {
+        setIslogin(false);
+        setAuthLoading(false);
+        return;
+      }
 
+      try {
+        const res = await fetchDataFromApi(`/api/user/user-details`);
+        if (res.success) {
+          setIslogin(true);
+
+          setUserData(res.data);
+        } else {
+          setIslogin(false);
+          setUserData(null);
+          localStorage.removeItem("accesstoken");
+          localStorage.removeItem("refreshtoken");
+        }
+      } catch (error) {
+        setIslogin(false);
+        setUserData(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    authenticateUser();
+  }, []);
 
   const values = {
     isSidebarOpen,
@@ -92,57 +116,69 @@ function App() {
     setIslogin,
     openAlerBox,
     setUserData,
-    userData
+    userData,
+    authLoading
   };
 
-  // 4. CẤU HÌNH ROUTER
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <RootLayout />,
+      element: <ProtectedRoute />,
       children: [
         {
           index: true,
           element: <Dashboard />,
         },
         {
-          path: "/users",
+          path: "/home-banner",
+          element: <BannerListPage />,
+        },
+        {
+          path: "/add-banner",
+          element: <AddBannerPage />,
+        },
+        {
+          path: "/edit-banner",
+          element: <EditBannerPage />,
+        },
+        {
+          path: "users",
           element: <UserListPage />,
         },
         {
-          path: "/edit-user",
+          path: "add-user",
           element: <AddUserPage />,
         },
         {
-          path: "/add-category",
-          element: <AddCategoryPage />,
-        },
-        {
-          path: "/list-category",
+          path: "category-list",
           element: <CategoryListPage />,
         },
         {
-          path: "/edit-category",
+          path: "add-category",
+          element: <AddCategoryPage />,
+        },
+        {
+          path: "edit-category/:categoryId",
           element: <EditCategoryPage />,
-        }
-        , {
-          path: "/product-list",
+        },
+        {
+          path: "product-list",
           element: <Products />,
         },
         {
-          path: "/product-upload",
+          path: "product-upload",
           element: <AddProductPage />,
         },
         {
-          path: "/orders",
+          path: "orders",
           element: <OrderListPage />,
         },
         {
-          path: "/orders-Detail",
+          path: "orders-Detail",
           element: <OrderDetailPage />,
         },
         {
-          path: "/profile",
+          path: "profile",
           element: <ProfilePage />,
         },
       ]
@@ -163,10 +199,11 @@ function App() {
       path: "/forgot-password",
       element: <ForgotPassword />,
     },
-
   ]);
-
-
+  // Thêm một màn hình loading nhỏ trong khi chờ xác thực
+  if (isLogin === undefined) {
+    return <div>Loading...</div>; // Hoặc một spinner toàn trang
+  }
 
   return (
     <MyContext.Provider value={values}>

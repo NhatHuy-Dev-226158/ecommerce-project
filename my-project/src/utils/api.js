@@ -2,48 +2,69 @@ import axios from "axios";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-export const postData = async (url, formData) => {
-    try {
-        const response = await fetch(apiUrl + url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem("accesstoken")}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            //console.log(data)
-            return data;
-        } else {
-            const errorData = await response.json();
-            return errorData;
-        }
-
-    } catch (error) {
-        console.error('Error:', error);
+// Hàm chuẩn hóa lỗi để tái sử dụng
+const handleError = (error) => {
+    console.error('API Error:', error);
+    // Nếu là lỗi từ axios, nó có thể có cấu trúc `error.response.data`
+    if (error.response && error.response.data) {
+        // Trả về toàn bộ response lỗi từ backend để frontend có thể đọc `message`
+        return error.response.data;
     }
+    // Nếu là lỗi mạng hoặc lỗi khác không phải từ axios response
+    return { success: false, error: true, message: error.message || 'An unknown network error occurred.' };
 }
 
 export const fetchDataFromApi = async (url) => {
     try {
+        const token = localStorage.getItem('accesstoken');
         const params = {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accesstoken')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
         };
 
-        const { data } = await axios.get(apiUrl + url, params)
+        // --- LOG CHI TIẾT ---
+        console.groupCollapsed(`[API GET] ${url}`);
+        console.log("Token from localStorage:", token);
+        console.log("Headers sent:", params.headers);
+        console.groupEnd();
+        // -------------------
+
+        const { data } = await axios.get(apiUrl + url, params);
         return data;
     } catch (error) {
-        console.log(error);
-        return error;
+        return handleError(error);
     }
 }
 
+export const postData = async (url, formData) => {
+    try {
+        const token = localStorage.getItem("accesstoken");
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        };
+
+        // --- LOG CHI TIẾT ---
+        console.groupCollapsed(`[API POST] ${url}`);
+        console.log("Token from localStorage:", token);
+        console.log("Headers sent:", headers);
+        console.groupEnd();
+        // -------------------
+
+        const response = await fetch(apiUrl + url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(formData)
+        });
+
+        return await response.json();
+
+    } catch (error) {
+        return handleError(error);
+    }
+}
 
 export const uploadImage = async (url, updateData) => {
     const params = {

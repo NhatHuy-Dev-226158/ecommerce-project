@@ -1,11 +1,7 @@
 import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate để điều hướng
-
-// COMPONENT CON
+import { Link, useNavigate } from 'react-router-dom';
 import Search from '../Search';
 import Navigation from './Navigation';
-
-// CONTEXT
 import { MyContext } from '../../App';
 
 // THƯ VIỆN GIAO DIỆN (MATERIAL-UI)
@@ -21,15 +17,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 
 // THƯ VIỆN ICON (REACT-ICONS)
 import { AiOutlineShoppingCart } from "react-icons/ai";
-
 import { IoSettingsOutline } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { MdLogout } from "react-icons/md";
 import { RiAccountCircleLine, RiDashboardLine } from "react-icons/ri";
 import { LuHeartOff } from 'react-icons/lu';
-import { fetchDataFromApi } from '../../utils/api';
+import { fetchDataFromApi, postData } from '../../utils/api';
 
-// Tùy chỉnh component Badge của Material-UI
+
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
         right: -3,
@@ -40,11 +35,8 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const Header = () => {
-    // Lấy context và hook navigate
     const context = useContext(MyContext);
-    const history = useNavigate();
-
-    // State và các hàm xử lý cho Menu dropdown
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
@@ -55,28 +47,31 @@ const Header = () => {
         setAnchorEl(null);
     };
 
-    // Hàm xử lý khi người dùng nhấn nút Logout
-    const handleLogout = () => {
+    const handleLogout = async () => {
         handleClose();
+        try {
+            const res = await postData('/api/user/logout', {});
 
-        setAnchorEl(null)
-
-        fetchDataFromApi(`/api/user/logout?token=${localStorage.getItem('accesstoken')}`, { withCredentials: true }).then((res) => {
-            console.log(res);
-            if (res?.error == false) {
-                context.setIsLogin(false);
-                localStorage.removeItem("accesstoken")
-                localStorage.removeItem("refreshtoken")
-                history('/')
+            if (res.success) {
+                context.openAlerBox("success", res.message || "Đăng xuất thành công!");
+            } else {
+                throw new Error(res.message || "Đăng xuất thất bại trên server.");
             }
-
-        });
+        } catch (error) {
+            console.error("Logout error:", error);
+            context.openAlerBox("error", "Có lỗi xảy ra, đã đăng xuất cục bộ.");
+        } finally {
+            localStorage.removeItem("accesstoken");
+            localStorage.removeItem("refreshtoken");
+            context.setIsLogin(false);
+            context.setUserData(null);
+            navigate('/login');
+        }
     };
+
 
     return (
         <header className='bg-white'>
-
-            {/* Phần thanh thông báo phía trên */}
             <div className="top-strip py-2 border-t-[1.5px] border-gray-200 border-b-[1px]">
                 <div className="container">
                     <div className="flex items-center justify-between">
@@ -123,7 +118,6 @@ const Header = () => {
                                     // Khi người dùng đã đăng nhập
                                     (
                                         <>
-                                            {/* NÚT KÍCH HOẠT MENU */}
                                             <Tooltip title={context?.userData?.email} placement="bottom-end">
                                                 <Button
                                                     className='!min-w-[250px] !text-[#000] my-Account !flex !items-center !justify-center !gap-3 cursor-pointer !rounded-full !p-1'
@@ -160,8 +154,6 @@ const Header = () => {
                                                 </Button>
                                             </Tooltip>
 
-
-                                            {/* MENU DROPDOWN ĐÃ ĐƯỢC TÙY CHỈNH */}
                                             <Menu
                                                 anchorEl={anchorEl}
                                                 id="account-menu"
@@ -195,26 +187,26 @@ const Header = () => {
                                                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                             >
-                                                <MenuItem onClick={() => { handleClose(); history('/my-account'); }}>
+                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account'); }}>
                                                     <ListItemIcon>
                                                         <RiDashboardLine />
                                                     </ListItemIcon>
                                                     Tổng quan
                                                 </MenuItem>
-                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=profile'); }}>
+                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=profile'); }}>
                                                     <ListItemIcon>
                                                         <CgProfile />
                                                     </ListItemIcon>
                                                     Thông tin cá nhân
                                                 </MenuItem>
 
-                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=wishlist'); }}>
+                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=wishlist'); }}>
                                                     <ListItemIcon>
                                                         <RiAccountCircleLine />
                                                     </ListItemIcon>
                                                     Sản phẩm yêu thích
                                                 </MenuItem>
-                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=orders'); }}>
+                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=orders'); }}>
                                                     <ListItemIcon>
                                                         <RiAccountCircleLine />
                                                     </ListItemIcon>
@@ -223,7 +215,7 @@ const Header = () => {
 
                                                 <Divider sx={{ my: 0.5 }} />
 
-                                                <MenuItem onClick={() => { handleClose(); history('/my-account?tab=settings'); }}>
+                                                <MenuItem onClick={() => { handleClose(); navigate('/my-account?tab=settings'); }}>
                                                     <ListItemIcon>
                                                         <IoSettingsOutline />
                                                     </ListItemIcon>
@@ -240,7 +232,7 @@ const Header = () => {
                                         </>
                                     )
                             }
-                            {/* Các icon Wishlist và Cart */}
+                            {/* Wishlist và Cart */}
                             <li>
                                 <Link to='/my-account?tab=wishlist'>
                                     <Tooltip title="Wishlist">

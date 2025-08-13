@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { React, useEffect, useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -10,49 +10,13 @@ import Divider from '@mui/material/Divider';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { IoCloseCircleOutline } from "react-icons/io5";
+import { CircularProgress } from '@mui/material';
+import { MyContext } from '../../../App';
+import { fetchDataFromApi } from '../../../utils/api';
 
-const menuData = [
-    {
-        id: 'cat-1',
-        label: 'Thực Phẩm Tươi Sống',
-        children: [
-            { id: 'sub-1-1', label: 'Rau, Củ, Quả', path: '/category/rau-cu-qua' },
-            { id: 'sub-1-2', label: 'Thịt, Hải Sản', path: '/category/thit-hai-san' },
-            { id: 'sub-1-4', label: 'Thực Phẩm Chế Biến Sẵn', path: '/category/che-bien-san' },
-        ]
-    },
-    {
-        id: 'cat-2',
-        label: 'Thực Phẩm Khô & Đóng Hộp',
-        children: [
-            { id: 'sub-2-1', label: 'Gạo, Mì & Nông Sản Khô', path: '/category/gao-mi' },
-            { id: 'sub-2-2', label: 'Gia Vị & Nước Chấm', path: '/category/gia-vi' },
-            { id: 'sub-2-3', label: 'Thực Phẩm Đóng Hộp', path: '/category/do-hop' },
-        ]
-    },
-    {
-        id: 'cat-3',
-        label: 'Đồ Uống & Giải Khát',
-        path: '/category/do-uong'
-    },
-    {
-        id: 'cat-4',
-        label: 'Bánh Kẹo & Đồ Ăn Vặt',
-        path: '/category/an-vat'
-    },
-    {
-        id: 'cat-5',
-        label: 'Hóa Mỹ Phẩm & Chăm Sóc Cá Nhân',
-        path: '/category/hoa-my-pham'
-    },
-    {
-        id: 'cat-6',
-        label: 'Mẹ & Bé',
-        path: '/category/me-be'
-    }
-];
-
-const RecursiveMenuItem = ({ item, level = 0 }) => {
+// === COMPONENT CON ĐỆ QUY (ĐÃ CẬP NHẬT) ===
+// Component này sẽ nhận dữ liệu từ API
+const RecursiveMenuItem = ({ item, level = 0, onClose }) => {
     const [open, setOpen] = useState(false);
     const isParent = item.children && item.children.length > 0;
 
@@ -60,8 +24,26 @@ const RecursiveMenuItem = ({ item, level = 0 }) => {
         setOpen(!open);
     };
 
+    // Component sẽ là Link nếu có đường dẫn, ngược lại là div
     const Component = isParent ? 'div' : Link;
-    const componentProps = isParent ? {} : { to: item.path || '#' };
+
+    // Tạo slug từ tên danh mục để làm URL
+    // Ví dụ: "Thịt, Hải Sản" -> "/category/thit-hai-san"
+    const slug = item.name.toLowerCase()
+        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
+        .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
+        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+        .replace(/đ/g, "d")
+        .replace(/\s+/g, '-') // Thay thế khoảng trắng bằng gạch nối
+        .replace(/&/g, 'va'); // Xử lý ký tự '&'
+
+    const componentProps = isParent ? {} : {
+        to: `/category/${slug}`,
+        onClick: onClose // Khi nhấn vào link, đóng menu
+    };
 
     return (
         <>
@@ -72,7 +54,7 @@ const RecursiveMenuItem = ({ item, level = 0 }) => {
                 sx={{ pl: (level + 1) * 2, py: 1.2 }}
             >
                 <ListItemText
-                    primary={item.label}
+                    primary={item.name} // Sử dụng `item.name` từ API
                     primaryTypographyProps={{ fontSize: '14px', fontWeight: '500' }}
                 />
                 {isParent ? (open ? <ExpandLess /> : <ExpandMore />) : null}
@@ -82,7 +64,7 @@ const RecursiveMenuItem = ({ item, level = 0 }) => {
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                         {item.children.map(child => (
-                            <RecursiveMenuItem key={child.id} item={child} level={level + 1} />
+                            <RecursiveMenuItem key={child._id} item={child} level={level + 1} onClose={onClose} />
                         ))}
                     </List>
                 </Collapse>
@@ -91,8 +73,40 @@ const RecursiveMenuItem = ({ item, level = 0 }) => {
     );
 };
 
+
 // --- COMPONENT CHÍNH ---
 const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
+    const context = useContext(MyContext);
+    const [categoryData, setCategoryData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            setIsLoading(true);
+            const result = await fetchDataFromApi('/api/category/');
+            if (result.success) {
+                const filterPublished = (categories) => {
+                    return categories
+                        .filter(cat => cat.isPublished !== false)
+                        .map(cat => {
+                            if (cat.children && cat.children.length > 0) {
+                                return { ...cat, children: filterPublished(cat.children) };
+                            }
+                            return cat;
+                        });
+                };
+
+                const publishedCategories = filterPublished(result.data);
+                setCategoryData(publishedCategories);
+
+            } else {
+                context.openAlerBox("error", "Không thể tải danh mục sản phẩm.");
+            }
+            setIsLoading(false);
+        };
+
+        fetchCategories();
+    }, []);
 
     const toggleDrawer = (newOpen) => () => {
         setIsOpenCategoryMenu(newOpen);
@@ -112,11 +126,20 @@ const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
             </Box>
 
             <Divider />
-            <List component="nav" sx={{ p: 0 }}>
-                {menuData.map(item => (
-                    <RecursiveMenuItem key={item.id} item={item} level={0} />
-                ))}
-            </List>
+
+            {isLoading ? (
+                // Hiển thị loading trong khi chờ API
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <CircularProgress />
+                </Box>
+            ) : (
+                // Hiển thị danh sách sau khi có dữ liệu
+                <List component="nav" sx={{ p: 0 }}>
+                    {categoryData.map(item => (
+                        <RecursiveMenuItem key={item._id} item={item} level={0} onClose={toggleDrawer(false)} />
+                    ))}
+                </List>
+            )}
         </Box>
     );
 

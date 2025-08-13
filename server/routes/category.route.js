@@ -4,6 +4,7 @@ import upload from '../middleware/multer.js';
 import {
     createCategory,
     deleteCategory,
+    deleteMultipleCategories,
     getCategories,
     getCategoriesCount,
     getCategory,
@@ -16,12 +17,13 @@ import {
 const categoryRouter = Router();
 categoryRouter.post('/uploadImages', auth, upload.array('images'), updatedImages);
 categoryRouter.post('/create-category', auth, createCategory);
-categoryRouter.get('/', auth, getCategories);
+categoryRouter.get('/', getCategories);
 categoryRouter.get('/get/count', auth, getCategoriesCount);
 categoryRouter.get('/get/count/subCat', auth, getSubCatehoriesCount);
-categoryRouter.get('/:id', auth, getCategory);
+categoryRouter.get('/:id', getCategory);
 categoryRouter.delete('/removeImage', auth, removeImageFromCloudinary);
 categoryRouter.delete('/:id', auth, deleteCategory);
+categoryRouter.post('/delete-multiple', auth, deleteMultipleCategories);
 categoryRouter.put('/:id', auth, updateCategory);
 
 

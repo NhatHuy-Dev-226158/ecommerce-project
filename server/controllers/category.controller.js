@@ -52,37 +52,53 @@ export async function updatedImages(request, response) {
 
 export async function createCategory(request, response) {
     try {
+        const {
+            name,
+            description,
+            parentId,
+            parentCatName,
+            isPublished,
+            seoTitle,
+            seoDescription,
+            slug,
+            images,
+        } = request.body;
+
         let category = new CategoryModel({
-            name: request.body.name,
-            images: imagesArr,
-            parentId: request.body.parentId,
-            parentCatName: request.body.parentCatName,
-        })
+            name,
+            description,
+            parentId,
+            parentCatName,
+            isPublished,
+            seoTitle,
+            seoDescription,
+            slug,
+            images,
+        });
 
         if (!category) {
-            return response.status(500).json({
-                message: "Category not created",
+            return response.status(400).json({
+                message: "Category data is invalid",
                 error: true,
                 success: false
-            })
+            });
         }
 
         category = await category.save();
-        imagesArr = []
 
-        return response.status(200).json({
-            message: "Successfully",
+        return response.status(201).json({
+            message: "Category created successfully!",
             error: false,
             success: true,
             category: category
-        })
+        });
 
     } catch (error) {
         return response.status(500).json({
             message: error.message || error,
             error: true,
             success: false
-        })
+        });
     }
 }
 
@@ -315,32 +331,68 @@ export async function deleteCategory(request, response) {
     });
 }
 
-export async function updateCategory(request, response) {
+export async function deleteMultipleCategories(request, response) {
+    try {
+        const { ids } = request.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return response.status(400).json({ message: "Please provide an array of IDs to delete." });
+        }
 
-    const category = await CategoryModel.findByIdAndUpdate(
-        request.params.id,
-        {
-            name: request.body.name,
-            images: imagesArr.length > 0 ? imagesArr[0] : request.body.images,
-            parentId: request.body.parentId,
-            parentCatName: request.body.parentCatName,
-        },
-        { new: true }
-    );
-    if (!category) {
+        await CategoryModel.deleteMany({ _id: { $in: ids } });
+
+
+        return response.status(200).json({ success: true, message: "Categories deleted successfully." });
+    } catch (error) {
+    }
+}
+
+export async function updateCategory(request, response) {
+    try {
+        const { name, description, parentId, parentCatName, isPublished, images, seoTitle, seoDescription, slug } = request.body;
+
+        const updateFields = {
+            name,
+            description,
+            isPublished,
+            seoTitle,
+            seoDescription,
+            slug,
+            images,
+        };
+
+        if (parentId === '' || parentId === null || parentId === undefined) {
+            updateFields.parentId = null;
+            updateFields.parentCatName = '';
+        } else {
+            updateFields.parentId = parentId;
+            updateFields.parentCatName = parentCatName;
+        }
+
+        const updatedCategory = await CategoryModel.findByIdAndUpdate(
+            request.params.id,
+            updateFields,
+            { new: true }
+        );
+
+        if (!updatedCategory) {
+            return response.status(404).json({
+                message: "Category not found",
+                error: true,
+                success: false,
+            });
+        }
+        return response.status(200).json({
+            message: "Category updated successfully!",
+            success: true,
+            error: false,
+            category: updatedCategory
+        });
+
+    } catch (error) {
         return response.status(500).json({
-            message: "Category not found",
+            message: error.message || error,
             error: true,
-            success: false,
+            success: false
         });
     }
-
-    imagesArr = [];
-
-    return response.status(200).json({
-        error: true,
-        success: false,
-        category: category
-    });
-
 }
