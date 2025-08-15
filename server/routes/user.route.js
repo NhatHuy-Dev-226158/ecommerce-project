@@ -2,12 +2,15 @@ import { Router } from 'express';
 import {
     changePassword,
     forgotPasswordController,
+    getAllUsers,
+    getUserById,
     loginUserController,
     logoutUserController,
     refreshToken,
     registerUserController,
     removeImageFromCloudinary,
     resetPassword,
+    updateUserByAdmin,
     updateUserDeteils,
     userAvatarController,
     userDetails,
@@ -31,6 +34,8 @@ userRouter.post('/change-password', changePassword);
 userRouter.post('/reset-password', resetPassword);
 userRouter.post('/refresh-token', refreshToken);
 userRouter.get('/user-details', auth, userDetails);
-
+userRouter.get('/all', auth, getAllUsers);
+userRouter.get('/:id', auth, getUserById);
+userRouter.put('/updateUserByAdmin/:id', auth, updateUserByAdmin);
 
 export default userRouter;

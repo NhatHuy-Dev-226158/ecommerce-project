@@ -5,12 +5,12 @@ import Home from './Pages/Home'
 import Footer from './componets/Footer'
 import ProductList from './Pages/ProductList'
 import ProductDetails from './Pages/ProductDetails'
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useMemo, useState } from 'react'
 
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import ZoomProductImg from './componets/ZoomProductImg'
+import ZoomProductImg from './componets/ZoomProductImg/Zoomquickview'
 import { MdOutlineCloseFullscreen } from "react-icons/md";
 import ProductDetailsComponets from './componets/ProductDetails/inddex'
 import Login from './Pages/Login'
@@ -21,47 +21,136 @@ import toast, { Toaster } from 'react-hot-toast';
 import ForgotPassword from './Pages/ForgotPassword'
 import CheckoutPage from './Pages/Checkout'
 import MyAccount from './Pages/MyAccount'
-import { fetchDataFromApi } from './utils/api'
+import { deleteData, fetchDataFromApi, postData } from './utils/api'
 
 
 
 const MyContext = createContext();
 
 function App() {
-  const [maxWidth, setMaxWidth] = React.useState('lg');
-  const [fullWidth, setFullWidth] = React.useState(true);
+  const [maxWidth, setMaxWidth] = useState('lg');
+  const [fullWidth, setFullWidth] = useState(true);
   const [openProductDetailModel, setOpenProductDetailModel] = useState(false);
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [productDataForModel, setProductDataForModel] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
 
+  // --- CÁC HÀM MỚI ĐỂ QUẢN LÝ GIỎ HÀNG ---
+  const addToCart = (product, quantity = 1) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item._id === product._id);
 
+      if (existingItem) {
+        return prevCart.map(item =>
+          item._id === product._id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: quantity }];
+      }
+    });
+    setOpenCartPanel(true);
+    toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item._id !== productId));
+    toast.error("Đã xóa sản phẩm khỏi giỏ hàng.");
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) {
+      removeFromCart(productId);
+    } else {
+      setCart(prevCart =>
+        prevCart.map(item =>
+          item._id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
+  };
+
+  // --- CÁC HÀM QUẢN LÝ WISHLIST ---
+  const addToWishlist = async (product) => {
+    if (!isLogin) return openAlerBox("error", "Vui lòng đăng nhập.");
+    try {
+      const result = await postData('/api/mylist/add', {
+        productId: product._id, productTitle: product.name, image: product.images?.[0] || '',
+        rating: product.rating || 0, price: product.price, oldPrice: product.oldPrice || 0,
+        brand: product.brand || '', discount: product.discount || 0
+      });
+      if (result.success) {
+        const wishlistRes = await fetchDataFromApi(`/api/mylist/`);
+        if (wishlistRes.success) {
+          setWishlist(wishlistRes.data.map(item => ({ productId: item.productId, wishlistId: item._id })));
+        }
+        toast.success("Đã thêm vào danh sách yêu thích!");
+      } else { throw new Error(result.message); }
+    } catch (error) { openAlerBox("error", error.message); }
+  };
+
+  const removeFromWishlist = async (productId) => {
+    if (!isLogin) return openAlerBox("error", "Vui lòng đăng nhập.");
+
+    const wishlistItem = wishlist.find(item => item.productId === productId);
+    if (!wishlistItem) return;
+
+    try {
+      const result = await deleteData(`/api/mylist/${wishlistItem.wishlistId}`);
+      if (result.success) {
+        setWishlist(prev => prev.filter(item => item.productId !== productId));
+      } else { throw new Error(result.message); }
+    } catch (error) { openAlerBox("error", error.message); }
+  };
+
+  const isInWishlist = (productId) => wishlist.some(item => item.productId === productId);
 
   const toggleCartPanel = (isOpen) => () => {
     setOpenCartPanel(isOpen);
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('accesstoken')
-    if (token !== undefined && token !== null && token !== "") {
+    const token = localStorage.getItem('accesstoken');
+    if (token) {
       setIsLogin(true);
-      fetchDataFromApi(`/api/user/user-details`).then((res) => {
-        setUserData(res.data);
-        if (res?.response?.data?.message === "Chưa đăng nhập") {
-          localStorage.removeItem("accesstoken")
-          localStorage.removeItem("refreshtoken")
-          openAlerBox("error", "Phiên đăng nhập của bạn đã hết hạng. Vui lòng đăng nhập lại");
-          window.location.href = '/login'
+      Promise.all([
+        fetchDataFromApi(`/api/user/user-details`),
+        fetchDataFromApi(`/api/mylist/`)
+      ]).then(([userRes, wishlistRes]) => {
+        if (userRes.success) {
+          setUserData(userRes.data);
+        } else {
+          localStorage.removeItem("accesstoken");
+          localStorage.removeItem("refreshtoken");
           setIsLogin(false);
         }
+        if (wishlistRes.success) {
+          const wishlistData = wishlistRes.data.map(item => ({
+            wishlistId: item._id,
+            productId: item.productId,
+            productTitle: item.productTitle,
+            image: item.image,
+            price: item.price,
+          }));
+          setWishlist(wishlistData);
+        }
+      }).catch(error => {
+        console.error("Authentication Error:", error);
+        setIsLogin(false);
       });
     } else {
       setIsLogin(false);
     }
-  }, [isLogin])
+  }, [isLogin]);
+
 
   const handleClose = () => {
     setOpenProductDetailModel(false);
+    setProductDataForModel(null);
   };
 
   const openAlerBox = (type, msg) => {
@@ -73,7 +162,7 @@ function App() {
     }
   }
 
-  const values = {
+  const values = useMemo(() => ({
     setOpenProductDetailModel,
     setOpenCartPanel,
     toggleCartPanel,
@@ -82,8 +171,17 @@ function App() {
     isLogin,
     openCartPanel,
     userData,
-    setUserData
-  };
+    setUserData,
+    setProductDataForModel,
+    cart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist
+  }), [isLogin, userData, cart, openCartPanel, wishlist]);
 
   return (
     <>
@@ -93,7 +191,7 @@ function App() {
           <Routes>
             <Route path={"/"} exact={true} element={<Home />} />
             <Route path={"/product-list"} exact={true} element={<ProductList />} />
-            <Route path={"/product-detail/:id"} exact={true} element={<ProductDetails />} />
+            <Route path={"/product-detail/:productId"} exact={true} element={<ProductDetails />} />
             <Route path={"/login"} exact={true} element={<Login />} />
             <Route path={"/register"} exact={true} element={<Register />} />
             <Route path={"/view-cart"} exact={true} element={<Cart />} />
@@ -128,11 +226,11 @@ function App() {
               <MdOutlineCloseFullscreen className='text-[24px]' />
             </Button>
             <div className="col1 w-[38.3%] px-3">
-              <ZoomProductImg></ZoomProductImg>
+              <ZoomProductImg images={productDataForModel?.images} />
             </div>
 
             <div className="col2  w-[61.7%] py-8 px-8 pr-10">
-              <ProductDetailsComponets></ProductDetailsComponets>
+              <ProductDetailsComponets product={productDataForModel} />
             </div>
           </div>
         </DialogContent>

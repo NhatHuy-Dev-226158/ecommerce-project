@@ -3,11 +3,11 @@ import {
     InputAdornment, Typography, Button, Breadcrumbs, MenuItem, TextField, Select, FormControl,
     InputLabel, Divider, IconButton, CircularProgress
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiPlus, FiUploadCloud, FiX } from 'react-icons/fi';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { FiUploadCloud, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 import { MyContext } from '../../App';
-import { fetchDataFromApi, postData, uploadFiles } from '../../utils/api';
+import { fetchDataFromApi, updateData, uploadFiles } from '../../utils/api';
 
 // --- COMPONENT GIAO DIỆN CON ---
 const FormSection = ({ title, children }) => (
@@ -17,42 +17,70 @@ const FormSection = ({ title, children }) => (
     </div>
 );
 
-const breadcrumbsData = [
-    { name: 'Dashboard', link: '/' },
-    { name: 'Sản phẩm', link: '/product-list' },
-    { name: 'Thêm mới' }
-];
 
 // === COMPONENT TRANG CHÍNH ===
-const AddProductPage = () => {
+const EditProductPage = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const { productId } = useParams();
+
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetchingData, setIsFetchingData] = useState(true);
     const [categories, setCategories] = useState([]);
 
     const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        brand: '',
-        price: '',
-        oldPrice: '',
-        category: '',
-        countInStock: '',
-        isFeatured: false,
-        discount: 0,
+        name: '', description: '', brand: '', price: '', oldPrice: '',
+        category: '', countInStock: '', isFeatured: false, discount: 0,
     });
     const [imageFiles, setImageFiles] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
-
+    const [oldImages, setOldImages] = useState([]);
+    // --- LOGIC FETCH DỮ LIỆU BAN ĐẦU ---
     useEffect(() => {
-        fetchDataFromApi('/api/category/')
-            .then(res => {
-                if (res.success) {
-                    const flatCategories = flattenCategories(res.data);
+        const fetchInitialData = async () => {
+            setIsFetchingData(true);
+            try {
+                const [productRes, categoriesRes] = await Promise.all([
+                    fetchDataFromApi(`/api/products/${productId}`),
+                    fetchDataFromApi('/api/category/')
+                ]);
+
+                if (productRes.success) {
+                    const productData = productRes.product;
+                    setFormData({
+                        name: productData.name || '',
+                        description: productData.description || '',
+                        brand: productData.brand || '',
+                        price: productData.price || '',
+                        oldPrice: productData.oldPrice || '',
+                        category: productData.category?._id || '',
+                        countInStock: productData.countInStock || '',
+                        isFeatured: productData.isFeatured || false,
+                        discount: productData.discount || 0
+                    });
+                    if (productData.images && productData.images.length > 0) {
+                        setOldImages(productData.images);
+                        setImagePreviews(productData.images);
+                    }
+                } else {
+                    throw new Error("Không tìm thấy sản phẩm.");
+                }
+
+                if (categoriesRes.success) {
+                    const flatCategories = flattenCategories(categoriesRes.data);
                     setCategories(flatCategories);
                 }
-            });
-    }, []);
+
+            } catch (error) {
+                context.openAlerBox("error", error.message);
+                navigate('/product-list');
+            } finally {
+                setIsFetchingData(false);
+            }
+        };
+
+        fetchInitialData();
+    }, [productId]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -71,52 +99,6 @@ const AddProductPage = () => {
             setImagePreviews(prev => [...prev, ...newPreviews]);
         }
     };
-
-    const removeImage = (indexToRemove) => {
-        setImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if (!formData.name || !formData.category || !formData.price || !formData.countInStock) {
-            return context.openAlerBox("error", "Vui lòng điền đầy đủ các trường bắt buộc (*).");
-        }
-        if (imageFiles.length === 0) {
-            return context.openAlerBox("error", "Vui lòng tải lên ít nhất một hình ảnh.");
-        }
-        setIsLoading(true);
-        try {
-            let imageUrls = [];
-            if (imageFiles.length > 0) {
-                const imageFormData = new FormData();
-                for (const file of imageFiles) {
-                    imageFormData.append('images', file);
-                }
-                const uploadResult = await uploadFiles('/api/products/uploadImages', imageFormData);
-                if (uploadResult.success) {
-                    imageUrls = uploadResult.data.images;
-                } else {
-                    throw new Error(uploadResult.message || 'Tải ảnh thất bại');
-                }
-            }
-
-            const finalData = { ...formData, images: imageUrls };
-
-            const createResult = await postData('/api/products/', finalData);
-            if (createResult.success) {
-                context.openAlerBox("success", "Thêm sản phẩm thành công!");
-                navigate('/product-list');
-            } else {
-                throw new Error(createResult.message || 'Thêm sản phẩm thất bại');
-            }
-        } catch (error) {
-            context.openAlerBox("error", error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const flattenCategories = (categories) => {
         let flatList = [];
         const traverse = (nodes, depth = 0) => {
@@ -131,24 +113,92 @@ const AddProductPage = () => {
         return flatList;
     };
 
+    const removeImage = (indexToRemove) => {
+        const removedPreview = imagePreviews[indexToRemove];
+        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+        setImageFiles(prev => prev.filter((_, index) => {
+            return URL.createObjectURL(prev[index]) !== removedPreview;
+        }));
+        setOldImages(prev => prev.filter(url => url !== removedPreview));
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (!formData.name || !formData.category || !formData.price || !formData.countInStock) {
+            return context.openAlerBox("error", "Vui lòng điền đầy đủ các trường bắt buộc (*).");
+        }
+
+        if (oldImages.length === 0 && imageFiles.length === 0) {
+            return context.openAlerBox("error", "Sản phẩm phải có ít nhất một hình ảnh.");
+        }
+        setIsLoading(true);
+        try {
+            let uploadedImageUrls = [];
+            // Bước 1: Upload các file ảnh MỚI
+            if (imageFiles.length > 0) {
+                const imageFormData = new FormData();
+                for (const file of imageFiles) {
+                    imageFormData.append('images', file);
+                }
+
+                const uploadResult = await uploadFiles('/api/products/uploadImages', imageFormData);
+
+                if (uploadResult && uploadResult.success) {
+                    uploadedImageUrls = uploadResult.data.images;
+                } else {
+                    throw new Error(uploadResult.message || 'Tải ảnh mới thất bại');
+                }
+            }
+
+            const finalImageUrls = [...oldImages, ...uploadedImageUrls];
+
+            const finalData = { ...formData, images: finalImageUrls };
+
+            const updateResult = await updateData(`/api/products/${productId}`, finalData);
+            if (updateResult.success) {
+                context.openAlerBox("success", "Cập nhật sản phẩm thành công!");
+                navigate('/product-list');
+            } else {
+                throw new Error(updateResult.message || 'Cập nhật sản phẩm thất bại');
+            }
+        } catch (error) {
+            context.openAlerBox("error", error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Breadcrumbs được cập nhật động
+    const breadcrumbsData = [
+        { name: 'Dashboard', link: '/' },
+        { name: 'Sản phẩm', link: '/product-list' },
+        { name: isFetchingData ? 'Đang tải...' : `Sửa: ${formData.name}` }
+    ];
+
+    if (isFetchingData) {
+        return <div className="flex justify-center items-center h-screen"><CircularProgress /></div>;
+    }
+
     return (
         <section className="bg-gray-50 p-4 md:p-6">
             <form onSubmit={handleSubmit} noValidate>
+                {/* Header và Breadcrumbs */}
                 <div className="flex flex-wrap justify-between items-center mb-6">
                     <div>
-                        <Typography variant="h5" component="h1" fontWeight="bold">Thêm sản phẩm mới</Typography>
-                        <Breadcrumbs separator={<FaAngleRight className='text-sm' />} sx={{ mt: 1 }}>
-                            {breadcrumbsData.map((c, i) => (c.link ? <Link key={i} to={c.link} className="text-sm hover:underline">{c.name}</Link> : <Typography key={i} className="text-sm font-semibold">{c.name}</Typography>))}
+                        <Typography variant="h5" component="h1" fontWeight="bold">Sửa sản phẩm</Typography>
+                        <Breadcrumbs separator={<FaAngleRight />} sx={{ mt: 1 }}>
+                            {breadcrumbsData.map((c, i) => (c.link ? <Link key={i} to={c.link}>{c.name}</Link> : <Typography key={i}>{c.name}</Typography>))}
                         </Breadcrumbs>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outlined" color="secondary" sx={{ textTransform: 'none', borderRadius: '8px' }}>Lưu bản nháp</Button>
-                        <Button type="submit" variant="contained" disabled={isLoading} sx={{ textTransform: 'none', borderRadius: '8px' }}>
-                            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Đăng sản phẩm'}
+                        <Button variant="outlined" color="secondary" onClick={() => navigate('/product-list')}>Hủy</Button>
+                        <Button type="submit" variant="contained" disabled={isLoading}>
+                            {isLoading ? <CircularProgress size={24} /> : 'Lưu thay đổi'}
                         </Button>
                     </div>
                 </div>
 
+                {/* Layout chính của form*/}
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="w-full lg:w-2/3 flex flex-col gap-6">
                         <FormSection title="Thông tin cơ bản">
@@ -199,4 +249,4 @@ const AddProductPage = () => {
     );
 };
 
-export default AddProductPage;
+export default EditProductPage;

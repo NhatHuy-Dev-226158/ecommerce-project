@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
     Typography, InputAdornment, Button, Breadcrumbs, TextField, Switch, FormControlLabel, CircularProgress,
-    Paper, Box
+    Paper, Box,
+    IconButton
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiUploadCloud, FiLink, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
+import { MyContext } from '../../App';
+import { postData, uploadFiles } from '../../utils/api';
 
 // --- COMPONENT GIAO DIỆN CON ---
 const FormSection = ({ title, children, subtitle }) => (
@@ -59,6 +62,7 @@ const breadcrumbsData = [
 
 // === COMPONENT TRANG CHÍNH ===
 const AddBannerPage = () => {
+    const context = useContext(MyContext);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -91,11 +95,64 @@ const AddBannerPage = () => {
     // Hàm submit
     const handleSubmit = async (event) => {
         event.preventDefault();
-        // TODO: Logic submit form
-        // 1. Tải ảnh desktopImage.file và mobileImage.file lên Cloudinary
-        // 2. Lấy URL trả về
-        // 3. Gửi toàn bộ formData + 2 URL ảnh đến API tạo banner
-        console.log({ formData, desktopImage: desktopImage.file, mobileImage: mobileImage.file });
+
+        // Validation
+        if (!formData.title || !formData.link || !desktopImage.file) {
+            context.openAlerBox("error", "Vui lòng điền Tiêu đề, Đường dẫn và tải lên ít nhất ảnh Desktop.");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            let desktopImageUrl = '';
+            let mobileImageUrl = '';
+
+            // 1. Tải ảnh desktop lên
+            const desktopFormData = new FormData();
+            desktopFormData.append('images', desktopImage.file);
+            const desktopUploadRes = await uploadFiles('/api/banners/upload', desktopFormData, true); // `true` để chỉ đây là form data
+
+            if (desktopUploadRes.success) {
+                desktopImageUrl = desktopUploadRes.data.images[0];
+            } else {
+                throw new Error(desktopUploadRes.message || 'Tải ảnh desktop thất bại.');
+            }
+
+            // 2. Tải ảnh mobile lên (nếu có)
+            if (mobileImage.file) {
+                const mobileFormData = new FormData();
+                mobileFormData.append('images', mobileImage.file);
+                const mobileUploadRes = await uploadFiles('/api/banners/upload', mobileFormData, true);
+                if (mobileUploadRes.success) {
+                    mobileImageUrl = mobileUploadRes.data.images[0];
+                } else {
+                    // Không ném lỗi ở đây để người dùng vẫn có thể lưu banner dù ảnh mobile lỗi
+                    context.openAlerBox("error", "Tải ảnh mobile thất bại, banner vẫn sẽ được tạo với ảnh desktop.");
+                }
+            }
+
+            // 3. Tạo đối tượng dữ liệu cuối cùng để gửi đi
+            const finalData = {
+                ...formData,
+                desktopImage: desktopImageUrl,
+                mobileImage: mobileImageUrl,
+            };
+
+            // 4. Gọi API để tạo banner
+            const createResult = await postData('/api/banners/', finalData);
+            if (createResult.success) {
+                context.openAlerBox("success", "Thêm banner thành công!");
+                navigate('/banner-list');
+            } else {
+                throw new Error(createResult.message || "Thêm banner thất bại.");
+            }
+
+        } catch (error) {
+            context.openAlerBox("error", error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -145,14 +202,14 @@ const AddBannerPage = () => {
                         <FormSection title="Hình ảnh">
                             <ImageUploadBox
                                 title="Ảnh cho Desktop"
-                                recommendation="Nên dùng ảnh ngang (tỷ lệ 16:9), rộng 1920px"
+                                recommendation="Tỷ lệ 16:9, rộng 1920px (Bắt buộc)"
                                 imagePreview={desktopImage.preview}
                                 onImageChange={handleImageChange(setDesktopImage)}
                                 onRemoveImage={removeImage(setDesktopImage)}
                             />
                             <ImageUploadBox
                                 title="Ảnh cho Mobile"
-                                recommendation="Nên dùng ảnh dọc (tỷ lệ 9:16), rộng 800px"
+                                recommendation="Tỷ lệ 9:16, rộng 800px (Tùy chọn)"
                                 imagePreview={mobileImage.preview}
                                 onImageChange={handleImageChange(setMobileImage)}
                                 onRemoveImage={removeImage(setMobileImage)}

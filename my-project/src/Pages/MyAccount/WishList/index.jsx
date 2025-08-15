@@ -1,143 +1,123 @@
-import React from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { FiShoppingCart, FiTrash2, FiHeart, FiMinus, FiPlus } from 'react-icons/fi';
+import { Button, Select, MenuItem, FormControl, InputLabel, CircularProgress, Typography, IconButton, Tooltip } from '@mui/material';
+import { FiShoppingCart, FiTrash2, FiHeart } from 'react-icons/fi';
+import { fetchDataFromApi } from '../../../utils/api';
+import { MyContext } from '../../../App';
 
-// --- DỮ LIỆU TĨNH ĐÃ CÓ THUỘC TÍNH CHI TIẾT ---
-const wishlistItems = [
-    {
-        id: 1,
-        name: 'Áo khoác Chrono-Weave',
-        image: '/product/720x840.png',
-        price: 3450000,
-        category: 'Thời trang',
-        attributes: { size: 'L', color: 'Đen' } // Thuộc tính thời trang
-    },
-    {
-        id: 2,
-        name: 'Đồng hồ thông minh Helios',
-        image: '/product/720x840.png',
-        price: 7300000,
-        category: 'Công nghệ',
-        attributes: { version: 'Titanium', strap: 'Da' } // Thuộc tính công nghệ
-    },
-    {
-        id: 3,
-        name: 'Túi da Lunar',
-        image: '/product/720x840.png',
-        price: 2100000,
-        category: 'Phụ kiện',
-        attributes: { material: 'Da bò thật', color: 'Nâu' } // Thuộc tính phụ kiện
-    },
-    {
-        id: 4,
-        name: 'Giày thể thao Zero-G',
-        image: '/product/720x840.png',
-        price: 1800000,
-        category: 'Giày dép',
-        attributes: { size: '42', color: 'Trắng/Xanh' }
-    },
-];
-const categories = ['Tất cả', 'Thời trang', 'Công nghệ', 'Phụ kiện', 'Giày dép'];
-const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 
-// --- COMPONENT CON MỚI ĐỂ HIỂN THỊ THUỘC TÍNH ---
-const ProductAttributes = ({ attributes }) => (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mt-1">
-        {attributes.size && <span>Size: <span className="font-medium text-gray-700">{attributes.size}</span></span>}
-        {attributes.color && <span>Màu: <span className="font-medium text-gray-700">{attributes.color}</span></span>}
-        {attributes.version && <span>Phiên bản: <span className="font-medium text-gray-700">{attributes.version}</span></span>}
-        {attributes.strap && <span>Dây đeo: <span className="font-medium text-gray-700">{attributes.strap}</span></span>}
-        {attributes.material && <span>Chất liệu: <span className="font-medium text-gray-700">{attributes.material}</span></span>}
-    </div>
-);
-
-
-// --- COMPONENT TRANG WISHLIST ---
 const WishlistPage = () => {
-    // Để xem giao diện khi trống, đổi giá trị này
-    const hasItems = true;
+    const context = useContext(MyContext);
+    const { wishlist, removeFromWishlist, addToCart } = context;
+
+    const [categories, setCategories] = useState([]);
+    const [filteredWishlist, setFilteredWishlist] = useState([]);
+    const [isLoading, setIsLoading] = useState(true); // Bắt đầu với trạng thái loading
+    const [selectedCategory, setSelectedCategory] = useState('all');
+
+    useEffect(() => {
+        // Biến này để tránh cập nhật state nếu component đã bị unmount
+        let isMounted = true;
+
+        const initialLoad = async () => {
+            setIsLoading(true);
+            try {
+                // Chỉ fetch categories
+                const catResult = await fetchDataFromApi('/api/category/');
+                if (isMounted && catResult.success) {
+                    setCategories(catResult.data.filter(cat => !cat.parentId));
+                }
+            } catch (error) {
+                console.error("Failed to fetch categories for filter", error);
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        initialLoad();
+
+        return () => {
+            isMounted = false; // Cleanup
+        };
+    }, []);
+
+    useEffect(() => {
+        let items = [...wishlist];
+        if (selectedCategory !== 'all') {
+        }
+        setFilteredWishlist(items);
+    }, [wishlist, selectedCategory]);
+
+    const handleCategoryFilterChange = (event) => {
+        setSelectedCategory(event.target.value);
+    };
+
+    const handleAddToCart = (item) => {
+        const productToAdd = {
+            _id: item.productId,
+            name: item.productTitle,
+            images: [item.image],
+            price: item.price,
+        };
+        addToCart(productToAdd, 1);
+        removeFromWishlist(item.productId);
+    };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 container mx-auto py-8">
             <div>
                 <h2 className="text-2xl font-bold text-gray-800">Sản phẩm yêu thích</h2>
-                <p className="text-gray-500 mt-1">Quản lý và mua sắm các sản phẩm bạn đã quan tâm.</p>
+                <p className="text-gray-500 mt-1">Quản lý các sản phẩm bạn đã quan tâm.</p>
             </div>
 
-            {/* Thanh công cụ với component MUI (Không đổi) */}
             <div className="p-4 bg-white rounded-xl border border-gray-200 flex flex-wrap gap-4 items-center">
                 <FormControl size="small" sx={{ minWidth: 200, flexGrow: 1 }}>
-                    <InputLabel>Danh mục</InputLabel>
-                    <Select defaultValue="Tất cả" label="Danh mục">
-                        {categories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                    <InputLabel>Lọc theo Danh mục</InputLabel>
+                    <Select value={selectedCategory} onChange={handleCategoryFilterChange} label="Lọc theo Danh mục">
+                        <MenuItem value="all">Tất cả danh mục</MenuItem>
+                        {categories.map(cat => (
+                            <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
-                <FormControl size="small" sx={{ minWidth: 200, flexGrow: 1 }}>
-                    <InputLabel>Sắp xếp</InputLabel>
-                    <Select defaultValue="date_desc" label="Sắp xếp">
-                        <MenuItem value="date_desc">Mới nhất</MenuItem>
-                        <MenuItem value="price_asc">Giá: Thấp đến cao</MenuItem>
-                        <MenuItem value="price_desc">Giá: Cao đến thấp</MenuItem>
-                    </Select>
-                </FormControl>
-                <Button variant="outlined" color="error" startIcon={<FiTrash2 />} className="!ml-auto">
-                    Xóa đã chọn
-                </Button>
             </div>
 
-            {/* Bảng sản phẩm - Nâng cấp */}
-            {hasItems ? (
+            {isLoading ? (
+                <div className="flex justify-center py-20"><CircularProgress /></div>
+            ) : filteredWishlist.length > 0 ? (
                 <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th scope="col" className="p-4"><input type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" /></th>
-                                <th scope="col" className="px-6 py-3">Sản phẩm</th>
-                                <th scope="col" className="px-6 py-3 text-center">Đơn giá</th>
-                                <th scope="col" className="px-6 py-3 text-center">Số lượng</th>
-                                <th scope="col" className="px-6 py-3 text-center">Hành động</th>
+                                <th scope="col" className="px-6 py-4 font-semibold">SẢN PHẨM</th>
+                                <th scope="col" className="px-6 py-4 font-semibold">ĐƠN GIÁ</th>
+                                <th scope="col" className="px-6 py-4 font-semibold text-center">HÀNH ĐỘNG</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {wishlistItems.map((item) => (
-                                <tr key={item.id} className="bg-white border-b hover:bg-gray-50 ">
-                                    <td className="w-4 p-4 pt-6"><input type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" /></td>
-
-                                    {/* Cột sản phẩm - Đã thêm thuộc tính */}
-                                    <td scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                        <div className="flex items-start gap-4">
-                                            <img src={item.image} alt={item.name} className="w-20 h-20 rounded-md object-cover" />
-                                            <div>
-                                                <Link to={`/product-detail/${item.id}`} className="font-bold hover:underline">{item.name}</Link>
-                                                <p className="text-gray-500 text-xs mt-1">{item.category}</p>
-                                                {/* Component hiển thị thuộc tính */}
-                                                <ProductAttributes attributes={item.attributes} />
-                                            </div>
+                            {filteredWishlist.map((item) => (
+                                <tr key={item.wishlistId} className="bg-white border-t hover:bg-gray-50">
+                                    <td scope="row" className="px-6 py-4">
+                                        <div className="flex items-center gap-4">
+                                            <img src={item.image || '/placeholder.png'} alt={item.productTitle} className="w-20 h-20 rounded-md object-cover" />
+                                            <Link to={`/product-detail/${item.productId}`} className="font-bold text-gray-800 hover:text-primary">{item.productTitle}</Link>
                                         </div>
                                     </td>
-
-                                    <td className="px-6 py-4 pt-6 text-center font-medium">
+                                    <td className="px-6 py-4 font-semibold text-gray-700">
                                         {formatCurrency(item.price)}
                                     </td>
-
-                                    {/* Cột số lượng - MỚI */}
-                                    <td className="px-6 py-4 pt-5 text-center">
-                                        <div className="flex items-center justify-center border border-gray-300 rounded-md w-fit mx-auto">
-                                            <button className="px-2 py-1 text-gray-600 hover:bg-gray-100"><FiMinus size={14} /></button>
-                                            <input type="text" defaultValue="1" className="w-10 text-center font-semibold text-gray-800 bg-transparent border-l border-r border-gray-300 focus:outline-none" />
-                                            <button className="px-2 py-1 text-gray-600 hover:bg-gray-100"><FiPlus size={14} /></button>
-                                        </div>
-                                    </td>
-
-                                    <td className="px-6 py-4 pt-5">
+                                    <td className="px-6 py-4">
                                         <div className="flex items-center justify-center gap-2">
-                                            <Button variant="contained" size="small" startIcon={<FiShoppingCart />} sx={{ textTransform: 'none', fontSize: '0.75rem' }}>
-                                                Add to card
+                                            <Button variant="contained" size="small" startIcon={<FiShoppingCart />} onClick={() => handleAddToCart(item)} sx={{ textTransform: 'none' }}>
+                                                Thêm vào giỏ
                                             </Button>
-                                            <button className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                                                <FiTrash2 className='text-[18px]' />
-                                            </button>
+                                            <Tooltip title="Xóa khỏi danh sách yêu thích">
+                                                {/* Sửa lại hàm xóa để dùng productId */}
+                                                <IconButton onClick={() => removeFromWishlist(item.productId)} color="error"><FiTrash2 /></IconButton>
+                                            </Tooltip>
                                         </div>
                                     </td>
                                 </tr>

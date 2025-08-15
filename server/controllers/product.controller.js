@@ -1,7 +1,8 @@
 import ProductModel from '../models/product.model.js';
-
+import CategoryModel from '../models/category.model.js';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import mongoose from 'mongoose';
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,656 +11,197 @@ cloudinary.config({
     secure: true,
 });
 
-var imagesArr = [];
-export async function updatedImages(request, response) {
+export async function uploadProductImages(request, response) {
     try {
-        imagesArr = [];
-
-        const image = request.files;
-        const options = {
-            use_filename: true,
-            unique_filename: false,
-            overwrite: false,
-        };
-
-        for (let i = 0; i < image?.length; i++) {
-            const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    imagesArr.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
+        const files = request.files;
+        if (!files || files.length === 0) {
+            return response.status(400).json({ message: "No image files provided." });
         }
-
+        const imageUrls = [];
+        for (const file of files) {
+            const result = await cloudinary.uploader.upload(file.path);
+            imageUrls.push(result.secure_url);
+            fs.unlinkSync(file.path);
+        }
         return response.status(200).json({
-            message: "Successfully.",
+            message: "Images uploaded successfully.",
             success: true,
-            data: {
-                images: imagesArr
-            }
+            data: { images: imageUrls }
         });
-
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
+        return response.status(500).json({ message: error.message, error: true });
     }
 }
 
 export async function createProduct(request, response) {
     try {
-        let product = new ProductModel({
+        // 1. Kiểm tra xem Category có tồn tại không
+        const category = await CategoryModel.findById(request.body.category);
+        if (!category) {
+            return response.status(400).json({ message: 'Invalid Category' });
+        }
+
+        // 2. Tạo sản phẩm với dữ liệu từ body
+        const product = new ProductModel({
             name: request.body.name,
             description: request.body.description,
-            images: imagesArr,
+            images: request.body.images, // Nhận mảng ảnh từ body
             brand: request.body.brand,
             price: request.body.price,
             oldPrice: request.body.oldPrice,
-            categoryName: request.body.categoryName,
-            categoryID: request.body.categoryID,
-            subCategory: request.body.subCategory,
-            subCategoryID: request.body.subCategoryID,
-            thirdSubCategory: request.body.thirdSubCategory,
-            thirdSubCategoryID: request.body.thirdSubCategoryID,
+            category: request.body.category, // Chỉ cần lưu ID
             countInStock: request.body.countInStock,
-            rating: request.body.rating,
             isFeatured: request.body.isFeatured,
-            discount: request.body.discount,
-            productRam: request.body.productRam,
-            size: request.body.size,
-            productWeight: request.body.productWeight,
-        })
+            discount: request.body.discount // Giữ lại nếu bạn vẫn dùng schema cũ
+        });
 
-        product = await product.save();
+        const savedProduct = await product.save();
 
-        if (!product) {
-            return response.status(500).json({
-                message: "Product not created",
-                error: true,
-                success: false
-            });
+        if (!savedProduct) {
+            return response.status(500).json({ message: 'The product could not be created' });
         }
 
-        imagesArr = [];
-
-        return response.status(200).json({
+        return response.status(201).json({
             message: "Product created successfully",
-            error: false,
             success: true,
-            product: product
+            product: savedProduct
         });
 
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
+        return response.status(500).json({ message: error.message, error: true });
     }
 }
 
 export async function getAllProduct(request, response) {
     try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage);
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
+        let filter = {};
 
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
+        // Lọc theo danh mục (có thể truyền nhiều ID, ví dụ: /api/products?categories=id1,id2)
+        if (request.query.categories) {
+            filter.category = request.query.categories.split(',');
         }
 
-        const products = await ProductModel.find().populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
+        // Tìm kiếm theo tên (ví dụ: /api/products?search=thit)
+        if (request.query.search) {
+            filter.name = { $regex: request.query.search, $options: 'i' }; // 'i' để không phân biệt hoa thường
         }
+
+        // Phân trang
+        const page = parseInt(request.query.page, 10) || 1;
+        const limit = parseInt(request.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        const products = await ProductModel.find(filter)
+            .populate('category')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 }); // Sắp xếp mới nhất lên đầu
+
+        const totalProducts = await ProductModel.countDocuments(filter);
 
         return response.status(200).json({
-            error: false,
             success: true,
             products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo id của category
-export async function getAllProductByCatId(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            categoryID: request.params.id
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo tên của category
-export async function getAllProductByCatName(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            categoryName: request.query.categoryName
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo id của subCategory
-export async function getAllProductBySubCatId(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            subCategoryID: request.params.id
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo tên của SubCategory
-export async function getAllProductBySubCatName(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            subCategory: request.query.subCategory
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo id của ThirdLavelCatId
-export async function getAllProductByThirdLavelCatId(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            thirdSubCategoryID: request.params.id
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo tên của ThirdLavelCatName
-export async function getAllProductByThirdLavelCatName(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        const products = await ProductModel.find({
-            thirdSubCategory: request.query.thirdSubCategory
-        })
-            .populate("category")
-            .skip((page - 1) * perPage)
-            .limit(perPage)
-            .exec();
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Lấy tất cả sản phẩm theo giá
-export async function getAllProductByPrice(request, response) {
-    try {
-        let productlist = [];
-
-        if (request.query.categoryID !== "" && request.query.categoryID !== undefined) {
-            const productlistArr = await ProductModel.find({
-                categoryID: request.query.categoryID,
-            }).populate("category");
-
-            productlist = productlistArr;
-        }
-
-        if (request.query.subCategoryID !== "" && request.query.subCategoryID !== undefined) {
-            const productlistArr = await ProductModel.find({
-                subCategoryID: request.query.subCategoryID,
-            }).populate("category");
-
-            productlist = productlistArr;
-        }
-
-        if (request.query.thirdSubCategoryID !== "" && request.query.thirdSubCategoryID !== undefined) {
-            const productlistArr = await ProductModel.find({
-                thirdSubCategoryID: request.query.thirdSubCategoryID,
-            }).populate("category");
-
-            productlist = productlistArr;
-        }
-
-        const filteredProducts = productlist.filter((product) => {
-            if (request.query.minPrice && product.price < parseInt(request.query.minPrice)) {
-                return false;
-            }
-            if (request.query.maxPrice && product.price > parseInt(request.query.maxPrice)) {
-                return false;
-            }
-            return true;
-        });
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: filteredProducts,
-            totalPages: 0,
-            page: 0,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: page,
+            totalCount: totalProducts
         });
 
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
+        return response.status(500).json({ message: error.message, error: true });
     }
 }
 
-//Lấy tất cả sản phẩm theo số sao đánh giá
-export async function getAllProductByRating(request, response) {
-    try {
-        const page = parseInt(request.query.page) || 1;
-        const perPage = parseInt(request.query.perPage) || 1000;
-        const totalPosts = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(totalPosts / perPage);
-
-        if (page > totalPages) {
-            return response.status(404).json({
-                message: "Page not found",
-                success: false,
-                error: true
-            });
-        }
-
-        let products = [];
-
-        if (request.query.categoryID !== undefined) {
-            products = await ProductModel.find({
-                rating: request.query.rating,
-                categoryID: request.query.categoryID,
-            })
-                .populate("category")
-                .skip((page - 1) * perPage)
-                .limit(perPage)
-                .exec();
-        }
-
-        if (request.query.subCategoryID !== undefined) {
-            products = await ProductModel.find({
-                rating: request.query.rating,
-                subCategoryID: request.query.subCategoryID,
-            })
-                .populate("category")
-                .skip((page - 1) * perPage)
-                .limit(perPage)
-                .exec();
-        }
-
-        if (request.query.thirdSubCategoryID !== undefined) {
-            products = await ProductModel.find({
-                rating: request.query.rating,
-                thirdSubCategoryID: request.query.thirdSubCategoryID,
-            })
-                .populate("category")
-                .skip((page - 1) * perPage)
-                .limit(perPage)
-                .exec();
-        }
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            })
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-            totalPages: totalPages,
-            page: page
-        })
-
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
-}
-
-//Số lượng sản phẩm
 export async function getProductCount(request, response) {
     try {
         const productCount = await ProductModel.countDocuments();
-
-        if (!productCount) {
-            return response.status(400).json({
-                error: true,
-                success: false,
-            });
-        }
-        return response.status(200).json({
-            error: false,
-            success: true,
-            productCount: productCount
-        });
+        return response.status(200).json({ success: true, productCount: productCount });
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        });
+        return response.status(500).json({ message: error.message, error: true });
     }
-
 }
 
-export async function getAllFeaturedProducts(request, response) {
+export async function getFeaturedProducts(request, response) {
     try {
-        const products = await ProductModel.find({
-            isFeatured: true
-        }).populate("category");
-
-        if (!products) {
-            return response.status(500).json({
-                error: true,
-                success: false
-            });
-        }
-
-        return response.status(200).json({
-            error: false,
-            success: true,
-            products: products,
-        });
-
+        const count = request.params.count ? parseInt(request.params.count, 10) : 0;
+        const products = await ProductModel.find({ isFeatured: true }).limit(count).populate('category');
+        return response.status(200).json({ success: true, products: products });
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        });
+        return response.status(500).json({ message: error.message, error: true });
     }
 }
 
 export async function deleteProduct(request, response) {
     try {
-        const product = await ProductModel.findById(request.params.id).populate("category");
-
-        if (!product) {
-            return response.status(404).json({
-                message: "Product Not found",
-                error: true,
-                success: false
-            })
+        if (!mongoose.isValidObjectId(request.params.id)) {
+            return response.status(400).json({ message: 'Invalid Product ID' });
         }
 
-        const images = product.images;
-        let img = "";
-        for (img of images) {
-            const imgUrl = img;
-            const urlArr = imgUrl.split("/");
-            const image = urlArr[urlArr.length - 1];
-            const imageName = image.split(".")[0];
+        const product = await ProductModel.findById(request.params.id);
+        if (!product) {
+            return response.status(404).json({ message: 'Product not found' });
+        }
 
-            if (imageName) {
-                cloudinary.uploader.destroy(imageName, (error, result) => {
-                    // console.log(error, result);
-                });
+        // --- HOÀN THIỆN LOGIC XÓA ẢNH ---
+        if (product.images && product.images.length > 0) {
+            for (const imageUrl of product.images) {
+                const urlArr = imageUrl.split("/");
+                const imageName = urlArr[urlArr.length - 1].split(".")[0];
+                if (imageName) {
+                    await cloudinary.uploader.destroy(imageName);
+                }
+            }
+        }
+        // ------------------------------------
+
+        await ProductModel.findByIdAndDelete(request.params.id);
+
+        return response.status(200).json({ success: true, message: 'Product deleted successfully' });
+    } catch (error) {
+        return response.status(500).json({ message: error.message, error: true });
+    }
+}
+
+export async function deleteMultipleProducts(request, response) {
+    try {
+        const { ids } = request.body; // Nhận một mảng các ID từ request body
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return response.status(400).json({
+                message: "Please provide an array of product IDs to delete.",
+                error: true,
+                success: false
+            });
+        }
+
+        // TODO: Xóa tất cả ảnh trên Cloudinary tương ứng với các sản phẩm này
+        // Đây là bước quan trọng để tránh lưu trữ ảnh rác
+        const productsToDelete = await ProductModel.find({ _id: { $in: ids } });
+        for (const product of productsToDelete) {
+            for (const imageUrl of product.images) {
+                const urlArr = imageUrl.split("/");
+                const imageName = urlArr[urlArr.length - 1].split(".")[0];
+                if (imageName) {
+                    cloudinary.uploader.destroy(imageName);
+                }
             }
         }
 
-        const deletedProduct = await ProductModel.findByIdAndDelete(request.params.id);
+        // Dùng $in để xóa tất cả các sản phẩm có _id nằm trong mảng `ids`
+        const deleteResult = await ProductModel.deleteMany({ _id: { $in: ids } });
 
-        if (!deletedProduct) {
+        if (deleteResult.deletedCount === 0) {
             return response.status(404).json({
-                message: "Product not deleted!",
-                success: false,
-                error: true
+                message: "No products found with the provided IDs.",
+                error: true,
+                success: false
             });
         }
 
         return response.status(200).json({
-            success: true,
+            message: `Successfully deleted ${deleteResult.deletedCount} products.`,
             error: false,
-            message: "Product Deleted!",
+            success: true
         });
 
     } catch (error) {
@@ -671,143 +213,65 @@ export async function deleteProduct(request, response) {
     }
 }
 
-//Lấy 1 sản phẩm
-export async function getProduct(request, response) {
+export async function getProductById(request, response) {
     try {
-        const product = await ProductModel.findById(request.params.id).populate("category");
-
+        if (!mongoose.isValidObjectId(request.params.id)) {
+            return response.status(400).json({ message: 'Invalid Product ID' });
+        }
+        const product = await ProductModel.findById(request.params.id).populate('category');
         if (!product) {
-            return response.status(404).json({
-                message: "Product Not found",
-                error: true,
-                success: false
-            })
+            return response.status(404).json({ message: 'Product not found' });
         }
-
-        return response.status(200).json({
-            success: true,
-            error: false,
-            product: product,
-        });
+        return response.status(200).json({ success: true, product: product });
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        });
-    }
-}
-
-export async function removeImageFromCloudinary(request, response) {
-
-    // try {
-    //     const userId = request.userId;
-    //     const user = await UserModel.findById(userId);
-
-    //     if (!user) {
-    //         return response.status(404).json({
-    //             message: "User not found." 
-    //         });
-    //     }
-
-    //     const imgUrl = user.avatar;
-
-    //     if (!imgUrl) {
-    //         return response.status(400).json({ 
-    //             message: "No avatar to delete." 
-    //         });
-    //     }
-
-    //     const urlArr = imgUrl.split("/");
-    //     const imageFile = urlArr[urlArr.length - 1];
-    //     const publicId = imageFile.split(".")[0];
-
-    //     await cloudinary.uploader.destroy(publicId);
-
-    //     user.avatar = ""; 
-    //     await user.save(); 
-
-
-    //     return response.status(200).json({
-    //         message: "Avatar removed successfully.",
-    //         success: true,
-    //         error: false
-    //     });
-
-    // } catch (error) {
-    //     return response.status(500).json({
-    //         message: "An internal server error occurred.",
-    //         error: true,
-    //         success: false
-    //     });
-    // }
-
-
-    const imgUrl = request.query.img;
-    const urlArr = imgUrl.split("/");
-    const image = urlArr[urlArr.length - 1];
-    const imageName = image.split(".")[0];
-
-    if (imageName) {
-        const res = await cloudinary.uploader.destroy(
-            imageName,
-            (error, result) => {
-
-            }
-        );
-
-        if (res) {
-            response.status(200).send(res);
-        }
+        return response.status(500).json({ message: error.message, error: true });
     }
 }
 
 export async function updateProduct(request, response) {
     try {
-        const product = await ProductModel.findByIdAndUpdate(
-            request.params.id, {
-            name: request.body.name,
-            description: request.body.description,
-            images: request.body.images,
-            brand: request.body.brand,
-            price: request.body.price,
-            oldPrice: request.body.oldPrice,
-            categoryName: request.body.categoryName,
-            categoryID: request.body.categoryID,
-            subCategory: request.body.subCategory,
-            subCategoryID: request.body.subCategoryID,
-            category: request.body.category,
-            thirdSubCategory: request.body.thirdSubCategory,
-            thirdSubCategoryID: request.body.thirdSubCategoryID,
-            countInStock: request.body.countInStock,
-            rating: request.body.rating,
-            isFeatured: request.body.isFeatured,
-            discount: request.body.discount,
-            productRam: request.body.productRam,
-            size: request.body.size,
-            productWeight: request.body.productWeight,
-        }, { new: true });
-
-        if (!product) {
-            return response.status(404).json({
-                message: "the product can not be updated!",
-                status: false,
-            });
+        // Kiểm tra ID sản phẩm có hợp lệ không
+        if (!mongoose.isValidObjectId(request.params.id)) {
+            return response.status(400).json({ message: 'Invalid Product ID' });
         }
 
-        imagesArr = [];
+        // Kiểm tra Category (nếu có thay đổi)
+        if (request.body.category) {
+            const category = await CategoryModel.findById(request.body.category);
+            if (!category) {
+                return response.status(400).json({ message: 'Invalid Category' });
+            }
+        }
+
+        const updatedProduct = await ProductModel.findByIdAndUpdate(
+            request.params.id,
+            {
+                // Chỉ cập nhật các trường được gửi lên
+                name: request.body.name,
+                description: request.body.description,
+                images: request.body.images,
+                brand: request.body.brand,
+                price: request.body.price,
+                oldPrice: request.body.oldPrice,
+                category: request.body.category,
+                countInStock: request.body.countInStock,
+                isFeatured: request.body.isFeatured,
+                discount: request.body.discount
+            },
+            { new: true } // Trả về tài liệu đã được cập nhật
+        );
+
+        if (!updatedProduct) {
+            return response.status(404).json({ message: "Product not found!" });
+        }
 
         return response.status(200).json({
-            message: "The product is updated",
-            error: false,
-            success: true
-        })
+            message: "The product was updated successfully",
+            success: true,
+            product: updatedProduct
+        });
 
     } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        });
+        return response.status(500).json({ message: error.message, error: true });
     }
 }

@@ -6,8 +6,8 @@ import { FiPlus } from 'react-icons/fi';
 import { useEffect } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import AddressCard from './componets-Address/AddressCard';
-import ConfirmationDialog from './componets-Address/ConfirmationDialog';
 import AddressDialog from './componets-Address/AddressDialog';
+import ConfirmationDialog from '../../componets/ConfirmationDialog/ConfirmationDialog';
 
 
 

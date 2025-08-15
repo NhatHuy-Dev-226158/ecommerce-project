@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FiUploadCloud, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 import { MyContext } from '../../App';
-import { fetchDataFromApi, updateData, uploadCategoryImages } from '../../utils/api';
+import { fetchDataFromApi, updateData, uploadFiles } from '../../utils/api';
 
 
 // --- COMPONENT GIAO DIỆN CON ---
@@ -133,7 +133,7 @@ const EditCategoryPage = () => {
             if (imageFile) {
                 const imageFormData = new FormData();
                 imageFormData.append('images', imageFile);
-                const uploadResult = await uploadCategoryImages('/api/category/uploadImages', imageFormData);
+                const uploadResult = await uploadFiles('/api/category/uploadImages', imageFormData);
                 if (uploadResult.success) {
                     finalImageUrls = uploadResult.data.images;
                 } else {

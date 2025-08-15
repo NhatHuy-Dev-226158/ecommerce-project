@@ -14,7 +14,7 @@ const handleError = (error) => {
 }
 
 // === HÀM POST DATA ===
-export const postData = async (url, formData) => {
+export const postData = async (url, jsonData) => {
     try {
         const token = localStorage.getItem("accesstoken");
         const response = await fetch(apiUrl + url, {
@@ -23,15 +23,14 @@ export const postData = async (url, formData) => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(jsonData)
         });
-
         return await response.json();
-
     } catch (error) {
         return handleError(error);
     }
 }
+
 
 // === HÀM GET DATA ===
 export const fetchDataFromApi = async (url) => {
@@ -55,7 +54,7 @@ export const fetchDataFromApi = async (url) => {
 }
 
 // === HÀM UPLOAD ẢNH DANH MỤC ===
-export const uploadCategoryImages = async (url, formData) => {
+export const uploadFiles = async (url, formData) => {
     try {
         const token = localStorage.getItem('accesstoken');
         const response = await fetch(apiUrl + url, {

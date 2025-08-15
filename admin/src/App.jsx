@@ -4,7 +4,6 @@ import Header from './componets/Header';
 import Sidebar from './componets/Sidebar';
 import Dashboard from './Pages/Dashboard';
 import { createContext, useState, useContext } from 'react';
-import ProductsTable from './componets/Dashboard-Products';
 import Login from './Pages/Login/login';
 import Register from './Pages/Register/register';
 import Products from './Pages/Products/products';
@@ -21,10 +20,12 @@ import AddCategoryPage from './Pages/Category/AddCategoryPage';
 import CategoryListPage from './Pages/Category/CategoryListPage';
 import EditCategoryPage from './Pages/Category/EditCategoryPage';
 import UserListPage from './Pages/Users/UserListPage';
-import AddUserPage from './Pages/Users/AddUserPage';
 import AddBannerPage from './Pages/Banner/AddBannerPage';
 import BannerListPage from './Pages/Banner/BannerListPage';
 import EditBannerPage from './Pages/Banner/EditBannerPage';
+import ProductDetailPage from './Pages/Products/ProductDetailPage';
+import EditProductPage from './Pages/Products/EditProductPage';
+import EditUserPage from './Pages/Users/EditUserPage';
 
 const MyContext = createContext();
 
@@ -130,7 +131,7 @@ function App() {
           element: <Dashboard />,
         },
         {
-          path: "/home-banner",
+          path: "/banner-list",
           element: <BannerListPage />,
         },
         {
@@ -138,7 +139,7 @@ function App() {
           element: <AddBannerPage />,
         },
         {
-          path: "/edit-banner",
+          path: "/edit-banner/:bannerId",
           element: <EditBannerPage />,
         },
         {
@@ -146,8 +147,8 @@ function App() {
           element: <UserListPage />,
         },
         {
-          path: "add-user",
-          element: <AddUserPage />,
+          path: "edit-user/:userId",
+          element: <EditUserPage />,
         },
         {
           path: "category-list",
@@ -168,6 +169,14 @@ function App() {
         {
           path: "product-upload",
           element: <AddProductPage />,
+        },
+        {
+          path: "/product/:productId",
+          element: <ProductDetailPage />,
+        },
+        {
+          path: "/edit-product/:productId",
+          element: <EditProductPage />,
         },
         {
           path: "orders",

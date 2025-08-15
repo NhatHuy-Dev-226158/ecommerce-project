@@ -4,14 +4,18 @@ const productSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+        trim: true
     },
     description: {
         type: String,
         required: true,
     },
+    richDescription: {
+        type: String,
+        default: ''
+    },
     images: [{
         type: String,
-        required: true
     }],
     brand: {
         type: String,
@@ -19,36 +23,14 @@ const productSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        default: 0
+        default: 0,
+        required: true
     },
     oldPrice: {
         type: Number,
         default: 0,
     },
-    categoryName: {
-        type: String,
-        default: ""
-    },
-    categoryID: {
-        type: String,
-        default: ""
-    },
-    subCategory: {
-        type: String,
-        default: ""
-    },
-    subCategoryID: {
-        type: String,
-        default: ""
-    },
-    thirdSubCategory: {
-        type: String,
-        default: ""
-    },
-    thirdSubCategoryID: {
-        type: String,
-        default: ""
-    },
+
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
@@ -57,6 +39,7 @@ const productSchema = new mongoose.Schema({
     countInStock: {
         type: Number,
         required: true,
+        min: 0
     },
     rating: {
         type: Number,
@@ -66,28 +49,33 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    discount: {
-        type: Number,
-        required: true,
+    isPublished: {
+        type: Boolean,
+        default: true
     },
-    productRam: [{
-        type: String,
-        default: null
-    }],
-    size: [{
-        type: String,
-        default: null,
-    }],
-    productWeight: [{
-        type: String,
-        default: null
-    }],
-    dateCreated: {
-        type: Date,
-        default: Date.now,
+    sale: {
+        discountType: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
+        discountValue: { type: Number, default: 0 }
     },
+    attributes: [{
+        name: String,
+        values: [String]
+    }],
+    variants: [{
+        type: Map,
+        of: mongoose.Schema.Types.Mixed
+    }],
+
 }, { timestamps: true });
 
-const ProductModel = mongoose.model('product', productSchema);
+productSchema.virtual('id').get(function () {
+    return this._id.toHexString();
+});
+productSchema.set('toJSON', {
+    virtuals: true,
+});
+
+
+const ProductModel = mongoose.model('Product', productSchema); // Đổi tên thành 'Product' (viết hoa)
 
 export default ProductModel;

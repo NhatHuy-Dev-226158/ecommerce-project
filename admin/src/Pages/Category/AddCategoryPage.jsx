@@ -8,7 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiUploadCloud, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 import { MyContext } from '../../App';
-import { fetchDataFromApi, postData, uploadCategoryImages } from '../../utils/api';
+import { fetchDataFromApi, postData, uploadFiles } from '../../utils/api';
 
 // --- COMPONENT GIAO DIỆN CON ---
 const FormSection = ({ title, children }) => (
@@ -103,7 +103,7 @@ const AddCategoryPage = () => {
                 const imageFormData = new FormData();
                 imageFormData.append('images', imageFile);
 
-                const uploadResult = await uploadCategoryImages('/api/category/uploadImages', imageFormData);
+                const uploadResult = await uploadFiles('/api/category/uploadImages', imageFormData);
                 if (uploadResult.success) {
                     imageUrls = uploadResult.data.images;
                 } else {

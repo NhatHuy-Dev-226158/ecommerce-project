@@ -6,21 +6,8 @@ import {
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FiUploadCloud, FiLink, FiX } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
-import { MyContext } from '../../App'; // Điều chỉnh đường dẫn nếu cần
-import { fetchDataFromApi, updateData, uploadImage } from '../../utils/api'; // Giả sử bạn có các hàm này
-
-// --- DỮ LIỆU MẪU ĐỂ GIẢ LẬP API ---
-const mockBannerDataToEdit = {
-    _id: 'banner1',
-    title: 'Khuyến mãi hè rực rỡ',
-    subtitle: 'Giảm giá đến 50% cho tất cả các mặt hàng tươi sống.',
-    buttonText: 'Xem ngay',
-    link: '/khuyen-mai/he-2025',
-    desktopImage: 'https://via.placeholder.com/1920x600/e0f2fe/0ea5e9',
-    mobileImage: 'https://via.placeholder.com/800x1200/e0f2fe/0ea5e9',
-    isPublished: true
-};
-
+import { MyContext } from '../../App';
+import { fetchDataFromApi, updateData, uploadFiles } from '../../utils/api';
 
 // --- CÁC COMPONENT CON ---
 const FormSection = ({ title, children, subtitle }) => (
@@ -71,15 +58,10 @@ const EditBannerPage = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const { bannerId } = useParams();
-
-    const [isLoading, setIsLoading] = useState(false); // Dùng cho lúc submit
-    const [isFetchingData, setIsFetchingData] = useState(true); // Dùng cho lúc tải dữ liệu ban đầu
-
-    // State cho ảnh, mỗi state chứa file (nếu có thay đổi) và preview URL
+    const [isLoading, setIsLoading] = useState(false);
+    const [isFetchingData, setIsFetchingData] = useState(true);
     const [desktopImage, setDesktopImage] = useState({ file: null, preview: '' });
     const [mobileImage, setMobileImage] = useState({ file: null, preview: '' });
-
-    // State cho form
     const [formData, setFormData] = useState({
         title: '', subtitle: '', buttonText: '', link: '', isPublished: true,
     });
@@ -89,9 +71,11 @@ const EditBannerPage = () => {
         const fetchBannerData = async () => {
             setIsFetchingData(true);
             try {
-                // const result = await fetchDataFromApi(`/api/banners/${bannerId}`);
-                // if (!result.success) throw new Error(result.message);
-                const bannerData = mockBannerDataToEdit; // Giả lập API
+                // Thay thế mock data bằng lời gọi API thật
+                const result = await fetchDataFromApi(`/api/banners/${bannerId}`);
+                if (!result.success) throw new Error(result.message || "Không thể tải dữ liệu banner.");
+
+                const bannerData = result.data;
 
                 setFormData({
                     title: bannerData.title || '',
@@ -100,11 +84,12 @@ const EditBannerPage = () => {
                     link: bannerData.link || '',
                     isPublished: bannerData.isPublished,
                 });
+                // Giữ lại URL ảnh cũ từ server
                 setDesktopImage({ file: null, preview: bannerData.desktopImage || '' });
                 setMobileImage({ file: null, preview: bannerData.mobileImage || '' });
 
             } catch (error) {
-                context.openAlerBox("error", "Không thể tải dữ liệu banner.");
+                context.openAlerBox("error", error.message);
                 navigate('/banner-list');
             } finally {
                 setIsFetchingData(false);
@@ -126,7 +111,7 @@ const EditBannerPage = () => {
     };
 
     const removeImage = (setter) => () => {
-        setter({ file: null, preview: '' }); // Xóa cả file và preview
+        setter({ file: null, preview: '' });
     };
 
     // --- LOGIC SUBMIT FORM ---
@@ -140,40 +125,43 @@ const EditBannerPage = () => {
 
             // Xử lý upload ảnh nếu có file mới được chọn
             if (desktopImage.file) {
-                const formData = new FormData();
-                formData.append('image', desktopImage.file);
-                // const res = await uploadImage('/api/upload', formData);
-                // if (res.success) dataToSubmit.desktopImage = res.imageUrl;
-                // else throw new Error('Tải ảnh desktop thất bại');
+                const formDataUpload = new FormData();
+                // API upload của bạn có thể nhận 1 hoặc nhiều ảnh, key là 'images'
+                formDataUpload.append('images', desktopImage.file);
+                const res = await uploadFiles('/api/banners/upload', formDataUpload);
+                if (res.success) {
+                    dataToSubmit.desktopImage = res.data.images[0]; // Lấy URL ảnh đầu tiên
+                } else {
+                    throw new Error('Tải ảnh desktop thất bại');
+                }
             } else {
                 dataToSubmit.desktopImage = desktopImage.preview; // Giữ lại ảnh cũ nếu không đổi
             }
 
             if (mobileImage.file) {
-                const formData = new FormData();
-                formData.append('image', mobileImage.file);
-                // const res = await uploadImage('/api/upload', formData);
-                // if (res.success) dataToSubmit.mobileImage = res.imageUrl;
-                // else throw new Error('Tải ảnh mobile thất bại');
+                const formDataUpload = new FormData();
+                formDataUpload.append('images', mobileImage.file);
+                const res = await uploadFiles('/api/banners/upload', formDataUpload);
+                if (res.success) {
+                    dataToSubmit.mobileImage = res.data.images[0];
+                } else {
+                    throw new Error('Tải ảnh mobile thất bại');
+                }
             } else {
-                dataToSubmit.mobileImage = mobileImage.preview; // Giữ lại ảnh cũ nếu không đổi
+                dataToSubmit.mobileImage = mobileImage.preview;
             }
 
             // Gọi API để cập nhật banner
-            // const result = await updateData(`/api/banners/${bannerId}`, dataToSubmit);
-            // if (result.success) {
-            //     context.openAlerBox("success", "Cập nhật banner thành công!");
-            //     navigate('/banner-list');
-            // } else {
-            //     throw new Error(result.message);
-            // }
-            console.log("Dữ liệu gửi đi:", dataToSubmit); // Giả lập API
-            context.openAlerBox("success", "Cập nhật banner thành công!");
-            navigate('/banner-list');
-
+            const result = await updateData(`/api/banners/${bannerId}`, dataToSubmit);
+            if (result.success) {
+                context.openAlerBox("success", "Cập nhật banner thành công!");
+                navigate('/banner-list');
+            } else {
+                throw new Error(result.message || "Cập nhật banner thất bại.");
+            }
 
         } catch (error) {
-            context.openAlerBox("error", error.message || "Đã có lỗi xảy ra.");
+            context.openAlerBox("error", error.message);
         } finally {
             setIsLoading(false);
         }

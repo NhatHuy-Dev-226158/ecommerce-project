@@ -190,7 +190,7 @@ nav ul button:hover {
    Small Button Styles for Swiper
    - Tùy chỉnh nút nhỏ trong slider.
 ========================================================================== */
-.smlBtn .swiper-button-prev,
+/* .smlBtn .swiper-button-prev,
 .smlBtn .swiper-button-next {
     width: 28px !important;
     height: 28px !important;
@@ -203,6 +203,10 @@ nav ul button:hover {
     font-size: 18px !important;
     color: #000;
 }
+
+.smlBtn {
+    overflow: hidden;
+} */
 
 /* ==========================================================================
    Category Slider Styles
@@ -259,6 +263,10 @@ nav ul button:hover {
     padding: 15px !important;
     margin-left: -15px;
     margin-right: -15px;
+}
+
+.zoom-container .swiper-wrapper {
+    align-items: center;
 }
 
 /* ==========================================================================
@@ -470,4 +478,8 @@ input[type="number"]::-webkit-outer-spin-button {
 .react-international-phone-country-selector-button {
     width: 55px !important;
     height: 50px !important;
+}
+
+.zoom-container .iiz__hint {
+    display: none;
 }

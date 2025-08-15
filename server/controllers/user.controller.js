@@ -5,7 +5,7 @@ import sendEmailFun from '../config/sendEmail.js';
 import verificationEmail from '../utils/verifyEmailTemplate.js';
 import generateAccessToken from '../utils/generateAccessToken.js';
 import generateRefreshToken from '../utils/generateRefreshToken.js';
-
+import mongoose from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 
@@ -240,62 +240,45 @@ export async function logoutUserController(request, response) {
     }
 }
 
-var imagesArr = [];
 export async function userAvatarController(request, response) {
     try {
-        imagesArr = [];
-
         const userId = request.userId;
-        const image = request.files;
-        const user = await UserModel.findOne({ _id: userId });
-        const imgUrl = user.avatar;
-        const urlArr = imgUrl.split("/");
-        const avatar_image = urlArr[urlArr.length - 1];
-        const imageName = avatar_image.split(".")[0];
+        const imageFiles = request.files;
 
+        if (!imageFiles || imageFiles.length === 0) {
+            return response.status(400).json({ message: "No avatar file provided." });
+        }
+
+        const user = await UserModel.findById(userId);
         if (!user) {
-            return response.status(500).json({
-                message: "User not found",
-                error: true,
-                success: false
-            })
+            return response.status(404).json({ message: "User not found" });
         }
 
-        if (imageName) {
-            const res = await cloudinary.uploader.destroy(
-                imageName,
-                (error, result) => {
+        if (user.avatar) {
+            const imgUrl = user.avatar;
+            const urlArr = imgUrl.split("/");
+            const avatar_image = urlArr[urlArr.length - 1];
+            const imageName = avatar_image ? avatar_image.split(".")[0] : null;
 
-                }
-            );
+            if (imageName) {
+                await cloudinary.uploader.destroy(imageName);
+            }
         }
 
-        const options = {
-            use_filename: true,
-            unique_filename: false,
-            overwrite: false,
-        };
+        const fileToUpload = imageFiles[0];
+        const uploadResult = await cloudinary.uploader.upload(fileToUpload.path);
 
-        for (let i = 0; i < image?.length; i++) {
-            const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    imagesArr.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
-        }
+        fs.unlinkSync(fileToUpload.path);
+        const newAvatarUrl = uploadResult.secure_url;
 
-        user.avatar = imagesArr[0];
+        user.avatar = newAvatarUrl;
         await user.save();
 
         return response.status(200).json({
             message: "Avatar uploaded successfully.",
             success: true,
             _id: userId,
-            avatar: imagesArr[0]
-
+            avatar: newAvatarUrl
         });
 
     } catch (error) {
@@ -303,7 +286,7 @@ export async function userAvatarController(request, response) {
             message: error.message || error,
             error: true,
             success: false
-        })
+        });
     }
 }
 
@@ -708,3 +691,80 @@ export async function userDetails(request, response) {
         })
     }
 }
+
+export const getAllUsers = async (request, response) => {
+    try {
+        const page = parseInt(request.query.page, 10) || 1;
+        const limit = parseInt(request.query.limit, 10) || 10;
+        const searchTerm = request.query.search || '';
+        const skip = (page - 1) * limit;
+
+        const filter = {
+            $or: [
+                { name: { $regex: searchTerm, $options: 'i' } },
+                { email: { $regex: searchTerm, $options: 'i' } }
+            ]
+        };
+
+        const users = await UserModel.find(filter)
+            .select('-password -refresh_token -otp -otpExpires')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalUsers = await UserModel.countDocuments(filter);
+
+        return response.status(200).json({
+            success: true,
+            data: users,
+            totalPages: Math.ceil(totalUsers / limit),
+            totalCount: totalUsers
+        });
+    } catch (error) {
+        return response.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getUserById = async (request, response) => {
+    try {
+        const userId = request.params.id;
+        if (!mongoose.isValidObjectId(userId)) {
+            return response.status(400).json({ success: false, message: 'Invalid User ID' });
+        }
+
+        const user = await UserModel.findById(userId).select('-password -refresh_token');
+
+        if (!user) {
+            return response.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        return response.status(200).json({ success: true, data: user });
+    } catch (error) {
+        return response.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const updateUserByAdmin = async (request, response) => {
+    try {
+        const userId = request.params.id;
+        const { name, role, status } = request.body; // Các trường admin có thể sửa
+
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            userId,
+            { name: name, role: role, status: status },
+            { new: true }
+        ).select('-password -refresh_token');
+
+        if (!updatedUser) {
+            return response.status(404).json({ success: false, message: "User not found." });
+        }
+
+        return response.status(200).json({
+            success: true,
+            message: "User updated successfully.",
+            data: updatedUser
+        });
+    } catch (error) {
+        return response.status(500).json({ success: false, message: error.message });
+    }
+};

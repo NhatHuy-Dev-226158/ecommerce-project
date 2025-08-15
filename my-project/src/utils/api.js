@@ -2,16 +2,21 @@ import axios from "axios";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-// Hàm chuẩn hóa lỗi để tái sử dụng
 const handleError = (error) => {
     console.error('API Error:', error);
-    // Nếu là lỗi từ axios, nó có thể có cấu trúc `error.response.data`
     if (error.response && error.response.data) {
-        // Trả về toàn bộ response lỗi từ backend để frontend có thể đọc `message`
         return error.response.data;
     }
-    // Nếu là lỗi mạng hoặc lỗi khác không phải từ axios response
     return { success: false, error: true, message: error.message || 'An unknown network error occurred.' };
+}
+
+export const fetchPublicDataFromApi = async (url) => {
+    try {
+        const { data } = await axios.get(apiUrl + url);
+        return data;
+    } catch (error) {
+        return handleError(error);
+    }
 }
 
 export const fetchDataFromApi = async (url) => {
@@ -24,12 +29,12 @@ export const fetchDataFromApi = async (url) => {
             },
         };
 
-        // --- LOG CHI TIẾT ---
-        console.groupCollapsed(`[API GET] ${url}`);
-        console.log("Token from localStorage:", token);
-        console.log("Headers sent:", params.headers);
-        console.groupEnd();
-        // -------------------
+        // // --- LOG CHI TIẾT ---
+        // console.groupCollapsed(`[API GET] ${url}`);
+        // console.log("Token from localStorage:", token);
+        // console.log("Headers sent:", params.headers);
+        // console.groupEnd();
+        // // -------------------
 
         const { data } = await axios.get(apiUrl + url, params);
         return data;
@@ -46,12 +51,12 @@ export const postData = async (url, formData) => {
             'Content-Type': 'application/json',
         };
 
-        // --- LOG CHI TIẾT ---
-        console.groupCollapsed(`[API POST] ${url}`);
-        console.log("Token from localStorage:", token);
-        console.log("Headers sent:", headers);
-        console.groupEnd();
-        // -------------------
+        // // --- LOG CHI TIẾT ---
+        // console.groupCollapsed(`[API POST] ${url}`);
+        // console.log("Token from localStorage:", token);
+        // console.log("Headers sent:", headers);
+        // console.groupEnd();
+        // // -------------------
 
         const response = await fetch(apiUrl + url, {
             method: 'POST',

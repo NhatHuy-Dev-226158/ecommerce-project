@@ -10,7 +10,7 @@ import { FiPlus, FiSearch, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 import { MyContext } from '../../App';
 import { fetchDataFromApi, deleteData, postData } from '../../utils/api';
-import ConfirmationDialog from './ConfirmationDialog';
+import ConfirmationDialog from '../../componets/ConfirmationDialog/ConfirmationDialog';
 import { alpha } from '@mui/material/styles';
 
 const breadcrumbsData = [

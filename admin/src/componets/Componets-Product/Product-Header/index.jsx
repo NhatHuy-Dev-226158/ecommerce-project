@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 
-const PageHeader = () => {
+const PageHeader = ({ onSearchChange }) => {
     const handleAddProductClick = () => {
         console.log("Redirecting to Add Product page...");
     };
@@ -20,6 +20,7 @@ const PageHeader = () => {
             </div>
             <div className='flex items-center gap-2'>
                 <TextField
+                    onChange={onSearchChange}
                     className='w-[495px]'
                     size="small"
                     label="Tìm kiếm"
