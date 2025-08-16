@@ -17,6 +17,7 @@ import SmallSliderHome from '../../componets/SmallSliderHome';
 import BannerSmall from '../../componets/BannerSmall';
 import { MyContext } from '../../App';
 import { fetchDataFromApi } from '../../utils/api';
+import { Skeleton } from '@mui/material';
 
 const Home = () => {
     const context = useContext(MyContext);
@@ -26,6 +27,8 @@ const Home = () => {
     const [isLoadingTabs, setIsLoadingTabs] = useState(true);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [value, setValue] = React.useState(0);
+    const [blogs, setBlogs] = useState([]);
+    const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
 
     const handleChange = (event, newIndex) => {
         setSelectedTabIndex(newIndex);
@@ -49,6 +52,27 @@ const Home = () => {
         };
         fetchTabCategories();
     }, []);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            setIsLoadingBlogs(true);
+            try {
+                // Gọi API lấy các bài viết đã được publish
+                const result = await fetchDataFromApi('/api/blogs?publishedOnly=true');
+                if (result.success) {
+                    // Lấy 6 bài viết mới nhất để hiển thị
+                    setBlogs(result.data.slice(0, 6));
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải bài viết cho trang chủ:", error);
+            } finally {
+                setIsLoadingBlogs(false);
+            }
+        };
+        fetchBlogs();
+    }, []);
+
+
 
     return (
         <>
@@ -115,7 +139,6 @@ const Home = () => {
                             <p className='font-[600] text-[18px]'>Duy Nhất Chỉ Từ ... Đến ...</p>
                         </div>
                     </div>
-                    <AdsBanner items={4}></AdsBanner>
                 </div>
             </section>
 
@@ -123,14 +146,16 @@ const Home = () => {
                 <div className="container">
                     <h2 className='text-[20px] font-[600]'> Sản Phẩm Mới Nhất</h2>
                     <ProductsSlider items={6}></ProductsSlider>
-                    <AdsBanner items={4}></AdsBanner>
+                </div>
+                <div className="container">
+                    <h2 className='text-[20px] font-[600]'> Sản Phẩm Nổi Bật</h2>
+                    <ProductsSlider items={6}></ProductsSlider>
                 </div>
             </section>
 
             <section className='py-5 pt-0 bg-white'>
                 <div className="container">
-                    <h2 className='text-[20px] font-[600]'> Sản Phẩm Nổi Bật</h2>
-                    <ProductsSlider items={6}></ProductsSlider>
+                    <AdsBanner items={4}></AdsBanner>
                     <AdsBanner items={3}></AdsBanner>
                 </div>
             </section>
@@ -141,36 +166,42 @@ const Home = () => {
                         <h2 className='text-[30px] font-[600] mb-4 flex items-center justify-center uppercase
                     w-96 border-b-2 border-gray-300 '> Blog</h2>
                     </div>
+
                     <Swiper
                         slidesPerView={4}
                         spaceBetween={30}
                         navigation={true}
                         modules={[Navigation]}
                         className="blogSlider"
+                        breakpoints={{ // Thêm breakpoints để responsive
+                            320: { slidesPerView: 1, spaceBetween: 10 },
+                            640: { slidesPerView: 2, spaceBetween: 20 },
+                            1024: { slidesPerView: 3, spaceBetween: 30 },
+                            1280: { slidesPerView: 4, spaceBetween: 30 },
+                        }}
                     >
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <BlogItem></BlogItem>
-                        </SwiperSlide>
+                        {isLoadingBlogs ? (
+                            // Hiển thị Skeleton loading khi đang tải
+                            Array.from(new Array(4)).map((_, index) => (
+                                <SwiperSlide key={index}>
+                                    <Skeleton variant="rectangular" width="100%" height={192} />
+                                    <Skeleton variant="text" sx={{ fontSize: '1rem', mt: 2 }} />
+                                    <Skeleton variant="text" />
+                                </SwiperSlide>
+                            ))
+                        ) : (
+                            // Render các bài viết thật
+                            blogs.map(blog => (
+                                <SwiperSlide key={blog._id}>
+                                    <BlogItem blog={blog} />
+                                </SwiperSlide>
+                            ))
+                        )}
                     </Swiper>
                 </div>
             </section>
         </>
-    )
-}
+    );
+};
 
 export default Home;

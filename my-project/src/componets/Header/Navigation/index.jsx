@@ -1,6 +1,6 @@
-import Button from '@mui/material/Button';
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import { BsMenuButtonWideFill } from "react-icons/bs";
 import { TfiAngleDown } from "react-icons/tfi";
 import { IoHomeOutline, IoRocketOutline, IoChevronDownOutline } from "react-icons/io5";
@@ -10,30 +10,16 @@ import { MyContext } from '../../../App';
 import { fetchDataFromApi } from '../../../utils/api';
 
 
-const createSlug = (name) => {
-    return name.toLowerCase()
-        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
-        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
-        .replace(/ì|í|ị|ỉ|ĩ/g, "i")
-        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
-        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
-        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
-        .replace(/đ/g, "d")
-        .replace(/\s+/g, '-')
-        .replace(/&/g, 'va');
-};
-
-
 const Navigation = () => {
-    const context = useContext(MyContext);
+    const { applyFilterAndNavigate, ...context } = useContext(MyContext);
     const [navCategories, setNavCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isOpenCategoryMenu, setIsOpenCategoryMenu] = useState(false);
 
-    const openCategoryMenu = () => {
-        setIsOpenCategoryMenu(true);
+    const handleCategoryClick = (categoryId) => {
+        // Gọi hàm từ context để cập nhật bộ lọc và điều hướng
+        applyFilterAndNavigate('category', categoryId);
     };
-
     useEffect(() => {
         const fetchNavCategories = async () => {
             setIsLoading(true);
@@ -128,36 +114,32 @@ const Navigation = () => {
 
                             {!isLoading && navCategories.map(category => {
                                 const isParent = category.children && category.children.length > 0;
-                                const categorySlug = createSlug(category.name);
 
                                 return (
                                     <li key={category._id} className="list-none relative">
                                         <Button
-                                            component={isParent ? 'div' : Link}
-                                            to={isParent ? undefined : `/product-list`}
-                                            // to={isParent ? undefined : `/category/${categorySlug}`}
+                                            // Nếu là danh mục cha, nó chỉ là một div. Nếu không, nó sẽ có sự kiện onClick
+                                            component={isParent ? 'div' : Button}
+                                            onClick={isParent ? undefined : () => handleCategoryClick(category._id)}
                                             sx={navButtonStyle}
                                         >
                                             {category.name}
                                             {isParent && <IoChevronDownOutline className="chevron-icon" />}
                                         </Button>
 
-                                        {/* Nếu có danh mục con, tạo submenu */}
                                         {isParent && (
                                             <div className="submenu absolute top-[100%] left-0 min-w-[240px] bg-white shadow-md">
                                                 <ul>
                                                     {category.children.map(child => {
-                                                        // hiển thị các danh mục con được publish
                                                         if (child.isPublished === false) return null;
-                                                        const childSlug = createSlug(child.name);
                                                         return (
                                                             <li key={child._id}>
-                                                                <Button component={Link} to={`/product-list`} sx={subMenuButtonStyle}>
+                                                                <Button
+                                                                    onClick={() => handleCategoryClick(child._id)}
+                                                                    sx={subMenuButtonStyle}
+                                                                >
                                                                     {child.name}
                                                                 </Button>
-                                                                {/* <Button component={Link} to={`/category/${childSlug}`} sx={subMenuButtonStyle}>
-                                                                    {child.name}
-                                                                </Button> */}
                                                             </li>
                                                         )
                                                     })}
@@ -169,7 +151,6 @@ const Navigation = () => {
                             })}
                         </ul>
                     </div>
-                    {/* --------------------------------------------------- */}
 
                     <div className="h-8 border-l-2 border-gray-200"></div>
 

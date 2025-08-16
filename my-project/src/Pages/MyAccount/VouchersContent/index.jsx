@@ -104,7 +104,7 @@ const VouchersContent = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-gray-800">Ví Voucher</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Ví Voucher(Chưa phát triển)</h2>
                 <p className="text-gray-500 mt-1">Săn và lưu các mã giảm giá tốt nhất cho lần mua sắm tiếp theo.</p>
             </div>
 

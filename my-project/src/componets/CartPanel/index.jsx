@@ -11,10 +11,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 // ĐỔI TÊN COMPONENT ĐỂ KHỚP VỚI TÊN FILE
 const Cart = () => {
-    // LẤY DỮ LIỆU VÀ CÁC HÀM TỪ CONTEXT
     const context = useContext(MyContext);
-
-    // TÍNH TOÁN TỔNG TIỀN TỪ DỮ LIỆU CONTEXT
     const subtotal = context.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     // GIAO DIỆN KHI GIỎ HÀNG TRỐNG
@@ -57,19 +54,17 @@ const Cart = () => {
 
                         <div className="flex-1 flex flex-col">
                             <div className='flex justify-between items-start'>
-                                {/* --- VÀ THAY ĐỔI Ở ĐÂY --- */}
                                 <Link
                                     component={RouterLink}
                                     to={`/product-detail/${item._id}`}
                                     onClick={context.toggleCartPanel(false)}
                                     className="font-semibold text-sm text-gray-800 hover:text-blue-600 line-clamp-2 pr-2"
-                                    // Bỏ underline và đặt màu mặc định
                                     underline="hover"
                                     color="inherit"
                                 >
                                     {item.name}
                                 </Link>
-                                <button onClick={() => context.removeFromCart(item._id)} /* ... */>
+                                <button onClick={() => context.removeFromCart(item.cartItemId)}>
                                     <MdDelete className="text-xl" />
                                 </button>
                             </div>
@@ -78,11 +73,11 @@ const Cart = () => {
                             <div className="flex items-center justify-between mt-auto pt-2">
                                 {/* KẾT NỐI CÁC HÀM CẬP NHẬT SỐ LƯỢNG */}
                                 <div className="flex items-center border border-gray-200 rounded-full">
-                                    <IconButton size="small" onClick={() => context.updateQuantity(item._id, item.quantity - 1)} className="!text-gray-500">
+                                    <IconButton size="small" onClick={() => context.updateQuantity(item.cartItemId, item.quantity - 1)} className="!text-gray-500">
                                         <FiMinus className="w-3.5 h-3.5" />
                                     </IconButton>
                                     <span className="px-3 text-sm font-bold">{item.quantity}</span>
-                                    <IconButton size="small" onClick={() => context.updateQuantity(item._id, item.quantity + 1)} className="!text-gray-500">
+                                    <IconButton size="small" onClick={() => context.updateQuantity(item.cartItemId, item.quantity + 1)} className="!text-gray-500">
                                         <FiPlus className="w-3.5 h-3.5" />
                                     </IconButton>
                                 </div>

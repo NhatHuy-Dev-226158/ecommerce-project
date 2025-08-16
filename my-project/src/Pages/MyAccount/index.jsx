@@ -92,7 +92,7 @@ const MyAccountPage = () => {
     const activeTab = searchParams.get('tab') || 'dashboard';
     const [anchorEl, setAnchorEl] = React.useState(null);
     const context = useContext(MyContext);
-    const history = useNavigate();
+    const navigate = useNavigate();
     const [previews, setPreviews] = useState([]);
     const [uploading, setUploading] = useState(false)
     // Hàm để thay đổi tab VÀ cập nhật URL
@@ -111,11 +111,11 @@ const MyAccountPage = () => {
     useEffect(() => {
         const token = localStorage.getItem('accesstoken');
         if (token == null) {
-            history('/login');
+            navigate('/login');
             context.openAlerBox("error", "Bạn cần đăng nhập để truy cập trang này.");
         }
 
-    }, [context?.isLogin, history])
+    }, [context?.isLogin, navigate])
 
     if (context.isLogin === false) {
         return null;
@@ -173,7 +173,7 @@ const MyAccountPage = () => {
         { id: 'vouchers', title: 'Ví voucher', icon: <FiTag /> },
         { kind: 'divider' },
         { id: 'settings', title: 'Cài đặt tài khoản', icon: <FiSettings /> },
-        { id: 'logout', title: 'Đăng xuất', icon: <FiLogOut />, isExternalLink: true, href: '/logout' },
+        // { id: 'logout', title: 'Đăng xuất', icon: <FiLogOut />, isExternalLink: true, href: '/logout' },
     ];
 
     const renderContent = () => {

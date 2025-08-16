@@ -34,7 +34,7 @@ const ProductItem = ({ product }) => {
     if (!product) {
         return null;
     }
-    const img1 = product.images?.[0] || '/placeholder.png';
+    const img1 = product.images?.[0] || '/720x840.png';
     const img2 = product.images?.[1] || img1;
 
     return (

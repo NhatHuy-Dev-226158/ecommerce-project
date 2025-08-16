@@ -26,6 +26,8 @@ import EditBannerPage from './Pages/Banner/EditBannerPage';
 import ProductDetailPage from './Pages/Products/ProductDetailPage';
 import EditProductPage from './Pages/Products/EditProductPage';
 import EditUserPage from './Pages/Users/EditUserPage';
+import BlogFormPage from './Pages/Blog/BlogFormPage';
+import BlogListPage from './Pages/Blog/BlogListPage';
 
 const MyContext = createContext();
 
@@ -183,8 +185,20 @@ function App() {
           element: <OrderListPage />,
         },
         {
-          path: "orders-Detail",
+          path: "/admin/orders/:orderId",
           element: <OrderDetailPage />,
+        },
+        {
+          path: "/admin/blogs",
+          element: <BlogListPage />,
+        },
+        {
+          path: "/admin/blogs/new",
+          element: <BlogFormPage />,
+        },
+        {
+          path: "/admin/blogs/edit/:id",
+          element: <BlogFormPage />,
         },
         {
           path: "profile",

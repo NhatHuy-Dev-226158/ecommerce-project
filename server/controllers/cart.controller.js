@@ -1,170 +1,126 @@
-import CartProductModel from "../models/cartproduct.model.js";
-import UserModel from "../models/user.model.js";
+// File: controllers/cart.controller.js
 
-// HÀM: Thêm sản phẩm vào giỏ hàng
-export const addToCartItemController = async (request, response) => {
+import CartModel from "../models/cart.model.js";
+
+// === LẤY TẤT CẢ SẢN PHẨM TRONG GIỎ HÀNG CỦA NGƯỜI DÙNG ===
+export const getCartController = async (request, response) => {
     try {
         const userId = request.userId;
-        const { productId } = request.body;
+        const cartItems = await CartModel.find({ userId: userId }).sort({ createdAt: -1 });
 
-        if (!productId) {
-            return response.status(400).json({
-                message: "Vui lòng cung cấp ID sản phẩm",
-                error: true,
-                success: false,
-            });
-        }
+        return response.status(200).json({
+            success: true,
+            data: cartItems,
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
+};
+
+// === THÊM SẢN PHẨM VÀO GIỎ HÀNG (HOẶC CẬP NHẬT SỐ LƯỢNG) ===
+export const addToCartController = async (request, response) => {
+    try {
+        const userId = request.userId;
+        const { productId, quantity, productTitle, image, price } = request.body;
 
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng của người dùng chưa
-        const checkItemCart = await CartProductModel.findOne({
-            userId: userId,
-            productId: productId
-        });
+        const existingItem = await CartModel.findOne({ userId, productId });
 
-        if (checkItemCart) {
-            return response.status(400).json({
-                message: "Sản phẩm đã có trong giỏ hàng",
+        if (existingItem) {
+            // Nếu đã tồn tại, cập nhật số lượng
+            existingItem.quantity += quantity;
+            await existingItem.save();
+            return response.status(200).json({
+                success: true,
+                message: "Số lượng sản phẩm đã được cập nhật trong giỏ hàng.",
+                data: existingItem,
+            });
+        } else {
+            // Nếu chưa tồn tại, tạo mới
+            const newItem = new CartModel({
+                userId,
+                productId,
+                quantity,
+                productTitle,
+                image,
+                price
+            });
+            await newItem.save();
+            return response.status(201).json({
+                success: true,
+                message: "Sản phẩm đã được thêm vào giỏ hàng.",
+                data: newItem,
             });
         }
-
-        // Tạo một mục giỏ hàng mới
-        const cartItem = new CartProductModel({
-            quantity: 1,
-            userId: userId,
-            productId: productId
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
         });
+    }
+};
 
-        const savedCartItem = await cartItem.save();
 
-        // Cập nhật giỏ hàng của người dùng để thêm mục mới này
-        await UserModel.updateOne(
-            { _id: userId },
-            {
-                $push: { shopping_cart: savedCartItem._id }
-            }
-        );
+// === CẬP NHẬT SỐ LƯỢNG SẢN PHẨM ===
+export const updateQuantityController = async (request, response) => {
+    try {
+        const { cartItemId, newQuantity } = request.body;
+        const userId = request.userId;
 
-        return response.json({
-            data: savedCartItem,
-            message: "Thêm sản phẩm thành công",
-            error: false,
+        const cartItem = await CartModel.findOne({ _id: cartItemId, userId: userId });
+
+        if (!cartItem) {
+            return response.status(404).json({ message: "Không tìm thấy sản phẩm trong giỏ hàng." });
+        }
+
+        cartItem.quantity = newQuantity;
+        await cartItem.save();
+
+        return response.status(200).json({
             success: true,
+            message: "Cập nhật số lượng thành công.",
+            data: cartItem
         });
 
     } catch (error) {
         return response.status(500).json({
             message: error.message || error,
             error: true,
-            success: false,
+            success: false
         });
     }
 };
 
-// HÀM: Lấy tất cả sản phẩm trong giỏ hàng của người dùng
-export const getCartItemController = async (request, response) => {
+
+// === XÓA SẢN PHẨM KHỎI GIỎ HÀNG ===
+export const deleteFromCartController = async (request, response) => {
     try {
+        const cartItemId = request.params.id; // Lấy _id của mục trong giỏ hàng
         const userId = request.userId;
-        const cartItem = await CartProductModel.find({
-            userId: userId
-        }).populate('productId');
 
-        return response.json({
-            data: cartItem,
-            error: false,
-            success: true,
-        });
+        const deletedItem = await CartModel.findOneAndDelete({ _id: cartItemId, userId: userId });
 
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false,
-        });
-    }
-};
-
-// HÀM: Cập nhật số lượng sản phẩm trong giỏ hàng
-export const updateCartItemQtyController = async (request, response) => {
-    try {
-        const userId = request.userId;
-        const { _id, qty } = request.body;
-
-        if (!_id || !qty) {
-            return response.status(400).json({
-                message: "Vui lòng cung cấp _id và qty",
-            });
-        }
-
-        // Cập nhật số lượng của mục trong giỏ hàng
-        const updateCartItem = await CartProductModel.updateOne(
-            {
-                _id: _id,
-                userId: userId
-            }, {
-            quantity: qty
-        });
-
-        return response.json({
-            message: "Cập nhật giỏ hàng thành công",
-            success: true,
-            error: false,
-            data: updateCartItem
-        });
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false,
-        });
-    }
-};
-
-// HÀM: Xóa sản phẩm khỏi giỏ hàng 
-export const deleteCartItemQtyController = async (request, response) => {
-    try {
-        const userId = request.userId;
-        const { _id } = request.body;
-
-        if (!_id) {
-            return response.status(400).json({
-                message: "Vui lòng cung cấp _id của mục cần xóa",
-                error: true,
-                success: false
-            });
-        }
-
-        //Xóa mục khỏi collection cartproducts.
-        const deleteCartItem = await CartProductModel.deleteOne({ _id: _id, userId: userId });
-
-        // Nếu ID sai hoặc không thuộc về user báo lỗi.
-        if (deleteCartItem.deletedCount === 0) {
+        if (!deletedItem) {
             return response.status(404).json({
-                message: "Không tìm thấy mục trong giỏ hàng để xóa",
-                error: true,
-                success: false,
+                message: "Không tìm thấy sản phẩm này trong giỏ hàng của bạn."
             });
         }
 
-        //  Xóa ObjectId tương ứng khỏi mảng shopping_cart của người dùng.
-        await UserModel.updateOne(
-            { _id: userId },
-            {
-                $pull: { shopping_cart: _id }
-            }
-        );
-
-        return response.json({
-            message: "Xóa sản phẩm thành công",
-            error: false,
+        return response.status(200).json({
             success: true,
-            data: deleteCartItem
+            message: "Đã xóa sản phẩm khỏi giỏ hàng."
         });
 
     } catch (error) {
         return response.status(500).json({
             message: error.message || error,
             error: true,
-            success: false,
+            success: false
         });
     }
 };

@@ -72,38 +72,114 @@ export async function createProduct(request, response) {
     }
 }
 
+// export async function getAllProduct(request, response) {
+//     try {
+//         let filter = {};
+
+//         if (request.query.categories) {
+//             filter.category = request.query.categories.split(',');
+//         }
+
+//         if (request.query.search) {
+//             filter.name = { $regex: request.query.search, $options: 'i' }; // 'i' để không phân biệt hoa thường
+//         }
+
+//         const page = parseInt(request.query.page, 10) || 1;
+//         const limit = parseInt(request.query.limit, 10) || 10;
+//         const skip = (page - 1) * limit;
+
+//         const products = await ProductModel.find(filter)
+//             .populate('category')
+//             .skip(skip)
+//             .limit(limit)
+//             .sort({ createdAt: -1 });
+//         const totalProducts = await ProductModel.countDocuments(filter);
+
+//         return response.status(200).json({
+//             success: true,
+//             products: products,
+//             totalPages: Math.ceil(totalProducts / limit),
+//             currentPage: page,
+//             totalCount: totalProducts
+//         });
+
+//     } catch (error) {
+//         return response.status(500).json({ message: error.message, error: true });
+//     }
+// }
+
 export async function getAllProduct(request, response) {
     try {
-        let filter = {};
+        const {
+            page = 1,
+            limit = 15,
+            categories,
+            search,
+            minPrice,  // Tham số mới
+            maxPrice,  // Tham số mới
+            brand,     // Tham số mới
+            sort       // Tham số mới
+        } = request.query;
 
-        // Lọc theo danh mục (có thể truyền nhiều ID, ví dụ: /api/products?categories=id1,id2)
-        if (request.query.categories) {
-            filter.category = request.query.categories.split(',');
+        // --- BỘ LỌC ĐỘNG ---
+        const filter = {};
+
+        // 1. Lọc theo danh mục
+        if (categories) {
+            filter.category = { $in: categories.split(',') };
         }
 
-        // Tìm kiếm theo tên (ví dụ: /api/products?search=thit)
-        if (request.query.search) {
-            filter.name = { $regex: request.query.search, $options: 'i' }; // 'i' để không phân biệt hoa thường
+        // 2. Tìm kiếm theo tên
+        if (search) {
+            filter.name = { $regex: search, $options: 'i' };
         }
 
-        // Phân trang
-        const page = parseInt(request.query.page, 10) || 1;
-        const limit = parseInt(request.query.limit, 10) || 10;
-        const skip = (page - 1) * limit;
+        // 3. LỌC THEO KHOẢNG GIÁ (PHẦN QUAN TRỌNG)
+        if (minPrice || maxPrice) {
+            filter.price = {};
+            if (minPrice) {
+                filter.price.$gte = Number(minPrice); // $gte = lớn hơn hoặc bằng
+            }
+            if (maxPrice) {
+                filter.price.$lte = Number(maxPrice); // $lte = nhỏ hơn hoặc bằng
+            }
+        }
+
+        // 4. Lọc theo thương hiệu
+        if (brand) {
+            filter.brand = { $in: brand.split(',') };
+        }
+
+
+        // --- SẮP XẾP ---
+        let sortOption = { createdAt: -1 }; // Mặc định: Mới nhất
+        if (sort) {
+            switch (sort) {
+                case 'price_asc': sortOption = { price: 1 }; break;
+                case 'price_desc': sortOption = { price: -1 }; break;
+                case 'name_asc': sortOption = { name: 1 }; break;
+                case 'name_desc': sortOption = { name: -1 }; break;
+                default: sortOption = { createdAt: -1 };
+            }
+        }
+
+        // --- TRUY VẤN DATABASE ---
+        const skip = (Number(page) - 1) * Number(limit);
 
         const products = await ProductModel.find(filter)
             .populate('category')
+            .sort(sortOption)
             .skip(skip)
-            .limit(limit)
-            .sort({ createdAt: -1 }); // Sắp xếp mới nhất lên đầu
+            .limit(Number(limit));
 
         const totalProducts = await ProductModel.countDocuments(filter);
 
+        // Trả về theo cấu trúc cũ của bạn
         return response.status(200).json({
             success: true,
             products: products,
-            totalPages: Math.ceil(totalProducts / limit),
-            currentPage: page,
+            totalPages: Math.ceil(totalProducts / Number(limit)),
+            currentPage: Number(page),
             totalCount: totalProducts
         });
 
@@ -111,6 +187,7 @@ export async function getAllProduct(request, response) {
         return response.status(500).json({ message: error.message, error: true });
     }
 }
+
 
 export async function getProductCount(request, response) {
     try {

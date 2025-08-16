@@ -23,7 +23,7 @@ export const addToMyListController = async (request, response) => {
 
         if (item) {
             return response.status(400).json({
-                message: "Item already in my list"
+                message: "Sản phẩm đã có trong danh sách yêu thích."
             });
         }
 
@@ -40,12 +40,13 @@ export const addToMyListController = async (request, response) => {
             userId
         });
 
-        const save = await mylist.save();
+        const savedItem = await mylist.save();
 
         return response.status(200).json({
             error: false,
             success: true,
-            message: "The product saved in the my list"
+            message: "The product saved in the my list",
+            data: savedItem
         });
 
     } catch (error) {

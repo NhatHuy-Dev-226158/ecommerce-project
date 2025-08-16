@@ -1,74 +1,106 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import SideBar from '../../componets/Sidebar';
-import Typography from '@mui/material/Typography';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
+import { Typography, Breadcrumbs, Link, Button, Menu, MenuItem, Pagination, CircularProgress, Box } from '@mui/material';
 import ProductItem from '../../componets/ProductItem';
 import ViewProductItemList from '../../componets/ViewProductItemList';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import { TfiMenuAlt } from "react-icons/tfi";
 import { IoGrid } from "react-icons/io5";
 import { MdOutlineTune } from "react-icons/md";
-import Pagination from '@mui/material/Pagination';
 import { MyContext } from '../../App';
 import { fetchDataFromApi } from '../../utils/api';
-import { CircularProgress, Box } from '@mui/material';
+import toast from 'react-hot-toast';
 
 const ProductList = () => {
-    const { categorySlug } = useParams();
-    const context = useContext(MyContext);
+    // === STATE QUẢN LÝ GIAO DIỆN VÀ DỮ LIỆU ===
+    const { productFilters } = useContext(MyContext);
 
-    // State cho dữ liệu và giao diện
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
     const [itemView, setItemView] = useState('grid');
-
-    // State cho bộ lọc
     const [anchorEl, setAnchorEl] = useState(null);
-    const [sortBy, setSortBy] = useState('default');
     const open = Boolean(anchorEl);
 
-    // Logic gọi API
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
-            try {
-                // TODO: Backend cần hỗ trợ lọc theo category slug và sắp xếp
-                const result = await fetchDataFromApi(`/api/products/?page=${page}&limit=15&sort=${sortBy}`);
-                if (result.success) {
-                    setProducts(result.products);
-                    setTotalPages(result.totalPages);
-                    setTotalProducts(result.totalCount);
-                } else {
-                    context.openAlerBox("error", "Không thể tải danh sách sản phẩm.");
-                }
-            } catch (error) {
-                context.openAlerBox("error", "Lỗi khi tải sản phẩm.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProducts();
-    }, [page, categorySlug, sortBy, context]);
+    // State này giờ đây chỉ có một nguồn duy nhất là `productFilters` từ Context
+    const [filters, setFilters] = useState({
+        search: '',
+        category: productFilters.category || '',
+        brand: productFilters.brand || [],
+        price: productFilters.price || [0, 5000000],
+        sort: 'createdAt_desc'
+    });
 
+    // === LOGIC ĐÃ ĐƯỢC TỐI ƯU HÓA ===
+    // 1. useEffect này sẽ đồng bộ state `filters` nội bộ khi `productFilters` từ context thay đổi
+    useEffect(() => {
+        setFilters(prev => ({
+            ...prev,
+            category: productFilters.category,
+            brand: productFilters.brand,
+            price: productFilters.price,
+        }));
+    }, [productFilters]);
+
+    // 2. Hàm gọi API, được kích hoạt bởi sự thay đổi của `filters` hoặc `page`
+    const fetchProducts = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                page: page,
+                limit: 15,
+                sort: filters.sort,
+                minPrice: filters.price[0],
+                maxPrice: filters.price[1],
+            });
+            if (filters.search) params.append('search', filters.search);
+            if (filters.category) params.append('categories', filters.category);
+            if (filters.brand.length > 0) params.append('brand', filters.brand.join(','));
+
+            const result = await fetchDataFromApi(`/api/products?${params.toString()}`);
+
+            if (result.success && Array.isArray(result.products)) {
+                setProducts(result.products);
+                setTotalPages(result.totalPages);
+                setTotalProducts(result.totalCount);
+            } else {
+                setProducts([]);
+                if (!result.success) {
+                    throw new Error(result.message || "API trả về dữ liệu không hợp lệ.");
+                }
+            }
+        } catch (error) {
+            toast.error(`Lỗi khi tải sản phẩm: ${error.message}`);
+            setProducts([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [page, filters]);
+
+    // 3. useEffect chính để kích hoạt việc gọi API
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    // === CÁC HÀM XỬ LÝ SỰ KIỆN ===
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+        setPage(1);
+    };
+
+    const handlePageChange = (event, value) => setPage(value);
     const handleClick = (event) => setAnchorEl(event.currentTarget);
     const handleClose = () => setAnchorEl(null);
-    const handlePageChange = (event, value) => setPage(value);
-
     const handleSort = (sortOption) => {
-        setSortBy(sortOption);
-        setPage(1);
+        handleFilterChange('sort', sortOption);
         handleClose();
     };
 
+    // === GIAO DIỆN JSX ===
     return (
-        <section className='py-5 pb-8'>
+        <section className='py-5 pb-8 bg-gray-50'>
             <div className="container">
                 <Breadcrumbs aria-label="breadcrumb">
                     <Link underline="hover" color="inherit" component={RouterLink} to="/" className='link transition'>
@@ -82,7 +114,7 @@ const ProductList = () => {
             <div className="bg-white p-2 mt-4">
                 <div className="container flex flex-col md:flex-row gap-6">
                     <div className="sidebarWrapper w-full md:w-[20%] h-full bg-white">
-                        <SideBar />
+                        <SideBar filters={filters} onFilterChange={handleFilterChange} />
                     </div>
 
                     <div className="right-Content w-full md:w-[80%] py-3">
@@ -111,11 +143,11 @@ const ProductList = () => {
                                     </span>
                                 </Button>
                                 <Menu id="basic-menu" anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <MenuItem onClick={() => handleSort('sales-desc')} className='!text-[13px] !text-[#000] !capitalize'>Bán chạy nhất</MenuItem>
+                                    <MenuItem onClick={() => handleSort('createdAt_desc')} className='!text-[13px] !text-[#000] !capitalize'>Mới nhất</MenuItem>
                                     <MenuItem onClick={() => handleSort('name-asc')} className='!text-[13px] !text-[#000] !capitalize'>Tên: A-Z</MenuItem>
                                     <MenuItem onClick={() => handleSort('name-desc')} className='!text-[13px] !text-[#000] !capitalize'>Tên: Z-A</MenuItem>
-                                    <MenuItem onClick={() => handleSort('price-asc')} className='!text-[13px] !text-[#000] !capitalize'>Giá: Thấp đến Cao</MenuItem>
-                                    <MenuItem onClick={() => handleSort('price-desc')} className='!text-[13px] !text-[#000] !capitalize'>Giá: Cao đến Thấp</MenuItem>
+                                    <MenuItem onClick={() => handleSort('price_asc')} className='!text-[13px] !text-[#000] !capitalize'>Giá: Thấp đến Cao</MenuItem>
+                                    <MenuItem onClick={() => handleSort('price_desc')} className='!text-[13px] !text-[#000] !capitalize'>Giá: Cao đến Thấp</MenuItem>
                                 </Menu>
                             </div>
                         </div>

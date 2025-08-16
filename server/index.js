@@ -13,6 +13,10 @@ import myListRouter from './routes/mylist.route.js';
 import addressRouter from './routes/address.route.js';
 import bannerRouter from './routes/banner.router.js';
 import productRouter from './routes/product.route.js';
+import orderRouter from './routes/order.route.js';
+import adminOrderRouter from './routes/adminOrder.route.js';
+import reviewRouter from './routes/review.route.js';
+import blogRouter from './routes/blog.route.js';
 
 const app = express();
 app.use(cors());
@@ -40,7 +44,10 @@ app.use('/api/cart', cartRouter);
 app.use("/api/mylist", myListRouter);
 app.use("/api/address", addressRouter);
 app.use('/api/banners', bannerRouter);
-
+app.use('/api/orders', orderRouter);
+app.use('/api/admin/orders', adminOrderRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/blogs', blogRouter);
 
 connectDB().then(() => {
     app.listen(process.env.PORT, () => {

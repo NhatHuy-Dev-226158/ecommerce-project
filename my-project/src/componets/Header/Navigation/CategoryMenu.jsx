@@ -1,5 +1,4 @@
-import { React, useEffect, useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -14,47 +13,30 @@ import { CircularProgress } from '@mui/material';
 import { MyContext } from '../../../App';
 import { fetchDataFromApi } from '../../../utils/api';
 
-// === COMPONENT CON ĐỆ QUY (ĐÃ CẬP NHẬT) ===
-// Component này sẽ nhận dữ liệu từ API
+// === COMPONENT CON ===
 const RecursiveMenuItem = ({ item, level = 0, onClose }) => {
+    const { applyFilterAndNavigate } = useContext(MyContext);
     const [open, setOpen] = useState(false);
     const isParent = item.children && item.children.length > 0;
 
-    const handleClick = () => {
+    const handleParentClick = () => {
         setOpen(!open);
     };
 
-    // Component sẽ là Link nếu có đường dẫn, ngược lại là div
-    const Component = isParent ? 'div' : Link;
-
-    // Tạo slug từ tên danh mục để làm URL
-    // Ví dụ: "Thịt, Hải Sản" -> "/category/thit-hai-san"
-    const slug = item.name.toLowerCase()
-        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
-        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
-        .replace(/ì|í|ị|ỉ|ĩ/g, "i")
-        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
-        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
-        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
-        .replace(/đ/g, "d")
-        .replace(/\s+/g, '-') // Thay thế khoảng trắng bằng gạch nối
-        .replace(/&/g, 'va'); // Xử lý ký tự '&'
-
-    const componentProps = isParent ? {} : {
-        to: `/category/${slug}`,
-        onClick: onClose // Khi nhấn vào link, đóng menu
+    // Khi click vào danh mục có thể lọc
+    const handleFilterClick = () => {
+        applyFilterAndNavigate('category', item._id);
+        onClose();
     };
 
     return (
         <>
             <ListItemButton
-                component={Component}
-                {...componentProps}
-                onClick={isParent ? handleClick : undefined}
-                sx={{ pl: (level + 1) * 2, py: 1.2 }}
+                onClick={isParent ? handleParentClick : handleFilterClick}
+                sx={{ pl: (level + 1) * 2, py: 1.2, cursor: 'pointer' }}
             >
                 <ListItemText
-                    primary={item.name} // Sử dụng `item.name` từ API
+                    primary={item.name}
                     primaryTypographyProps={{ fontSize: '14px', fontWeight: '500' }}
                 />
                 {isParent ? (open ? <ExpandLess /> : <ExpandMore />) : null}
@@ -95,18 +77,15 @@ const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
                             return cat;
                         });
                 };
-
                 const publishedCategories = filterPublished(result.data);
                 setCategoryData(publishedCategories);
-
             } else {
                 context.openAlerBox("error", "Không thể tải danh mục sản phẩm.");
             }
             setIsLoading(false);
         };
-
         fetchCategories();
-    }, []);
+    }, [context]); // Thêm context vào dependencies
 
     const toggleDrawer = (newOpen) => () => {
         setIsOpenCategoryMenu(newOpen);
@@ -114,26 +93,16 @@ const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
 
     const DrawerList = (
         <Box sx={{ width: 300 }} role="presentation">
-            <Box sx={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                p: '12px 16px', borderBottom: '1px solid #eee'
-            }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: '12px 16px', borderBottom: '1px solid #eee' }}>
                 <span style={{ fontSize: '1rem', fontWeight: 600 }}>Tất Cả Danh Mục</span>
-                <IoCloseCircleOutline
-                    onClick={toggleDrawer(false)}
-                    style={{ cursor: 'pointer', fontSize: '1.5rem', color: '#888' }}
-                />
+                <IoCloseCircleOutline onClick={toggleDrawer(false)} style={{ cursor: 'pointer', fontSize: '1.5rem', color: '#888' }} />
             </Box>
-
             <Divider />
-
             {isLoading ? (
-                // Hiển thị loading trong khi chờ API
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                     <CircularProgress />
                 </Box>
             ) : (
-                // Hiển thị danh sách sau khi có dữ liệu
                 <List component="nav" sx={{ p: 0 }}>
                     {categoryData.map(item => (
                         <RecursiveMenuItem key={item._id} item={item} level={0} onClose={toggleDrawer(false)} />

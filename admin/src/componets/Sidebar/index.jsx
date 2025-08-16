@@ -203,6 +203,14 @@ const Sidebar = () => {
                             </Button>
                         </Link>
                     </li>
+                    <li>
+                        <Link to='/admin/blogs'>
+                            <Button className='w-full !capitalize !items-center !justify-start gap-3 !text-[14px] !text-[rgba(0,0,0,0.8)] !font-[500] !py-2 hover:!bg-[#ebf2fe] group'>
+                                <IoBagCheckOutline className='text-[20px] group-hover:text-indigo-600' />
+                                <span>Quản lý Blog</span>
+                            </Button>
+                        </Link>
+                    </li>
                     <div className='py-2'>
                         <hr />
                     </div>

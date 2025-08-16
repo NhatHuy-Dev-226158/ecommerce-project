@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+    adminLoginController,
     changePassword,
     forgotPasswordController,
     getAllUsers,
@@ -19,11 +20,13 @@ import {
 } from '../controllers/user.controller.js';
 import auth from '../middleware/auth.js';
 import upload from '../middleware/multer.js';
+import isAdmin from '../middleware/isAdmin.js';
 
 const userRouter = Router();
 userRouter.post('/register', registerUserController);
 userRouter.post('/verify', verifyEmailController);
 userRouter.post('/login', loginUserController);
+userRouter.post('/admin-login', adminLoginController);
 userRouter.post('/logout', auth, logoutUserController);
 userRouter.put('/user-avatar', auth, upload.array('avatar'), userAvatarController);
 userRouter.delete('/removeImage', auth, removeImageFromCloudinary);

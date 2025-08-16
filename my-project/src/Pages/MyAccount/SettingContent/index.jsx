@@ -66,7 +66,7 @@ const SettingsContent = () => {
         <div className="space-y-8">
             {/* Header */}
             <div>
-                <h2 className="text-2xl font-bold text-gray-800">Cài đặt tài khoản</h2>
+                <h2 className="text-2xl font-bold text-gray-800">**Chức năng chưa phát triển**</h2>
                 <p className="text-gray-500 mt-1">Quản lý thông báo, dữ liệu và các tùy chọn khác.</p>
             </div>
 

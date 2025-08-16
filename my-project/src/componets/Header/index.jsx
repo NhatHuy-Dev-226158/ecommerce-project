@@ -40,6 +40,9 @@ const Header = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
+    const wishlistCount = context.wishlist.length;
+    const cartCount = context.cart.reduce((total, item) => total + item.quantity, 0);
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -48,27 +51,10 @@ const Header = () => {
     };
 
     const handleLogout = async () => {
-        handleClose();
-        try {
-            const res = await postData('/api/user/logout', {});
-
-            if (res.success) {
-                context.openAlerBox("success", res.message || "Đăng xuất thành công!");
-            } else {
-                throw new Error(res.message || "Đăng xuất thất bại trên server.");
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-            context.openAlerBox("error", "Có lỗi xảy ra, đã đăng xuất cục bộ.");
-        } finally {
-            localStorage.removeItem("accesstoken");
-            localStorage.removeItem("refreshtoken");
-            context.setIsLogin(false);
-            context.setUserData(null);
-            navigate('/login');
-        }
+        handleClose(); // Đóng menu trước
+        await context.logout(); // Gọi hàm logout trung tâm từ App.jsx
+        navigate('/login'); // Điều hướng về trang đăng nhập
     };
-
 
     return (
         <header className='bg-white'>
@@ -237,7 +223,7 @@ const Header = () => {
                                 <Link to='/my-account?tab=wishlist'>
                                     <Tooltip title="Wishlist">
                                         <IconButton aria-label="wishlist">
-                                            <StyledBadge badgeContent={4} color="secondary">
+                                            <StyledBadge badgeContent={wishlistCount} color="error">
                                                 <LuHeartOff className='text-gray-600' />
                                             </StyledBadge>
                                         </IconButton>
@@ -247,7 +233,7 @@ const Header = () => {
                             <li>
                                 <Tooltip title="Cart">
                                     <IconButton aria-label="cart" onClick={() => context.setOpenCartPanel(true)}>
-                                        <StyledBadge badgeContent={4} color="secondary">
+                                        <StyledBadge badgeContent={cartCount} color="primary">
                                             <AiOutlineShoppingCart className='text-gray-600' />
                                         </StyledBadge>
                                     </IconButton>

@@ -20,7 +20,7 @@ export async function registerUserController(request, response) {
     try {
         let user;
 
-        const { name, email, password, mobile, birthday, gender } = request.body;
+        const { role, name, email, password, mobile, birthday, gender } = request.body;
         if (!name || !email || !password) {
             return response.status(400).json({
                 message: "Provide email, name, password",
@@ -49,6 +49,7 @@ export async function registerUserController(request, response) {
             mobile: mobile,
             birthday: birthday,
             gender: gender,
+            role: role,
             otp: verifyCode,
             otpExpires: Date.now() + 600000
         });
@@ -199,6 +200,65 @@ export async function loginUserController(request, response) {
             error: true,
             success: false
         })
+    }
+}
+
+export async function adminLoginController(request, response) {
+    try {
+        const { email, password } = request.body;
+
+        if (!email || !password) {
+            return response.status(400).json({ message: "Vui lòng cung cấp email và mật khẩu." });
+        }
+
+        const user = await UserModel.findOne({ email: email });
+
+        // 1. Kiểm tra email và mật khẩu
+        if (!user || !(await bcryptjs.compare(password, user.password))) {
+            return response.status(400).json({ message: "Email hoặc mật khẩu không hợp lệ." });
+        }
+
+        // 2. (QUAN TRỌNG) Kiểm tra vai trò
+        if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
+            return response.status(403).json({ // 403 Forbidden
+                message: "Truy cập bị từ chối. Bạn không có quyền đăng nhập vào trang quản trị.",
+                error: true,
+                success: false
+            });
+        }
+
+        // 3. Nếu mọi thứ hợp lệ, tạo token và trả về response
+        const accesstoken = generateAccessToken(user._id);
+        const refreshtoken = generateRefreshToken(user._id);
+
+        user.last_login_date = new Date();
+        await user.save();
+
+        const userToReturn = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+        };
+
+        return response.status(200).json({
+            message: "Đăng nhập quản trị thành công",
+            error: false,
+            success: true,
+            data: {
+                accesstoken: accesstoken,
+                refreshtoken: refreshtoken,
+                user: userToReturn
+            }
+        });
+
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
     }
 }
 

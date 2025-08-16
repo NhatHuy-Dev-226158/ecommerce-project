@@ -13,7 +13,7 @@ import {
 
 const bannerRouter = Router();
 
-bannerRouter.post('/upload', auth, upload.array('images'), uploadBannerImages); // Upload ảnh, key là 'images'
+bannerRouter.post('/upload', auth, upload.array('images'), uploadBannerImages);
 bannerRouter.post('/', auth, createBanner);
 bannerRouter.get('/', getAllBanners);
 bannerRouter.get('/:id', getBannerById);

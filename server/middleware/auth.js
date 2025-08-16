@@ -1,52 +1,37 @@
 import jwt from 'jsonwebtoken';
+import UserModel from '../models/user.model.js'; // Import UserModel
 
-
-
-const auth = (request, response, next) => {
+const auth = async (request, response, next) => { // Thêm async
     try {
-        const token = request.cookies.accessToken || request?.headers?.authorization?.split(" ")
-        [1];
+        const token = request.headers?.authorization?.split(" ")[1];
         if (!token) {
-            return response.status(401).json({
-                message: "A token is required for authentication.",
-                success: false
-            });
+            return response.status(401).json({ message: "Yêu cầu token để xác thực.", success: false });
         }
-        // console.log("SECRET KEY BEING USED IN AUTH:", process.env.SECRET_KEY_ACCESS_TOKEN);
+
         const decode = jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);
-
         if (!decode) {
-            return response.status(401).json({
-                message: "unauthorized access",
-                error: true,
-                success: false
-            })
+            return response.status(401).json({ message: "Token không hợp lệ.", error: true, success: false });
         }
 
-        request.userId = decode.id
+        // --- THAY ĐỔI QUAN TRỌNG ---
+        // Từ ID trong token, tìm người dùng trong database để lấy thông tin mới nhất
+        const user = await UserModel.findById(decode.id).select('-password');
+        if (!user) {
+            return response.status(401).json({ message: "Không tìm thấy người dùng.", error: true, success: false });
+        }
 
-        next()
+        // Gán toàn bộ đối tượng user (bao gồm cả role) vào request
+        request.user = user;
+        request.userId = user._id; // Giữ lại userId cho tương thích
+
+        next();
 
     } catch (error) {
-
-        // console.error('--- AUTH MIDDLEWARE FAILED ---');
-        // console.error('ERROR NAME:', error.name);
-        // console.error('ERROR MESSAGE:', error.message);
-        // console.error("ERROR IN AUTH MIDDLEWARE:", error.name, error.message);
         if (error.name === 'TokenExpiredError') {
-            return response.status(401).json({
-                message: "Token has expired.",
-                error: true,
-                success: false,
-                expired: true
-            });
+            return response.status(401).json({ message: "Token đã hết hạn.", error: true, success: false, expired: true });
         }
-        return response.status(401).json({
-            message: "Invalid Token.",
-            error: true,
-            success: false
-        });
+        return response.status(401).json({ message: "Token không hợp lệ hoặc lỗi xác thực.", error: true, success: false });
     }
-}
+};
 
 export default auth;
