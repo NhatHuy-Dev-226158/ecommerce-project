@@ -4,10 +4,10 @@ server/node_modules/
 admin/node_modules/
 
 # Bỏ qua các tệp biến môi trường nhạy cảm
-.env
-server/.env
-my-project/.env
-admin/.env
+# .env
+# server/.env
+# my-project/.env
+# admin/.env
 
 # Bỏ qua các thư mục build/dist của các dự án React/Vue/Angular
 my-project/dist/
