@@ -1,5 +1,3 @@
-
-
 const verificationEmail = (username, otp) => {
     return `
     <!DOCTYPE html>

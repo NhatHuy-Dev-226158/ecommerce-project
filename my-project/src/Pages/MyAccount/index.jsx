@@ -18,7 +18,7 @@ import { uploadImage } from '../../utils/api';
 
 
 
-// === COMPONENT CON CHO GIAO DIỆN (Định nghĩa trong cùng file) ===
+// === COMPONENT CON CHO GIAO DIỆN===
 
 const StatWidget = ({ icon, title, value, color }) => (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-200 transition-all duration-300">

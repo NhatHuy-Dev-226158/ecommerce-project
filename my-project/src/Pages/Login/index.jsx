@@ -9,7 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { IoIosEyeOff, IoIosEye } from "react-icons/io";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import { MyContext } from '../../App';
 import { useContext } from 'react';
 import { fetchDataFromApi, postData } from '../../utils/api';
@@ -83,24 +83,20 @@ const Login = () => {
             // Log ra toàn bộ response để kiểm tra
             console.log("LOGIN RESPONSE:", res);
 
-            if (res.success) { // Kiểm tra `res.success`
+            if (res.success) {
                 context.openAlerBox("success", res.message);
 
-                // --- SỬA LỖI Ở ĐÂY ---
-                // Đọc token trực tiếp từ `res`, không phải từ `res.data`
                 localStorage.setItem("accesstoken", res.accesstoken);
                 localStorage.setItem("refreshtoken", res.refreshtoken);
-                // -----------------------
 
                 setFormFields({ email: '', password: '' });
 
                 // Gọi logic xác thực ngay lập tức để lấy user data
-                // (Như chúng ta đã làm ở Admin)
                 fetchDataFromApi('/api/user/user-details').then(userRes => {
                     if (userRes.success) {
                         context.setUserData(userRes.data);
                         context.setIsLogin(true);
-                        history("/"); // Chỉ điều hướng sau khi đã có đầy đủ dữ liệu
+                        history("/");
                     } else {
                         throw new Error("Không thể lấy dữ liệu người dùng sau khi đăng nhập.");
                     }
@@ -108,7 +104,7 @@ const Login = () => {
 
             } else {
                 context.openAlerBox("error", res.message);
-                setIsLoading(false); // Tắt loading nếu thất bại
+                setIsLoading(false);
             }
         }).catch(error => {
             // Xử lý lỗi mạng hoặc các lỗi khác
@@ -214,7 +210,9 @@ const Login = () => {
                             </Button>
                         </motion.div>
 
-                        <motion.div variants={itemVariants} className="flex items-center my-6">
+                        {/*NÚT ĐĂNG NHẬP BẰNG GOOGLE */}
+
+                        {/* <motion.div variants={itemVariants} className="flex items-center my-6">
                             <div className="flex-grow border-t border-gray-300"></div>
                             <span className="flex-shrink mx-4 text-gray-500 text-sm">Hoặc</span>
                             <div className="flex-grow border-t border-gray-300"></div>
@@ -229,7 +227,7 @@ const Login = () => {
                                 <FcGoogle className='text-2xl' />
                                 <span className="font-medium">Tiếp tục với Google</span>
                             </Button>
-                        </motion.div>
+                        </motion.div> */}
 
                         <motion.p variants={itemVariants} className='text-sm text-center text-gray-600'>
                             Bạn chưa có tài khoản?{' '}

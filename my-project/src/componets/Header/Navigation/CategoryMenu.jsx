@@ -13,7 +13,7 @@ import { CircularProgress } from '@mui/material';
 import { MyContext } from '../../../App';
 import { fetchDataFromApi } from '../../../utils/api';
 
-// === COMPONENT CON ===
+// === COMPONENT CON ĐỆ QUY ===
 const RecursiveMenuItem = ({ item, level = 0, onClose }) => {
     const { applyFilterAndNavigate } = useContext(MyContext);
     const [open, setOpen] = useState(false);
@@ -23,7 +23,6 @@ const RecursiveMenuItem = ({ item, level = 0, onClose }) => {
         setOpen(!open);
     };
 
-    // Khi click vào danh mục có thể lọc
     const handleFilterClick = () => {
         applyFilterAndNavigate('category', item._id);
         onClose();
@@ -55,7 +54,6 @@ const RecursiveMenuItem = ({ item, level = 0, onClose }) => {
     );
 };
 
-
 // --- COMPONENT CHÍNH ---
 const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
     const context = useContext(MyContext);
@@ -85,7 +83,7 @@ const CategoryMenu = ({ isOpenCategoryMenu, setIsOpenCategoryMenu }) => {
             setIsLoading(false);
         };
         fetchCategories();
-    }, [context]); // Thêm context vào dependencies
+    }, [context]);
 
     const toggleDrawer = (newOpen) => () => {
         setIsOpenCategoryMenu(newOpen);

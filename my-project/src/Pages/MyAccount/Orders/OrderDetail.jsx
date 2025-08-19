@@ -10,7 +10,6 @@ import { fetchDataFromApi } from '../../../utils/api';
 const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
 const StatusBadge = ({ status }) => {
-    // ... (Có thể copy component này từ OrdersContent.js)
     const statusMapping = {
         'Pending': { text: 'Chờ xác nhận', style: 'bg-orange-100 text-orange-800' },
         'Processing': { text: 'Đang xử lý', style: 'bg-blue-100 text-blue-800' },

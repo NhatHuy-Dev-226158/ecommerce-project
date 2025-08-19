@@ -1,0 +1,114 @@
+[{
+  "_id": {
+    "$oid": "689dcb3ac3e24f4a156e5e1c"
+  },
+  "title": "Khuyến mãi Trung Thu 2025",
+  "subtitle": "Giảm giá đặc biệt cho các loại bánh trung thu",
+  "buttonText": "Khám phá ngay",
+  "link": "/danh-muc/banh-trung-thu",
+  "desktopImage": "https://images.pexels.com/photos/1055272/pexels-photo-1055272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  "mobileImage": "https://images.pexels.com/photos/1055271/pexels-photo-1055271.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-14T11:40:42.579Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-14T11:40:42.579Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "689dcd36c3e24f4a156e5e3d"
+  },
+  "title": "Khuyến mãi Trung Thu 2025",
+  "subtitle": "Giảm giá đặc biệt cho các loại bánh trung thu",
+  "buttonText": "Khám phá ngay",
+  "link": "/danh-muc/banh-trung-thu",
+  "desktopImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755176133/bye7kcmqjmidb0zgbfpx.jpg",
+  "mobileImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755176134/x7pifnerps2dlmgpxvlr.jpg",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-14T11:49:10.212Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-14T13:31:24.138Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "689de4412cf094f04a763cb7"
+  },
+  "title": "1111111111",
+  "subtitle": "111111111",
+  "buttonText": "1111111",
+  "link": "1111",
+  "desktopImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755178046/vhj3zeo1tye0emxzouwt.jpg",
+  "mobileImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755178048/bzm1ex1fwhnnugijpy00.jpg",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-14T13:27:29.064Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-14T13:27:29.064Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "689dedf822a1e6783d849835"
+  },
+  "title": "1",
+  "subtitle": "1",
+  "buttonText": "1",
+  "link": "1",
+  "desktopImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755180536/va1segbhh3crdo63iaaq.jpg",
+  "mobileImage": "",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-14T14:08:56.908Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-14T14:08:56.908Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "689dee1522a1e6783d849839"
+  },
+  "title": "2",
+  "subtitle": "2",
+  "buttonText": "2",
+  "link": "2",
+  "desktopImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755180564/jthds8gzxbsh0uauhk03.jpg",
+  "mobileImage": "",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-14T14:09:25.678Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-17T22:32:50.670Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a2817e49b3481423a7e097"
+  },
+  "title": "Nội dung Banner",
+  "subtitle": "",
+  "buttonText": "",
+  "link": "/danh-muc/banh-trung-thu",
+  "desktopImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755480446/pqa4znjbjjqdujehbcbq.png",
+  "mobileImage": "",
+  "isPublished": true,
+  "createdAt": {
+    "$date": "2025-08-18T01:27:26.638Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T01:27:41.883Z"
+  },
+  "__v": 0
+}]

@@ -9,7 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { IoIosEyeOff, IoIosEye } from "react-icons/io";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import { MyContext } from '../../App';
 import { postData } from '../../utils/api';
 
@@ -206,7 +206,9 @@ const Register = () => {
                             </Button>
                         </motion.div>
 
-                        <motion.div variants={itemVariants} className="flex items-center my-6">
+                        {/*NÚT ĐĂNG Ký BẰNG GOOGLE */}
+
+                        {/* <motion.div variants={itemVariants} className="flex items-center my-6">
                             <div className="flex-grow border-t border-gray-300"></div>
                             <span className="flex-shrink mx-4 text-gray-500 text-sm">Hoặc</span>
                             <div className="flex-grow border-t border-gray-300"></div>
@@ -221,7 +223,7 @@ const Register = () => {
                                 <FcGoogle className='text-2xl' />
                                 <span className="font-medium">Tiếp tục với Google</span>
                             </Button>
-                        </motion.div>
+                        </motion.div> */}
 
                         <motion.p variants={itemVariants} className='text-center text-sm text-gray-600'>
                             Bạn đã có tài khoản?{' '}

@@ -6,7 +6,7 @@ import { MyContext } from '../../../App';
 import { fetchDataFromApi, postData, updateData } from '../../../utils/api';
 import toast from 'react-hot-toast';
 
-// --- COMPONENT CON (Đã sửa để dùng dữ liệu động) ---
+// --- COMPONENT CON ---
 
 const ReviewItemCard = ({ item, onWriteReview }) => (
     <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-white border border-gray-200 rounded-xl">

@@ -1,4 +1,3 @@
-// src/componets/Dashboard/QuickActionsCard.jsx
 import React from 'react';
 
 const QuickActionsCard = () => (

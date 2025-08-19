@@ -4,21 +4,11 @@ import { createReviewController, deleteReviewController, getMyReviewedItemsContr
 
 const reviewRouter = Router();
 
-// Lấy tất cả đánh giá (không cần đăng nhập)
 reviewRouter.get('/:productId', getReviewsByProductController);
-
-// Tạo một đánh giá mới (yêu cầu đăng nhập)
 reviewRouter.post('/', auth, createReviewController);
-
-// Cập nhật một đánh giá (yêu cầu đăng nhập)
 reviewRouter.put('/:reviewId', auth, updateReviewController);
-
-// Xóa một đánh giá (yêu cầu đăng nhập)
 reviewRouter.delete('/:reviewId', auth, deleteReviewController);
-
 reviewRouter.get('/my/reviewed', auth, getMyReviewedItemsController);
-
-// Lấy danh sách sản phẩm chờ đánh giá của người dùng
 reviewRouter.get('/my/to-review', auth, getMyToReviewItemsController);
 
 export default reviewRouter;

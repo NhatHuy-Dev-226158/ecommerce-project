@@ -1,5 +1,3 @@
-// src/components/OtpInput.jsx
-
 import React, { useState, useRef, useEffect } from 'react';
 
 const OtpInput = ({ length = 6, onOtpSubmit = () => { } }) => {
@@ -14,21 +12,17 @@ const OtpInput = ({ length = 6, onOtpSubmit = () => { } }) => {
 
     const handleChange = (index, e) => {
         const value = e.target.value;
-        // Allow only one digit
         if (isNaN(value)) return;
 
         const newOtp = [...otp];
-        // Allow only one character
         newOtp[index] = value.substring(value.length - 1);
         setOtp(newOtp);
 
-        // Submit trigger
         const combinedOtp = newOtp.join("");
         if (combinedOtp.length === length) {
             onOtpSubmit(combinedOtp);
         }
 
-        // Move focus to the next input if a digit is entered
         if (value && index < length - 1 && inputRefs.current[index + 1]) {
             inputRefs.current[index + 1].focus();
         }
@@ -37,7 +31,6 @@ const OtpInput = ({ length = 6, onOtpSubmit = () => { } }) => {
     const handleClick = (index) => {
         inputRefs.current[index].setSelectionRange(1, 1);
 
-        // Optional: Move focus to the first empty box
         const emptyIndex = otp.findIndex(val => val === "");
         if (emptyIndex !== -1 && emptyIndex < index) {
             inputRefs.current[emptyIndex].focus();
@@ -45,7 +38,6 @@ const OtpInput = ({ length = 6, onOtpSubmit = () => { } }) => {
     };
 
     const handleKeyDown = (index, e) => {
-        // Move focus to the previous input on backspace if the current field is empty
         if (
             e.key === "Backspace" &&
             !otp[index] &&

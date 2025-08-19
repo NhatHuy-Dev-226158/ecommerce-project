@@ -1,29 +1,41 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Button as MuiButton, CircularProgress } from '@mui/material';
-import { FiLogIn } from "react-icons/fi";
-import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import { MyContext } from '../../App';
 import { postData } from '../../utils/api';
 import toast from 'react-hot-toast';
 
-// === COMPONENT CHÍNH ===
+// --- Material-UI & Icon Imports ---
+import { Box, Button as MuiButton, CircularProgress } from '@mui/material';
+import { FiLogIn } from "react-icons/fi";
+import { IoIosEye, IoIosEyeOff } from "react-icons/io";
+
+//================================================================================
+// MAIN LOGIN COMPONENT
+//================================================================================
+
+/**
+ * @component Login
+ * @description Trang đăng nhập dành cho quản trị viên.
+ */
 const Login = () => {
-    // === STATE ===
+    // --- State Management ---
     const [isLoading, setIsLoading] = useState(false);
     const [isShowPassWord, setIsShowPassWord] = useState(false);
     const [formFields, setFormFields] = useState({ email: '', password: '' });
 
-    // === CONTEXT & ROUTER ===
+    // --- Hooks ---
     const context = useContext(MyContext);
     const navigate = useNavigate();
 
-    // === CÁC HÀM XỬ LÝ SỰ KIỆN ===
+    // --- Event Handlers ---
+
+    // Cập nhật state của form khi người dùng nhập liệu
     const onChangeInput = (e) => {
         const { name, value } = e.target;
         setFormFields(prevState => ({ ...prevState, [name]: value }));
     };
 
+    // Xử lý logic khi submit form đăng nhập
     const handleSubmit = async (event) => {
         event.preventDefault();
         const { email, password } = formFields;
@@ -34,7 +46,7 @@ const Login = () => {
 
         setIsLoading(true);
         try {
-            // 1. Gọi đến API endpoint dành riêng cho Admin
+            // Gọi API đăng nhập dành riêng cho Admin
             const result = await postData("/api/user/admin-login", formFields);
 
             if (result.success) {
@@ -42,16 +54,13 @@ const Login = () => {
 
                 const { accesstoken, user } = result.data;
 
-                // 2. Lưu token và cập nhật context
+                // Lưu token, cập nhật context và điều hướng
                 localStorage.setItem("accesstoken", accesstoken);
                 context.setIslogin(true);
                 context.setUserData(user);
-
-                // 3. Luôn chuyển hướng đến trang dashboard của admin
-                navigate('/');
+                navigate('/'); // Luôn chuyển hướng đến dashboard admin
 
             } else {
-                // Ném lỗi để khối catch xử lý
                 throw new Error(result.message || "Email, mật khẩu không đúng hoặc bạn không có quyền truy cập.");
             }
         } catch (error) {
@@ -61,16 +70,9 @@ const Login = () => {
         }
     };
 
-    // === GIAO DIỆN ===
+    // --- Render ---
     return (
         <section className='w-full min-h-screen flex items-center justify-center p-4 bg-gray-100'>
-            {/* Ảnh nền có thể giữ lại hoặc bỏ đi tùy ý */}
-            <img
-                src="/pexels-apasaric-325185.jpg"
-                alt="Abstract background"
-                className='w-full h-full fixed top-0 left-0 object-cover -z-10 opacity-50'
-            />
-
             <Box
                 className="loginBox w-full max-w-md rounded-2xl shadow-xl p-8 space-y-6"
                 sx={{
@@ -79,24 +81,24 @@ const Login = () => {
                     border: '1px solid rgba(255, 255, 255, 0.4)'
                 }}
             >
+                {/* Phần Header của form */}
                 <div className="text-center">
-                    <Link to='/'>
-                        <img src="/logo.jpg" alt="Logo" className='mx-auto w-32 h-auto mb-2' />
-                    </Link>
+                    <div className="py-2 w-full flex items-center justify-center">
+                        <Link to='/'>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Dash_%28cryptocurrency%29_logo.svg/1024px-Dash_%28cryptocurrency%29_logo.svg.png" className='w-[160px]' alt="Logo" />
+                        </Link>
+                    </div>
                     <h1 className='text-2xl font-bold text-gray-800'>Trang Quản Trị</h1>
                     <p className='text-sm text-gray-600'>Vui lòng đăng nhập để tiếp tục.</p>
                 </div>
 
+                {/* Form đăng nhập */}
                 <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                     <div>
                         <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-800">Email</label>
                         <input
-                            type="email"
-                            id="email"
-                            name='email'
-                            value={formFields.email}
-                            onChange={onChangeInput}
-                            disabled={isLoading}
+                            type="email" id="email" name='email'
+                            value={formFields.email} onChange={onChangeInput} disabled={isLoading}
                             className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition"
                             placeholder="admin@example.com" required
                         />
@@ -105,12 +107,8 @@ const Login = () => {
                         <label htmlFor="password" className="block mb-1 text-sm font-medium text-gray-800">Mật khẩu</label>
                         <div className="relative w-full">
                             <input
-                                type={isShowPassWord ? 'text' : 'password'}
-                                id="password"
-                                name='password'
-                                value={formFields.password}
-                                onChange={onChangeInput}
-                                disabled={isLoading}
+                                type={isShowPassWord ? 'text' : 'password'} id="password" name='password'
+                                value={formFields.password} onChange={onChangeInput} disabled={isLoading}
                                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition"
                                 required
                             />
@@ -128,9 +126,15 @@ const Login = () => {
                         disabled={isLoading}
                         className="w-full flex items-center justify-center gap-2 text-white bg-gradient-to-br from-gray-700 to-gray-900 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-base px-5 py-3 text-center transition-all duration-200"
                     >
-                        <FiLogIn className='text-[17px]' />
-                        {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Đăng nhập'}
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : <><FiLogIn className='text-[17px]' /><span>Đăng nhập</span></>}
                     </button>
+
+                    <p className='text-sm text-center text-gray-600'>
+                        Bạn chưa có tài khoản?{' '}
+                        <Link to='/register' className='link font-medium text-blue-600 hover:underline'>
+                            Đăng ký ngay
+                        </Link>
+                    </p>
                 </form>
             </Box>
         </section>

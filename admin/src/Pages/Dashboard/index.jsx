@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+// --- Import các component con của Dashboard ---
 import StatsGrid from '../../componets/Componets-Dashboard/DashboardBox';
 import EmployeeCard from '../../componets/Componets-Dashboard/EmployeeCard/EmployeeCard';
 import ConversionFunnelChart from '../../componets/Componets-Dashboard/FunnelChart/FunnelChart';
@@ -9,13 +11,17 @@ import RevenueByRegionChart from '../../componets/Componets-Dashboard/RevenueByR
 import AIAssistantCard from '../../componets/Componets-Dashboard/AIAssistantCard/AIAssistantCard';
 import QuickActionsCard from '../../componets/Componets-Dashboard/QuickActionsCard/QuickActionsCard';
 import DetailedAnalysisSection from '../../componets/Componets-Dashboard/DetailedAnalysisSection/DetailedAnalysisSection';
-import { FiClock } from "react-icons/fi";
 import OperationsSection from '../../componets/Componets-Dashboard/OperationsSection/OperationsSection';
 import OverviewSection from '../../componets/Componets-Dashboard/OperationsSection/OverviewSection';
 import ScheduleAndToolsSection from '../../componets/Componets-Dashboard/ScheduleAndToolsSection/ScheduleAndToolsSection';
 
+import { FiClock } from "react-icons/fi";
 
-// --- CÁC COMPONENT GIAO DIỆN CON ---
+//================================================================================
+// UI SUB-COMPONENTS (Các thành phần giao diện nhỏ)
+//================================================================================
+
+// Component bộ lọc thời gian (Hôm nay, 7 ngày qua,...)
 const PeriodFilter = ({ activePeriod, setActivePeriod }) => {
     const periods = ['Today', 'Last 7 Days', 'Last 30 Days', 'This Month'];
     return (
@@ -24,10 +30,7 @@ const PeriodFilter = ({ activePeriod, setActivePeriod }) => {
                 <button
                     key={period}
                     onClick={() => setActivePeriod(period)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activePeriod === period
-                        ? 'bg-white text-indigo-600 shadow-sm'
-                        : 'text-gray-600 hover:text-indigo-600'
-                        }`}
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activePeriod === period ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-indigo-600'}`}
                 >
                     {period}
                 </button>
@@ -36,7 +39,7 @@ const PeriodFilter = ({ activePeriod, setActivePeriod }) => {
     );
 };
 
-/*Component DashboardHeader*/
+// Component header của trang Dashboard
 const DashboardHeader = ({ activePeriod, setActivePeriod }) => (
     <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
@@ -52,7 +55,7 @@ const DashboardHeader = ({ activePeriod, setActivePeriod }) => (
     </div>
 );
 
-/* Component PerformanceSection*/
+// Component gom nhóm các thẻ Hiệu suất & Chuyển đổi
 const PerformanceSection = ({ employee }) => (
     <div>
         <h2 className="text-xl font-bold text-gray-800 mb-4">Hiệu suất & Chuyển đổi</h2>
@@ -63,7 +66,7 @@ const PerformanceSection = ({ employee }) => (
     </div>
 );
 
-/*Component RevenueAnalysisSection*/
+// Component gom nhóm các biểu đồ Phân tích Doanh thu
 const RevenueAnalysisSection = () => (
     <div>
         <h2 className="text-xl font-bold text-gray-800 mb-4">Phân tích Doanh thu</h2>
@@ -74,7 +77,7 @@ const RevenueAnalysisSection = () => (
     </div>
 );
 
-/*Component RankingsAndInsightsSection */
+// Component gom nhóm các thẻ Bảng xếp hạng & Phân tích
 const RankingsAndInsightsSection = () => (
     <div>
         <h2 className="text-xl font-bold text-gray-800 mb-4">Bảng xếp hạng & Phân tích</h2>
@@ -89,13 +92,20 @@ const RankingsAndInsightsSection = () => (
     </div>
 );
 
+//================================================================================
+// MAIN DASHBOARD COMPONENT
+//================================================================================
 
-// === COMPONENT DASHBOARD CHÍNH ===
+/**
+ * @component Dashboard
+ * @description Component chính tổng hợp tất cả các thành phần để tạo nên trang Dashboard.
+ */
 const Dashboard = () => {
-    // State để quản lý bộ lọc thời gian.
-    const [activePeriod, setActivePeriod] = useState('This Month');
+    // --- State Management ---
+    const [activePeriod, setActivePeriod] = useState('This Month'); // Quản lý bộ lọc thời gian
 
-    // Dữ liệu mẫu cho card nhân viên
+    // --- Dữ liệu mẫu ---
+    // Ghi chú: Trong ứng dụng thực tế, dữ liệu này sẽ được lấy từ API.
     const employeeData = {
         name: 'Lê Hoàng Cường',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500',
@@ -107,6 +117,8 @@ const Dashboard = () => {
         recommendation: 'Khen thưởng nóng & chia sẻ kinh nghiệm.'
     };
 
+    // --- Render ---
+    // Cấu trúc trang Dashboard được chia thành các section ngữ nghĩa.
     return (
         <section className="space-y-6 pb-6">
             <DashboardHeader activePeriod={activePeriod} setActivePeriod={setActivePeriod} />

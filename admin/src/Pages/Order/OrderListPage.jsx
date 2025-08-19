@@ -1,15 +1,23 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Typography, Button, Breadcrumbs, MenuItem, Checkbox, TextField, Select, FormControl, InputLabel, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Divider, Tooltip, Pagination } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { FiSearch, FiX, FiUser, FiMapPin, FiPhone, FiAlertCircle, FiPackage } from 'react-icons/fi';
-import { FaAngleRight } from "react-icons/fa6";
+import { Typography, TableRow, TableCell, Button, Breadcrumbs, MenuItem, Checkbox, TextField, Select, FormControl, InputLabel, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Divider, Tooltip, Pagination, Toolbar } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { alpha } from '@mui/material/styles';
+import { fetchDataFromApi, updateData, deleteData, postData } from '../../utils/api';
 
-// Import các hàm gọi API từ file utils của bạn
-import { fetchDataFromApi, updateData } from '../../utils/api';
+// --- Icon Imports ---
+import { FiSearch, FiX, FiUser, FiMapPin, FiPhone, FiAlertCircle, FiPackage, FiTrash2, FiEdit } from 'react-icons/fi';
+import { FaRegEye } from "react-icons/fa";
+import { FaAngleRight } from "react-icons/fa6";
+import ConfirmationDialog from '../../componets/ConfirmationDialog/ConfirmationDialog';
 
-// --- CÁC COMPONENT GIAO DIỆN CON ---
+// ====================================================================
+// ===                      SUB-COMPONENTS                          ===
+// ====================================================================
 
+/**
+ * Component con hiển thị tag trạng thái với màu sắc tương ứng.
+ */
 const StatusTag = ({ status }) => {
     const statusMapping = useMemo(() => ({
         'Pending': { text: 'Chờ xác nhận', color: 'bg-orange-100 text-orange-800' },
@@ -22,6 +30,9 @@ const StatusTag = ({ status }) => {
     return (<span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${statusInfo.color}`}>{statusInfo.text}</span>);
 };
 
+/**
+ * Component con cho phần header của trang.
+ */
 const PageHeader = () => (
     <div className="flex flex-wrap justify-between items-center mb-6">
         <div>
@@ -34,104 +45,67 @@ const PageHeader = () => (
     </div>
 );
 
+/**
+ * Component con cho thanh công cụ tìm kiếm và lọc.
+ */
 const OrderToolbar = ({ filters, onFilterChange }) => (
     <div className="bg-white p-4 rounded-xl shadow-md mb-6 flex flex-wrap items-center justify-between gap-4">
-        <TextField
-            name="searchQuery"
-            value={filters.searchQuery}
-            onChange={onFilterChange}
-            size="small"
-            placeholder="Tìm theo Tên KH, SĐT..."
-            className="flex-grow min-w-[300px]"
-            InputProps={{ startAdornment: (<FiSearch className="text-gray-400 mr-2" />) }}
-        />
+        <TextField name="searchQuery" value={filters.searchQuery} onChange={onFilterChange} size="small" placeholder="Tìm theo Tên KH, SĐT..." className="flex-grow min-w-[300px]" InputProps={{ startAdornment: (<FiSearch className="text-gray-400 mr-2" />) }} />
         <div className="flex items-center gap-3 flex-wrap">
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-                <InputLabel>Trạng thái</InputLabel>
-                <Select name="status" value={filters.status} label="Trạng thái" onChange={onFilterChange}>
-                    <MenuItem value="all">Tất cả trạng thái</MenuItem>
-                    <MenuItem value="Pending">Chờ xác nhận</MenuItem>
-                    <MenuItem value="Processing">Đang xử lý</MenuItem>
-                    <MenuItem value="Shipped">Đang giao hàng</MenuItem>
-                    <MenuItem value="Delivered">Đã giao</MenuItem>
-                    <MenuItem value="Cancelled">Đã hủy</MenuItem>
-                </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 180 }}>
-                <InputLabel>Lớp vận chuyển</InputLabel>
-                <Select name="shippingClass" value={filters.shippingClass} label="Lớp vận chuyển" onChange={onFilterChange}>
-                    <MenuItem value="all">Tất cả</MenuItem>
-                    <MenuItem value="Hàng tiêu chuẩn">Hàng tiêu chuẩn</MenuItem>
-                    <MenuItem value="Hàng đông lạnh">Hàng đông lạnh</MenuItem>
-                    <MenuItem value="Hàng dễ vỡ">Hàng dễ vỡ</MenuItem>
-                </Select>
-            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}><InputLabel>Trạng thái</InputLabel><Select name="status" value={filters.status} label="Trạng thái" onChange={onFilterChange}><MenuItem value="all">Tất cả trạng thái</MenuItem><MenuItem value="Pending">Chờ xác nhận</MenuItem><MenuItem value="Processing">Đang xử lý</MenuItem><MenuItem value="Shipped">Đang giao hàng</MenuItem><MenuItem value="Delivered">Đã giao</MenuItem><MenuItem value="Cancelled">Đã hủy</MenuItem></Select></FormControl>
+            <FormControl size="small" sx={{ minWidth: 180 }}><InputLabel>Lớp vận chuyển</InputLabel><Select name="shippingClass" value={filters.shippingClass} label="Lớp vận chuyển" onChange={onFilterChange}><MenuItem value="all">Tất cả</MenuItem><MenuItem value="Hàng tiêu chuẩn">Hàng tiêu chuẩn</MenuItem><MenuItem value="Hàng đông lạnh">Hàng đông lạnh</MenuItem><MenuItem value="Hàng dễ vỡ">Hàng dễ vỡ</MenuItem></Select></FormControl>
         </div>
     </div>
 );
 
+/**
+ * Component con cho thanh công cụ hiển thị khi có item được chọn, dùng để xóa hàng loạt.
+ */
+const EnhancedTableToolbar = ({ numSelected, onBulkDelete }) => (
+    <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, ...(numSelected > 0 && { bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity) }) }}>
+        <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1">{numSelected} đã chọn</Typography>
+        <Tooltip title="Xóa các mục đã chọn"><IconButton onClick={onBulkDelete} color="error"><FiTrash2 /></IconButton></Tooltip>
+    </Toolbar>
+);
+
+/**
+ * Component con cho Dialog "Xem nhanh" chi tiết đơn hàng.
+ */
 const QuickViewDialog = ({ open, onClose, order, onStatusUpdate }) => {
     const [newStatus, setNewStatus] = useState('');
-
-    useEffect(() => {
-        if (order) setNewStatus(order.status);
-    }, [order]);
-
+    useEffect(() => { if (order) setNewStatus(order.status); }, [order]);
     if (!order) return null;
-
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
-            <DialogTitle><div className="flex justify-between items-center">
-                <Typography variant="h6" fontWeight="bold">Đơn hàng: #{order._id.slice(-6).toUpperCase()}</Typography>
-                <IconButton onClick={onClose}><FiX /></IconButton>
-            </div></DialogTitle>
+            <DialogTitle><div className="flex justify-between items-center"><Typography variant="h6" fontWeight="bold">Đơn hàng: #{order._id.slice(-6).toUpperCase()}</Typography><IconButton onClick={onClose}><FiX /></IconButton></div></DialogTitle>
             <DialogContent dividers className="space-y-4">
-                <div>
-                    <Typography variant="button" color="text.secondary">Thông tin khách hàng</Typography>
-                    <div className="mt-2 space-y-1 text-sm">
-                        <p className="flex items-center gap-2"><FiUser /><strong>{order.shippingAddress.fullName}</strong></p>
-                        <p className="flex items-center gap-2"><FiPhone />{order.shippingAddress.phone}</p>
-                        <p className="flex items-center gap-2"><FiMapPin />{`${order.shippingAddress.address}, ${order.shippingAddress.city}`}</p>
-                    </div>
-                </div>
+                <div><Typography variant="button" color="text.secondary">Thông tin khách hàng</Typography><div className="mt-2 space-y-1 text-sm"><p className="flex items-center gap-2"><FiUser /><strong>{order.shippingAddress.fullName}</strong></p><p className="flex items-center gap-2"><FiPhone />{order.shippingAddress.phone}</p><p className="flex items-center gap-2"><FiMapPin />{`${order.shippingAddress.address}, ${order.shippingAddress.city}`}</p></div></div>
                 <Divider />
-                <div>
-                    <Typography variant="button" color="text.secondary">Trạng thái đơn hàng</Typography>
-                    <FormControl fullWidth size="small" sx={{ mt: 2 }}>
-                        <InputLabel>Cập nhật trạng thái</InputLabel>
-                        <Select label="Cập nhật trạng thái" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
-                            <MenuItem value="Pending">Chờ xác nhận</MenuItem>
-                            <MenuItem value="Processing">Đang xử lý</MenuItem>
-                            <MenuItem value="Shipped">Đang giao hàng</MenuItem>
-                            <MenuItem value="Delivered">Đã giao</MenuItem>
-                            <MenuItem value="Cancelled">Đã hủy</MenuItem>
-                        </Select>
-                    </FormControl>
-                </div>
+                <div><Typography variant="button" color="text.secondary">Trạng thái đơn hàng</Typography><FormControl fullWidth size="small" sx={{ mt: 2 }}><InputLabel>Cập nhật trạng thái</InputLabel><Select label="Cập nhật trạng thái" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}><MenuItem value="Pending">Chờ xác nhận</MenuItem><MenuItem value="Processing">Đang xử lý</MenuItem><MenuItem value="Shipped">Đang giao hàng</MenuItem><MenuItem value="Delivered">Đã giao</MenuItem><MenuItem value="Cancelled">Đã hủy</MenuItem></Select></FormControl></div>
             </DialogContent>
-            <DialogActions sx={{ p: 2 }}>
-                <Button onClick={onClose}>Hủy</Button>
-                <Button variant="contained" onClick={() => onStatusUpdate(order._id, newStatus)}>Lưu thay đổi</Button>
-            </DialogActions>
+            <DialogActions sx={{ p: 2 }}><Button onClick={onClose}>Hủy</Button><Button variant="contained" onClick={() => onStatusUpdate(order._id, newStatus)}>Lưu thay đổi</Button></DialogActions>
         </Dialog>
     );
 };
 
-// === COMPONENT TRANG CHÍNH ===
+// ====================================================================
+// ===                    MAIN COMPONENT                            ===
+// ====================================================================
 const OrderListPage = () => {
+    // --- State Management ---
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [quickViewOrder, setQuickViewOrder] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-
     const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
-    const [filters, setFilters] = useState({
-        searchQuery: '',
-        status: 'all',
-        shippingClass: 'all'
-    });
+    const [filters, setFilters] = useState({ searchQuery: '', status: 'all', shippingClass: 'all' });
+    const [selected, setSelected] = useState([]);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [idsToDelete, setIdsToDelete] = useState([]);
+    const navigate = useNavigate()
 
+    // --- Logic & Effects ---
     const fetchOrders = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -142,35 +116,26 @@ const OrderListPage = () => {
             if (filters.shippingClass !== 'all') params.append('shippingClass', filters.shippingClass);
 
             const response = await fetchDataFromApi(`/api/admin/orders?${params.toString()}`);
-
             if (response.success) {
                 setOrders(response.data);
                 setPagination(prev => ({ ...prev, totalPages: response.totalPages }));
-            } else {
-                throw new Error(response.message || 'Lỗi không xác định');
-            }
-        } catch (err) {
-            setError(err.message);
-            toast.error(`Lỗi khi tải đơn hàng: ${err.message}`);
-        } finally {
-            setIsLoading(false);
-        }
+            } else { throw new Error(response.message); }
+        } catch (err) { setError(err.message); }
+        finally { setIsLoading(false); }
     }, [pagination.currentPage, filters]);
 
-    useEffect(() => {
-        fetchOrders();
-    }, [fetchOrders]);
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
+    // --- Event Handlers ---
     const handleFilterChange = (event) => {
         const { name, value } = event.target;
         setFilters(prev => ({ ...prev, [name]: value }));
         setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
-    const handlePageChange = (event, value) => {
-        setPagination(prev => ({ ...prev, currentPage: value }));
-    };
+    const handlePageChange = (event, value) => setPagination(prev => ({ ...prev, currentPage: value }));
 
+    // Mở dialog xem nhanh và tải dữ liệu chi tiết
     const handleOpenQuickView = useCallback(async (orderId) => {
         try {
             const response = await fetchDataFromApi(`/api/admin/orders/${orderId}`);
@@ -183,6 +148,7 @@ const OrderListPage = () => {
         }
     }, []);
 
+    // Cập nhật trạng thái từ dialog xem nhanh
     const handleUpdateStatus = useCallback(async (orderId, newStatus) => {
         try {
             const response = await updateData(`/api/admin/orders/${orderId}/status`, { status: newStatus });
@@ -200,81 +166,97 @@ const OrderListPage = () => {
         }
     }, []);
 
-    const renderContent = () => {
-        if (isLoading) {
-            return <div className="flex justify-center items-center py-20"><CircularProgress /></div>;
-        }
-        if (error) {
-            return <div className="text-center py-20 text-red-600"><FiAlertCircle className="mx-auto text-5xl mb-3" /><p>Đã xảy ra lỗi: {error}</p></div>;
-        }
-        if (orders.length === 0) {
-            return <div className="text-center py-20 text-gray-500"><FiPackage className="mx-auto text-5xl mb-3" /><p>Không tìm thấy đơn hàng nào phù hợp.</p></div>;
-        }
-        return (
-            <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-500 uppercase bg-gray-50">
-                    <tr>
-                        <th className="p-4"><Checkbox size="small" /></th>
-                        <th className="p-4">Mã đơn hàng</th>
-                        <th className="p-4">Khách hàng</th>
-                        <th className="p-4">Ngày đặt</th>
-                        <th className="p-4">Vận chuyển</th>
-                        <th className="p-4">Trạng thái</th>
-                        <th className="p-4 text-right">Tổng tiền</th>
-                        <th className="p-4 text-center">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {orders.map((order) => (
-                        <tr key={order._id} className="border-b hover:bg-gray-50">
-                            <td className="p-4"><Checkbox size="small" /></td>
-                            <td className="p-4 font-semibold text-blue-600">#{order._id.slice(-6).toUpperCase()}</td>
-                            <td className="p-4">
-                                <div className="font-medium text-gray-800">{order.shippingAddress.fullName}</div>
-                                <div className="text-gray-500">{order.shippingAddress.phone}</div>
-                            </td>
-                            <td className="p-4 text-gray-600">{new Date(order.createdAt).toLocaleString('vi-VN')}</td>
-                            <td className="p-4 text-gray-600 font-medium">{order.shippingClass}</td>
-                            <td className="p-4"><StatusTag status={order.status} /></td>
-                            <td className="p-4 font-semibold text-gray-800 text-right">{order.totalPrice.toLocaleString('vi-VN')} đ</td>
-                            <td className="p-4 text-center flex items-center justify-center gap-1">
-                                <Tooltip title="Xem nhanh"><Button size="small" onClick={() => handleOpenQuickView(order._id)}>Xem nhanh</Button></Tooltip>
-                                <Tooltip title="Xem trang chi tiết"><Link to={`/admin/orders/${order._id}`}><Button variant="outlined" size="small">Chi tiết</Button></Link></Tooltip>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        );
+
+    // === CÁC HÀM MỚI CHO VIỆC CHỌN VÀ XÓA ===
+    const handleSelectAllClick = (event) => setSelected(event.target.checked ? orders.map((n) => n._id) : []);
+    const handleClick = (event, id) => {
+        const selectedIndex = selected.indexOf(id);
+        let newSelected = [];
+        if (selectedIndex === -1) newSelected = newSelected.concat(selected, id);
+        else newSelected = selected.filter(selId => selId !== id);
+        setSelected(newSelected);
+    };
+    const isSelected = (id) => selected.indexOf(id) !== -1;
+
+    const handleDeleteClick = (id) => { setIdsToDelete([id]); setIsConfirmOpen(true); };
+    const handleBulkDeleteClick = () => { setIdsToDelete(selected); setIsConfirmOpen(true); };
+    const handleCloseConfirm = () => { setIsConfirmOpen(false); setIdsToDelete([]); };
+    const handleConfirmDelete = async () => {
+        if (!idsToDelete || idsToDelete.length === 0) return;
+        try {
+            const result = idsToDelete.length === 1
+                ? await deleteData(`/api/admin/orders/${idsToDelete[0]}`)
+                : await postData('/api/admin/orders/delete-multiple', { ids: idsToDelete });
+            if (result.success) {
+                toast.success(result.message || "Xóa thành công!");
+                fetchOrders();
+                setSelected([]);
+            } else { throw new Error(result.message); }
+        } catch (err) { toast.error(`Lỗi khi xóa: ${err.message}`); }
+        finally { handleCloseConfirm(); }
+    };
+
+    // --- Render ---
+    const renderTableContent = () => {
+        if (isLoading) return <TableRow><TableCell colSpan={8} align="center" sx={{ p: 10 }}><CircularProgress /></TableCell></TableRow>;
+        if (error) return <TableRow><TableCell colSpan={8} align="center" sx={{ p: 10, color: 'red' }}><FiAlertCircle /><div>Đã xảy ra lỗi: {error}</div></TableCell></TableRow>;
+        if (orders.length === 0) return <TableRow><TableCell colSpan={8} align="center" sx={{ p: 10 }}><FiPackage /><div>Không tìm thấy đơn hàng.</div></TableCell></TableRow>;
+
+        return orders.map((order) => {
+            const isItemSelected = isSelected(order._id);
+            return (
+                <TableRow key={order._id} hover onClick={(event) => handleClick(event, order._id)} role="checkbox" tabIndex={-1} selected={isItemSelected} sx={{ cursor: 'pointer' }}>
+                    <TableCell padding="checkbox"><Checkbox color="primary" checked={isItemSelected} /></TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>#{order._id.slice(-6).toUpperCase()}</TableCell>
+                    <TableCell>
+                        <Typography variant="body2" fontWeight="medium">{order.shippingAddress.fullName}</Typography>
+                        <Typography variant="caption" color="text.secondary">{order.shippingAddress.phone}</Typography>
+                    </TableCell>
+                    <TableCell>{new Date(order.createdAt).toLocaleString('vi-VN')}</TableCell>
+                    <TableCell>{order.shippingClass}</TableCell>
+                    <TableCell><StatusTag status={order.status} /></TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{order.totalPrice.toLocaleString('vi-VN')} đ</TableCell>
+                    <TableCell align="center">
+                        <Tooltip title="Xem nhanh"><IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenQuickView(order._id); }}><FaRegEye /></IconButton></Tooltip>
+                        <IconButton size="small" onClick={(e) => {
+                            e.stopPropagation(); // Ngăn sự kiện click của cả hàng
+                            navigate(`/admin/orders/${order._id}`); // Điều hướng đến trang chi tiết
+                        }}>
+                            <FiEdit />
+                        </IconButton><Tooltip title="Xóa đơn hàng"><IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteClick(order._id); }}><FiTrash2 /></IconButton></Tooltip>
+                    </TableCell>
+                </TableRow>
+            );
+        });
     };
 
     return (
         <section className="p-4 md:p-6 bg-gray-50 min-h-screen">
             <PageHeader />
             <OrderToolbar filters={filters} onFilterChange={handleFilterChange} />
-            <div className="bg-white rounded-xl shadow-md">
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                {selected.length > 0 && <EnhancedTableToolbar numSelected={selected.length} onBulkDelete={handleBulkDeleteClick} />}
                 <div className="overflow-x-auto">
-                    {renderContent()}
+                    <table className="w-full text-sm">
+                        <thead className="text-xs text-gray-500 uppercase bg-gray-50">
+                            <tr>
+                                <th className="p-4"><Checkbox indeterminate={selected.length > 0 && selected.length < orders.length} checked={orders.length > 0 && selected.length === orders.length} onChange={handleSelectAllClick} /></th>
+                                <th className="p-4">Mã Đơn</th>
+                                <th className="p-4">Khách hàng</th>
+                                <th className="p-4">Ngày đặt</th>
+                                <th className="p-4">Vận chuyển</th>
+                                <th className="p-4">Trạng thái</th>
+                                <th className="p-4 text-right">Tổng tiền</th>
+                                <th className="p-4 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>{renderTableContent()}</tbody>
+                    </table>
                 </div>
-                {pagination.totalPages > 1 && !isLoading && (
-                    <div className="flex justify-center p-4 border-t">
-                        <Pagination
-                            count={pagination.totalPages}
-                            page={pagination.currentPage}
-                            onChange={handlePageChange}
-                            color="primary"
-                        />
-                    </div>
-                )}
+                <Pagination count={pagination.totalPages} page={pagination.currentPage} onChange={handlePageChange} sx={{ p: 2, display: 'flex', justifyContent: 'center' }} />
             </div>
-            {quickViewOrder && (
-                <QuickViewDialog
-                    open={isQuickViewOpen}
-                    onClose={() => setIsQuickViewOpen(false)}
-                    order={quickViewOrder}
-                    onStatusUpdate={handleUpdateStatus}
-                />
-            )}
+            {quickViewOrder && <QuickViewDialog open={isQuickViewOpen} onClose={() => setIsQuickViewOpen(false)} order={quickViewOrder} onStatusUpdate={handleUpdateStatus} />}
+            <ConfirmationDialog open={isConfirmOpen} onClose={handleCloseConfirm} onConfirm={handleConfirmDelete} title="Xác nhận xóa" message={`Bạn có chắc chắn muốn xóa ${idsToDelete.length} đơn hàng đã chọn? Hành động này không thể hoàn tác.`} />
         </section>
     );
 };

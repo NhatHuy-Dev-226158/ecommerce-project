@@ -28,7 +28,7 @@ const initialAddresses = [
     { id: 3, name: 'Văn phòng Công ty', phone: '028 1234 5678', street: 'Lầu 5, Tòa nhà Bitexco, Số 2 Hải Triều', ward: 'Phường Bến Nghé', district: 'Quận 1', city: 'TP. Hồ Chí Minh', isDefault: false },
 ];
 
-// --- COMPONENT CON CHO CARD ĐỊA CHỈ (Đã làm lại) ---
+// --- COMPONENT CON CHO CARD ĐỊA CHỈ ---
 const AddressCard = ({ address, onSetDefault, onEdit, onDelete }) => (
     <div className={`relative p-5 border-2 rounded-2xl transition-all duration-300 ${address.isDefault ? 'border-indigo-600 bg-indigo-50' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
         {address.isDefault && (
@@ -62,7 +62,7 @@ const AddressesContent = () => {
     const [editingAddress, setEditingAddress] = useState(null);
 
     const handleOpenModal = (address = null) => {
-        setEditingAddress(address); // Nếu là null -> thêm mới, ngược lại -> sửa
+        setEditingAddress(address);
         setIsModalOpen(true);
     };
 
@@ -118,7 +118,7 @@ const AddressesContent = () => {
             )}
 
 
-            {/* Modal để thêm/sửa địa chỉ (đã nâng cấp) */}
+            {/* Modal để thêm/sửa địa chỉ */}
             <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>
                     {editingAddress ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}

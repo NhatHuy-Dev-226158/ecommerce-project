@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, CircularProgress } from '@mui/material'; // Thêm CircularProgress
+import { Button, CircularProgress } from '@mui/material';
 import { FiSearch, FiTruck, FiStar, FiRepeat, FiPackage, FiAlertCircle } from 'react-icons/fi';
 import { fetchDataFromApi } from '../../../utils/api';
 import { MyContext } from '../../../App';
@@ -35,7 +35,6 @@ const OrderCard = ({ order }) => (
             <StatusBadge status={order.status} />
         </div>
         <div className="p-4">
-            {/* Thay `products` bằng `orderItems` */}
             {order.orderItems.slice(0, 2).map((item, index) => (
                 <div key={index} className="flex items-center gap-4 mb-3">
                     <img src={item.image} alt={item.name} className="w-14 h-14 rounded-md object-cover" />
@@ -52,7 +51,6 @@ const OrderCard = ({ order }) => (
                 <span className="font-bold text-lg text-indigo-600 ml-2">{formatCurrency(order.totalPrice)}</span>
             </div>
             <div className="flex gap-2">
-                {/* Cập nhật logic hiển thị button dựa trên status từ API */}
                 {order.status === 'Shipped' && <Button variant="outlined" size="small" startIcon={<FiTruck />}>Theo dõi</Button>}
                 {order.status === 'Delivered' && (
                     <>

@@ -9,7 +9,6 @@ import { MyContext } from '../../App';
 import { Link as RouterLink } from 'react-router-dom';
 
 
-// ĐỔI TÊN COMPONENT ĐỂ KHỚP VỚI TÊN FILE
 const Cart = () => {
     const context = useContext(MyContext);
     const subtotal = context.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);

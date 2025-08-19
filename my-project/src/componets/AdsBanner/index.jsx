@@ -36,23 +36,23 @@ const AdsBanner = (props) => {
         fetchBanners();
     }, []);
 
-    // if (isLoading) {
-    //     return (
-    //         <div className='py-5 w-full'>
-    //             <Swiper
-    //                 slidesPerView={props.items}
-    //                 spaceBetween={10}
-    //                 className="smlBtn"
-    //             >
-    //                 {[...Array(props.items || 3)].map((_, index) => (
-    //                     <SwiperSlide key={index}>
-    //                         <Skeleton variant="rectangular" width="100%" sx={{ aspectRatio: '2 / 1', borderRadius: '12px' }} />
-    //                     </SwiperSlide>
-    //                 ))}
-    //             </Swiper>
-    //         </div>
-    //     );
-    // }
+    if (isLoading) {
+        return (
+            <div className='py-5 w-full'>
+                <Swiper
+                    slidesPerView={props.items}
+                    spaceBetween={10}
+                    className="smlBtn"
+                >
+                    {[...Array(props.items || 3)].map((_, index) => (
+                        <SwiperSlide key={index}>
+                            <Skeleton variant="rectangular" width="100%" sx={{ aspectRatio: '2 / 1', borderRadius: '12px' }} />
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </div>
+        );
+    }
     if (banners.length === 0) {
         return null;
     }

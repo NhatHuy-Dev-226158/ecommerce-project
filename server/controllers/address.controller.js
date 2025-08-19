@@ -1,51 +1,52 @@
 import AddressModel from "../models/address.model.js";
 import UserModel from "../models/user.model.js";
 
+/**
+ * @route   POST /api/address/add
+ * @desc    Thêm địa chỉ mới cho người dùng.
+ * @access  Private
+ */
 export const addAddressController = async (request, response) => {
     try {
         const { address_line, city, state, pincode, country, status } = request.body;
-
         const userId = request.userId;
 
+        // --- Validation ---
         if (!address_line || !city || !state || !country) {
             return response.status(400).json({
-                message: "Please provide all required fields",
+                message: "Vui lòng cung cấp đầy đủ các trường bắt buộc.",
                 error: true,
                 success: false
             });
         }
 
-        // Kiểm tra xem userId có tồn tại không
         if (!userId) {
             return response.status(401).json({
-                message: "Unauthorized. User not found.",
+                message: "Không được phép. Người dùng không tồn tại.",
                 error: true,
                 success: false
             });
         }
 
+        // Nếu địa chỉ mới được đặt làm mặc định, đảm bảo chỉ có một địa chỉ mặc định duy nhất.
         if (status) {
-            // Tìm và cập nhật tất cả các địa chỉ cũ của người dùng này thành không mặc định
             await AddressModel.updateMany({ userId: userId }, { $set: { status: false } });
         }
 
+        // --- Tạo và lưu địa chỉ mới ---
         const address = new AddressModel({
-            address_line,
-            city,
-            state,
-            pincode,
-            country,
-            status,
+            address_line, city, state, pincode, country, status,
             userId: userId
         });
-
         const savedAddress = await address.save();
 
-        await UserModel.updateOne({ _id: userId }, {
-            $push: { address_details: savedAddress._id }
-        });
+        // Thêm ID của địa chỉ mới vào danh sách tham chiếu của người dùng.
+        await UserModel.updateOne(
+            { _id: userId },
+            { $push: { address_details: savedAddress._id } }
+        );
 
-        return response.status(200).json({
+        return response.status(201).json({ // 201 Created
             data: savedAddress,
             message: "Thêm địa chỉ thành công!",
             error: false,
@@ -61,14 +62,19 @@ export const addAddressController = async (request, response) => {
     }
 };
 
+/**
+ * @route   GET /api/address/
+ * @desc    Lấy tất cả địa chỉ của người dùng hiện tại.
+ * @access  Private
+ */
 export const getAddressesController = async (request, response) => {
     try {
         const userId = request.userId;
-
         if (!userId) {
             return response.status(401).json({ message: "Unauthorized." });
         }
 
+        // Dùng `populate` để lấy thông tin chi tiết của các địa chỉ.
         const userWithAddresses = await UserModel.findById(userId).populate({
             path: 'address_details',
             model: 'address'
@@ -80,46 +86,53 @@ export const getAddressesController = async (request, response) => {
 
         return response.status(200).json({
             data: userWithAddresses.address_details,
-            message: "Addresses fetched successfully.",
+            message: "Lấy danh sách địa chỉ thành công.",
             success: true,
             error: false
         });
 
     } catch (error) {
         return response.status(500).json({
-            message: error.message || "Failed to fetch addresses.",
+            message: error.message || "Lấy danh sách địa chỉ thất bại.",
             error: true,
             success: false
         });
     }
 };
 
+/**
+ * @route   PUT /api/address/update/:addressId
+ * @desc    Cập nhật một địa chỉ của người dùng.
+ * @access  Private
+ */
 export const updateAddressController = async (request, response) => {
     try {
         const { addressId } = request.params;
         const userId = request.userId;
         const updatedData = request.body;
 
+        // Nếu địa chỉ đang cập nhật được set làm mặc định, các địa chỉ khác sẽ bị bỏ mặc định.
         if (updatedData.status) {
             await AddressModel.updateMany(
-                { userId: userId, _id: { $ne: addressId } },
+                { userId: userId, _id: { $ne: addressId } }, // $ne: not equal
                 { $set: { status: false } }
             );
         }
 
+        // Điều kiện `userId` đảm bảo người dùng chỉ có thể cập nhật địa chỉ của chính họ.
         const address = await AddressModel.findOneAndUpdate(
             { _id: addressId, userId: userId },
             updatedData,
-            { new: true }
+            { new: true } // Trả về document sau khi đã cập nhật.
         );
 
         if (!address) {
-            return response.status(404).json({ message: "Address not found or you don't have permission to edit it." });
+            return response.status(404).json({ message: "Địa chỉ không tồn tại hoặc bạn không có quyền chỉnh sửa." });
         }
 
         return response.status(200).json({
             data: address,
-            message: "Address updated successfully!",
+            message: "Cập nhật địa chỉ thành công!",
             success: true
         });
 
@@ -128,26 +141,33 @@ export const updateAddressController = async (request, response) => {
     }
 };
 
+/**
+ * @route   DELETE /api/address/delete/:addressId
+ * @desc    Xóa một địa chỉ của người dùng.
+ * @access  Private
+ */
 export const deleteAddressController = async (request, response) => {
     try {
         const { addressId } = request.params;
         const userId = request.userId;
 
-        // 1. Xóa địa chỉ, đảm bảo nó thuộc về người dùng
+        // Xóa địa chỉ, đồng thời xác thực quyền sở hữu qua `userId`.
         const addressToDelete = await AddressModel.findOneAndDelete({ _id: addressId, userId: userId });
 
         if (!addressToDelete) {
-            return response.status(404).json({ message: "Address not found or you don't have permission to delete it." });
+            return response.status(404).json({ message: "Địa chỉ không tồn tại hoặc bạn không có quyền xóa." });
         }
-        await AddressModel.deleteOne({ _id: addressId });
-        // 2. Xóa tham chiếu đến địa chỉ này khỏi mảng address_details của người dùng
+
+        // Xóa tham chiếu đến địa chỉ này khỏi document của người dùng.
         await UserModel.updateOne(
             { _id: userId },
             { $pull: { address_details: addressId } }
         );
 
+        // Nếu địa chỉ vừa xóa là mặc định, cần đặt một địa chỉ khác làm mặc định mới.
         if (addressToDelete.status === true) {
-            const newDefaultAddress = await AddressModel.findOne({ userId: userId }).sort({ createdAt: -1 }); // Sắp xếp theo ngày tạo giảm dần
+            // Lấy địa chỉ mới nhất để làm mặc định.
+            const newDefaultAddress = await AddressModel.findOne({ userId: userId }).sort({ createdAt: -1 });
 
             if (newDefaultAddress) {
                 newDefaultAddress.status = true;
@@ -155,7 +175,7 @@ export const deleteAddressController = async (request, response) => {
             }
         }
         return response.status(200).json({
-            message: "Address deleted successfully!",
+            message: "Xóa địa chỉ thành công!",
             success: true
         });
 

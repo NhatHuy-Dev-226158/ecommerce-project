@@ -43,7 +43,7 @@ const ToggleSwitch = ({ enabled, setEnabled }) => (
     </button>
 );
 
-// === CÁC COMPONENT NỘI DUNG CHO TỪNG TAB (Giờ đã có logic) ==
+// === CÁC COMPONENT NỘI DUNG CHO TỪNG TAB ==
 
 const SecurityTab = () => {
     const context = useContext(MyContext)

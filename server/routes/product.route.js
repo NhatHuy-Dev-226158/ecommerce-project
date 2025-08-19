@@ -13,15 +13,16 @@ import {
     getFeaturedProducts,
     uploadProductImages
 } from '../controllers/product.controller.js';
+import isStaffOrAdmin from '../middleware/isStaffOrAdmin.js';
 
 const productRouter = Router();
 
 // === CÁC ROUTE CHÍNH ===
 productRouter.get('/', getAllProduct);
 productRouter.get('/:id', getProductById);
-productRouter.post('/', auth, createProduct);
-productRouter.put('/:id', auth, updateProduct);
-productRouter.delete('/:id', auth, deleteProduct);
+productRouter.post('/', auth, isStaffOrAdmin, createProduct);
+productRouter.put('/:id', auth, isStaffOrAdmin, updateProduct);
+productRouter.delete('/:id', auth, isStaffOrAdmin, deleteProduct);
 
 
 // === CÁC ROUTE PHỤ===

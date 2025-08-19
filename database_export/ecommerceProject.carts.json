@@ -1,0 +1,18 @@
+[{
+  "_id": {
+    "$oid": "68a09bdd7f1a274eeab1c3df"
+  },
+  "productId": "689f120405ab1c34a5ca85f8",
+  "userId": "6899ee9f7927f4ffb9fcdb13",
+  "quantity": 1,
+  "productTitle": "Nguyễn Nhật Huy",
+  "image": "https://res.cloudinary.com/dokaokntx/image/upload/v1755255298/wdr9qniuhaxe8rrlptri.png",
+  "price": 1471294000,
+  "createdAt": {
+    "$date": "2025-08-16T14:55:25.940Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-16T14:55:25.940Z"
+  },
+  "__v": 0
+}]

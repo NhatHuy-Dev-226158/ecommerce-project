@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import { MdOutlineCloseFullscreen } from "react-icons/md";
+import { CircularProgress } from '@mui/material';
 
 // --- Các Component & Trang của dự án ---
 import Header from './componets/Header';
@@ -24,11 +25,11 @@ import MyAccount from './Pages/MyAccount';
 import ZoomProductImg from './componets/ZoomProductImg/Zoomquickview';
 import ProductDetailsComponets from './componets/ProductDetails/inddex';
 import OrderDetailPage from './Pages/MyAccount/Orders/OrderDetail';
+import BlogDetailPage from './componets/BlogItem/BlogDetailPage';
 
 // --- Các hàm tiện ích & Styles ---
 import { deleteData, fetchDataFromApi, postData } from './utils/api';
 import './App.css';
-import BlogDetailPage from './componets/BlogItem/BlogDetailPage';
 
 // --- Khởi tạo Context ---
 export const MyContext = createContext();
@@ -38,7 +39,7 @@ export const MyContext = createContext();
 // ====================================================================
 // Component này chứa toàn bộ state và logic, nằm bên trong BrowserRouter
 const AppContextWrapper = ({ children }) => {
-  const navigate = useNavigate(); // Hook này hợp lệ vì component nằm trong <BrowserRouter>
+  const navigate = useNavigate();
 
   // --- STATE QUẢN LÝ UI CHUNG ---
   const [openCartPanel, setOpenCartPanel] = useState(false);
@@ -56,35 +57,32 @@ const AppContextWrapper = ({ children }) => {
     category: '',
     brand: [],
     price: [0, 5000000000],
+    search: '',
+    expandedParentCategory: null,
   });
-
 
   // ====================================================================
   // ===                       CÁC HÀM TIỆN ÍCH                      ===
   // ====================================================================
-
   const openAlerBox = (type, msg) => toast[type]?.(msg);
   const toggleCartPanel = (isOpen) => () => setOpenCartPanel(isOpen);
 
-  /**
-   * Áp dụng bộ lọc sản phẩm và điều hướng đến trang danh sách sản phẩm.
-   * Được gọi từ các menu danh mục.
-   */
-  const applyFilterAndNavigate = (filterKey, filterValue) => {
+  const applyFilterAndNavigate = (filterKey, filterValue, options = {}) => {
     setProductFilters(prev => ({
       ...prev,
       category: filterKey === 'search' ? '' : (filterKey === 'category' ? filterValue : prev.category),
       search: filterKey === 'search' ? filterValue : '',
-      [filterKey]: filterValue
+      [filterKey]: filterValue,
+      expandedParentCategory: options.expandParent ? filterValue : null,
+      // Khi lọc theo danh mục con, chúng ta nên reset bộ lọc cha
+      category: !options.expandParent ? filterValue : '',
     }));
     navigate('/product-list');
   };
 
-
   // ====================================================================
   // ===                      LOGIC GIỎ HÀNG (CART)                    ===
   // ====================================================================
-
   const fetchCartData = async () => {
     try {
       const res = await fetchDataFromApi('/api/cart/');
@@ -133,11 +131,9 @@ const AppContextWrapper = ({ children }) => {
     } catch (error) { openAlerBox("error", error.message || "Cập nhật số lượng thất bại."); }
   };
 
-
   // ====================================================================
   // ===               LOGIC DANH SÁCH YÊU THÍCH (WISHLIST)             ===
   // ====================================================================
-
   const addToWishlist = async (product) => {
     if (!isLogin) return openAlerBox("error", "Vui lòng đăng nhập.");
     try {
@@ -173,11 +169,9 @@ const AppContextWrapper = ({ children }) => {
 
   const isInWishlist = (productId) => wishlist.some(item => item.productId === productId);
 
-
   // ====================================================================
   // ===                      LOGIC XÁC THỰC (AUTH)                   ===
   // ====================================================================
-
   const logout = useCallback(async (showToast = true) => {
     try {
       await postData('/api/user/logout', {});
@@ -194,9 +188,6 @@ const AppContextWrapper = ({ children }) => {
     }
   }, []);
 
-  // --- SIDE EFFECTS ---
-
-  // Tải dữ liệu người dùng (giỏ hàng, wishlist) khi trạng thái đăng nhập thay đổi
   useEffect(() => {
     if (isLogin) {
       Promise.all([
@@ -224,51 +215,20 @@ const AppContextWrapper = ({ children }) => {
     }
   }, [isLogin, logout]);
 
-  // Kiểm tra token khi ứng dụng tải lần đầu
   useEffect(() => {
     if (localStorage.getItem('accesstoken')) {
       setIsLogin(true);
     }
   }, []);
 
-
   // ====================================================================
   // ===                    CUNG CẤP GIÁ TRỊ CONTEXT                  ===
   // ====================================================================
   const contextValue = useMemo(() => ({
-    // UI State & Handlers
-    openCartPanel,
-    openProductDetailModel,
-    setOpenCartPanel,
-    toggleCartPanel,
-    setOpenProductDetailModel,
-    setProductDataForModel,
-    openAlerBox,
-
-    // Auth State & Handlers
-    isLogin,
-    userData,
-    setIsLogin,
-    setUserData,
-    logout,
-
-    // Cart State & Handlers
-    cart,
-    fetchCartData,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-
-    // Wishlist State & Handlers
-    wishlist,
-    addToWishlist,
-    removeFromWishlist,
-    isInWishlist,
-
-    // Product Filter State & Handlers
-    productFilters,
-    applyFilterAndNavigate,
-
+    openCartPanel, openProductDetailModel, productDataForModel, isLogin, userData, cart, wishlist, productFilters,
+    setOpenCartPanel, setOpenProductDetailModel, setProductDataForModel, setIsLogin, setUserData,
+    toggleCartPanel, openAlerBox, applyFilterAndNavigate, fetchCartData, addToCart, removeFromCart,
+    updateQuantity, addToWishlist, removeFromWishlist, isInWishlist, logout,
   }), [isLogin, userData, cart, openCartPanel, wishlist, productFilters, logout, applyFilterAndNavigate]);
 
   return (
@@ -276,41 +236,48 @@ const AppContextWrapper = ({ children }) => {
       {children}
     </MyContext.Provider>
   );
-}
-
+};
 
 // ====================================================================
 // ===                      COMPONENT APP CHÍNH                     ===
 // ====================================================================
-// Component App giờ đây rất gọn gàng, chỉ chịu trách nhiệm về routing và layout
 function App() {
-  const [maxWidth] = useState('lg');
-  const [fullWidth] = useState(true);
-
-  // Component con để quản lý Dialog, giúp App gọn hơn
+  // Component con để quản lý Dialog, giúp App gọn hơn và sửa lỗi
   const DialogManager = () => {
     const { openProductDetailModel = false, setOpenProductDetailModel, productDataForModel } = useContext(MyContext);
     const handleCloseProductModel = () => setOpenProductDetailModel(false);
 
     return (
       <Dialog
-        fullWidth={fullWidth} maxWidth={maxWidth} open={openProductDetailModel}
-        onClose={handleCloseProductModel} className='product-Detail-Model'
+        fullWidth={true}
+        maxWidth={'lg'}
+        open={openProductDetailModel}
+        onClose={handleCloseProductModel}
+        className='product-Detail-Model flex items-center justify-center'
       >
-        <DialogContent>
-          <div className="flex items-center w-full product-Detail-Model-conteiner relative">
+        <DialogContent sx={{ minHeight: '400px' }}>
+          <div className="flex items-center justify-center w-full product-Detail-Model-conteiner relative">
             <Button
-              className='!absolute !top-0 !right-0 !w-[35px] !h-[35px] !min-w-[35px] !rounded-md !text-[#000] !bg-[#f4f4f4] hover:!bg-[#ff6767] hover:!text-[#fff4f4]'
+              className='!absolute !top-2 !right-2 !z-10 !w-[35px] !h-[35px] !min-w-[35px] !rounded-md !text-[#000] !bg-[#f4f4f4] hover:!bg-[#ff6767] hover:!text-[#fff4f4]'
               onClick={handleCloseProductModel}
             >
               <MdOutlineCloseFullscreen className='text-[24px]' />
             </Button>
-            <div className="col1 w-[38.3%] px-3">
-              <ZoomProductImg images={productDataForModel?.images} />
-            </div>
-            <div className="col2 w-[61.7%] py-8 px-8 pr-10">
-              <ProductDetailsComponets product={productDataForModel} />
-            </div>
+
+            {productDataForModel ? (
+              <>
+                <div className="col1 w-[38.3%] px-3">
+                  <ZoomProductImg images={productDataForModel.images} />
+                </div>
+                <div className="col2 w-[61.7%] py-8 px-8 pr-10">
+                  <ProductDetailsComponets product={productDataForModel} />
+                </div>
+              </>
+            ) : (
+              <div className="w-full flex justify-center items-center h-full absolute top-0 left-0">
+                <CircularProgress />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -326,7 +293,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/product-list" element={<ProductList />} />
-              {/* Route `/category/:categoryId` đã được comment lại để tránh lỗi */}
               <Route path="/product-detail/:productId" element={<ProductDetails />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

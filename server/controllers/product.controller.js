@@ -72,42 +72,6 @@ export async function createProduct(request, response) {
     }
 }
 
-// export async function getAllProduct(request, response) {
-//     try {
-//         let filter = {};
-
-//         if (request.query.categories) {
-//             filter.category = request.query.categories.split(',');
-//         }
-
-//         if (request.query.search) {
-//             filter.name = { $regex: request.query.search, $options: 'i' }; // 'i' để không phân biệt hoa thường
-//         }
-
-//         const page = parseInt(request.query.page, 10) || 1;
-//         const limit = parseInt(request.query.limit, 10) || 10;
-//         const skip = (page - 1) * limit;
-
-//         const products = await ProductModel.find(filter)
-//             .populate('category')
-//             .skip(skip)
-//             .limit(limit)
-//             .sort({ createdAt: -1 });
-//         const totalProducts = await ProductModel.countDocuments(filter);
-
-//         return response.status(200).json({
-//             success: true,
-//             products: products,
-//             totalPages: Math.ceil(totalProducts / limit),
-//             currentPage: page,
-//             totalCount: totalProducts
-//         });
-
-//     } catch (error) {
-//         return response.status(500).json({ message: error.message, error: true });
-//     }
-// }
-
 export async function getAllProduct(request, response) {
     try {
         const {
@@ -229,7 +193,6 @@ export async function deleteProduct(request, response) {
                 }
             }
         }
-        // ------------------------------------
 
         await ProductModel.findByIdAndDelete(request.params.id);
 
@@ -251,8 +214,6 @@ export async function deleteMultipleProducts(request, response) {
             });
         }
 
-        // TODO: Xóa tất cả ảnh trên Cloudinary tương ứng với các sản phẩm này
-        // Đây là bước quan trọng để tránh lưu trữ ảnh rác
         const productsToDelete = await ProductModel.find({ _id: { $in: ids } });
         for (const product of productsToDelete) {
             for (const imageUrl of product.images) {

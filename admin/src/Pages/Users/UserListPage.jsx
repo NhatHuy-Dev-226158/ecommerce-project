@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
-    Typography, Button, Breadcrumbs, Paper, TextField, InputAdornment, Chip, IconButton,
+    Typography, Button, Breadcrumbs, Paper, TextField, InputAdornment, IconButton,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Checkbox,
-    Toolbar, Tooltip, CircularProgress, Avatar
+    Toolbar, Tooltip, CircularProgress, Avatar, Divider
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { FiPlus, FiSearch, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 import { alpha } from '@mui/material/styles';
 import { MyContext } from '../../App';
-import { fetchDataFromApi } from '../../utils/api';
+import { deleteData, fetchDataFromApi, postData } from '../../utils/api';
 import { format } from 'date-fns';
 import ConfirmationDialog from '../../componets/ConfirmationDialog/ConfirmationDialog';
 
@@ -76,7 +76,10 @@ const UserListPage = () => {
     }, [page, rowsPerPage, searchTerm, context]);
 
     useEffect(() => {
-        fetchUsers();
+        const handler = setTimeout(() => {
+            fetchUsers();
+        }, 500); // Debounce
+        return () => clearTimeout(handler);
     }, [fetchUsers]);
 
     // --- CÁC HÀM XỬ LÝ SỰ KIỆN ---
@@ -114,15 +117,9 @@ const UserListPage = () => {
     const getRoleChip = (role) => {
         let className = 'px-2 py-1 text-xs font-semibold rounded-full ';
         switch (role) {
-            case 'ADMIN':
-                className += 'bg-blue-600 text-white';
-                break;
-            case 'STAFF':
-                className += 'bg-sky-500 text-white';
-                break;
-            default:
-                className += 'bg-gray-200 text-gray-700';
-                break;
+            case 'ADMIN': className += 'bg-blue-600 text-white'; break;
+            case 'STAFF': className += 'bg-sky-500 text-white'; break;
+            default: className += 'bg-gray-200 text-gray-700'; break;
         }
         return <span className={className}>{role}</span>;
     };
@@ -130,27 +127,14 @@ const UserListPage = () => {
         let className = 'px-2 py-1 text-xs font-semibold rounded-full ';
         let label = status;
         switch (status) {
-            case 'Active':
-                className += 'bg-green-600 text-white';
-                label = 'Hoạt động';
-                break;
-            case 'Inactive':
-                className += 'bg-yellow-500 text-white';
-                label = 'Không hoạt động';
-                break;
-            case 'Suspended':
-                className += 'bg-red-600 text-white';
-                label = 'Bị khóa';
-                break;
-            default:
-                className += 'bg-gray-200 text-gray-700';
-                break;
+            case 'Active': className += 'bg-green-600 text-white'; label = 'Hoạt động'; break;
+            case 'Inactive': className += 'bg-yellow-500 text-white'; label = 'Không hoạt động'; break;
+            case 'Suspended': className += 'bg-red-600 text-white'; label = 'Bị khóa'; break;
+            default: className += 'bg-gray-200 text-gray-700'; break;
         }
         return <span className={className}>{label}</span>;
     };
 
-
-    // --- CÁC HÀM XỬ LÝ XÓA MỚI ---
     const handleDeleteClick = (id) => {
         setIdsToDelete([id]);
         setIsConfirmOpen(true);
@@ -195,76 +179,89 @@ const UserListPage = () => {
                         {breadcrumbsData.map((c, i) => (c.link ? <Link key={i} to={c.link} className="text-sm hover:underline">{c.name}</Link> : <Typography key={i} className="text-sm font-semibold">{c.name}</Typography>))}
                     </Breadcrumbs>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button component={Link} to="/add-user" variant="contained" startIcon={<FiPlus />} sx={{ textTransform: 'none', borderRadius: '8px' }}>
-                        Thêm người dùng
-                    </Button>
-                </div>
             </div>
 
             <Paper elevation={0} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                 <EnhancedTableToolbar numSelected={selected.length} onSearchChange={handleSearchChange} onBulkDelete={handleBulkDeleteClick} />
-                <TableContainer>
-                    <Table>
-                        <TableHead sx={{ bgcolor: 'grey.50' }}>
-                            <TableRow>
-                                <TableCell padding="checkbox"><Checkbox color="primary" indeterminate={selected.length > 0 && selected.length < users.length} checked={users.length > 0 && selected.length === users.length} onChange={handleSelectAllClick} /></TableCell>
-                                <TableCell>Người dùng</TableCell>
-                                <TableCell>Vai trò</TableCell>
-                                <TableCell>Trạng thái</TableCell>
-                                <TableCell>Ngày tham gia</TableCell>
-                                <TableCell align="right">Hành động</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {isLoading && users.length === 0 ? (
-                                <TableRow><TableCell colSpan={6} align="center" sx={{ p: 4 }}><CircularProgress /></TableCell></TableRow>
-                            ) : users.map((row) => {
-                                const isItemSelected = isSelected(row._id);
-                                return (
-                                    <TableRow key={row._id} hover onClick={(event) => handleClick(event, row._id)} role="checkbox" tabIndex={-1} selected={isItemSelected}>
-                                        <TableCell padding="checkbox"><Checkbox color="primary" checked={isItemSelected} /></TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar src={row.avatar || `https://i.pravatar.cc/40?u=${row.email}`} alt={row.name} />
-                                                <div>
-                                                    <p className="font-medium text-gray-800">{row.name}</p>
-                                                    <p className="text-sm text-gray-500">{row.email}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getRoleChip(row.role)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {getStatusChip(row.status)}
-                                        </TableCell>
-                                        <TableCell>{format(new Date(row.createdAt), 'dd/MM/yyyy')}</TableCell>
-                                        <TableCell align="right">
-                                            <Tooltip title="Sửa người dùng">
-                                                <Link to={`/edit-user/${row._id}`} onClick={(e) => e.stopPropagation()}>
-                                                    <IconButton size="small"><FiEdit /></IconButton>
-                                                </Link>
-                                            </Tooltip>
-                                            <Tooltip title="Xóa">
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteClick(row._id);
-                                                    }}
-                                                >
-                                                    <FiTrash2 />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
+
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64"><CircularProgress /></div>
+                ) : users.length === 0 ? (
+                    <Typography className="text-center text-gray-500 py-8">Không có người dùng nào.</Typography>
+                ) : (
+                    <>
+                        <TableContainer className="hidden md:block">
+                            <Table>
+                                <TableHead sx={{ bgcolor: 'grey.50' }}>
+                                    <TableRow>
+                                        <TableCell padding="checkbox"><Checkbox color="primary" indeterminate={selected.length > 0 && selected.length < users.length} checked={users.length > 0 && selected.length === users.length} onChange={handleSelectAllClick} /></TableCell>
+                                        <TableCell>Người dùng</TableCell>
+                                        <TableCell>Vai trò</TableCell>
+                                        <TableCell>Trạng thái</TableCell>
+                                        <TableCell>Ngày tham gia</TableCell>
+                                        <TableCell align="right">Hành động</TableCell>
                                     </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                </TableHead>
+                                <TableBody>
+                                    {users.map((row) => {
+                                        const isItemSelected = isSelected(row._id);
+                                        return (
+                                            <TableRow key={row._id} hover onClick={(event) => handleClick(event, row._id)} role="checkbox" tabIndex={-1} selected={isItemSelected}>
+                                                <TableCell padding="checkbox"><Checkbox color="primary" checked={isItemSelected} /></TableCell>
+                                                <TableCell><div className="flex items-center gap-3"><Avatar src={row.avatar || `https-i.pravatar.cc/40?u=${row.email}`} alt={row.name} /><div><p className="font-medium text-gray-800">{row.name}</p><p className="text-sm text-gray-500">{row.email}</p></div></div></TableCell>
+                                                <TableCell>{getRoleChip(row.role)}</TableCell>
+                                                <TableCell>{getStatusChip(row.status)}</TableCell>
+                                                <TableCell>{format(new Date(row.createdAt), 'dd/MM/yyyy')}</TableCell>
+                                                <TableCell align="right">
+                                                    <Tooltip title="Sửa người dùng"><Link to={`/edit-user/${row._id}`} onClick={(e) => e.stopPropagation()}><IconButton size="small"><FiEdit /></IconButton></Link></Tooltip>
+                                                    <Tooltip title="Xóa"><IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteClick(row._id); }}><FiTrash2 /></IconButton></Tooltip>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        <div className="block md:hidden p-2 sm:p-4 space-y-3">
+                            {users.map((user) => (
+                                <div key={user._id} className="bg-white border rounded-lg p-4 space-y-3 shadow-sm">
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Checkbox checked={isSelected(user._id)} onChange={(event) => handleClick(event, user._id)} onClick={(e) => e.stopPropagation()} />
+                                            <Avatar src={user.avatar || `https-i.pravatar.cc/40?u=${user.email}`} />
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-gray-800 truncate">{user.name}</p>
+                                                <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex-shrink-0">
+                                            {getRoleChip(user.role)}
+                                        </div>
+                                    </div>
+                                    <Divider />
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-500">Trạng thái:</span>
+                                        {getStatusChip(user.status)}
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-500">Ngày tham gia:</span>
+                                        <span className="font-medium">{format(new Date(user.createdAt), 'dd/MM/yyyy')}</span>
+                                    </div>
+                                    <div className="pt-2 border-t flex justify-end gap-2">
+                                        <Link to={`/edit-user/${user._id}`}>
+                                            <Button size="small" variant="outlined" startIcon={<FiEdit />}>Sửa</Button>
+                                        </Link>
+                                        <Button size="small" variant="outlined" color="error" startIcon={<FiTrash2 />} onClick={() => handleDeleteClick(user._id)}>
+                                            Xóa
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"
@@ -276,6 +273,7 @@ const UserListPage = () => {
                     labelRowsPerPage="Số dòng/trang:"
                 />
             </Paper>
+
             <ConfirmationDialog
                 open={isConfirmOpen}
                 onClose={handleCloseConfirm}

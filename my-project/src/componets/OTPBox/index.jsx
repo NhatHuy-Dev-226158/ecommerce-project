@@ -1,5 +1,3 @@
-// src/components/OtpInput.jsx
-
 import React, { useState, useRef, useEffect } from 'react';
 
 const OtpInput = ({ length = 6, onOtpSubmit = () => { } }) => {

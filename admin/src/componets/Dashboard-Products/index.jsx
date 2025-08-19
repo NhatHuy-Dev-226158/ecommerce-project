@@ -1,47 +1,23 @@
 import React, { useState } from 'react';
 import {
-    Button,
-    Checkbox,
-    IconButton,
-    Menu,
-    MenuItem,
-    Paper,
-    TableContainer,
-    TablePagination,
-    Avatar,
-    Box,
-    Typography,
-    Chip,
-    Link,
-    Divider,
-    TextField,
+    Button, Checkbox, IconButton, Menu, MenuItem, Paper, TableContainer,
+    TablePagination, Avatar, Box, Typography, Chip, Link, Divider, TextField,
     InputAdornment,
 } from '@mui/material';
 import { IoIosSearch } from 'react-icons/io';
 import {
-    FiEdit,
-    FiTrash2,
-    FiMoreHorizontal,
-    FiCopy,
-    FiChevronDown,
-    FiChevronUp,
-    FiEyeOff,
-    FiEye,
-    FiStar,
-    FiTrendingUp,
-    FiAlertTriangle,
-    FiTarget,
-    FiDollarSign,
-    FiDownload,
-    FiUpload,
-    FiColumns,
-    FiMoreVertical,
+    FiEdit, FiTrash2, FiMoreHorizontal, FiCopy, FiChevronDown, FiChevronUp,
+    FiEyeOff, FiEye, FiStar, FiTrendingUp, FiAlertTriangle, FiTarget,
+    FiDollarSign, FiDownload, FiUpload, FiColumns, FiMoreVertical,
 } from 'react-icons/fi';
 import { FaPlus, FaFilter } from 'react-icons/fa';
 import { VscClearAll } from "react-icons/vsc";
 
+//================================================================================
+// DỮ LIỆU VÀ HÀM TIỆN ÍCH
+//================================================================================
 
-// --- DỮ LIỆU MẪU VỚI originalPrice ---
+// Ghi chú: Trong ứng dụng thực tế, dữ liệu này sẽ được lấy từ API.
 const sampleProducts = [
     { id: 'PROD-001', name: 'Apple MacBook Pro 17"', sku: 'APL-MBP-17', category: 'Laptop', vendor: 'Apple Inc.', originalPrice: 75000000, price: 70000000, stock: 12, sales: 150, rating: 4.9, published: 'Đang bán', image: '/720x840.png', dateAdded: '2024-05-20', variants: 3, tags: ['17-inch', 'M3 Pro', '1TB SSD'], revenue: 10500000000, profit: 1575000000, profitMargin: 15.0, salesTrend: 'up' },
     { id: 'PROD-002', name: 'Microsoft Surface Pro 9', sku: 'MS-SFP-9', category: 'Laptop 2-in-1', vendor: 'Microsoft', originalPrice: 96000000, price: 48000000, stock: 25, sales: 98, rating: 4.8, published: 'Đang bán', image: '/720x840.png', dateAdded: '2024-05-18', variants: 4, tags: ['i7', '16GB RAM'], revenue: 4704000000, profit: 846720000, profitMargin: 18.0, salesTrend: 'up' },
@@ -50,15 +26,33 @@ const sampleProducts = [
     { id: 'PROD-005', name: 'Bàn phím Logitech MX Keys', sku: 'LOGI-MXK', category: 'Phụ kiện', vendor: 'Logitech', originalPrice: null, price: 2890000, stock: 50, sales: 120, rating: 4.9, published: 'Ẩn', image: '/720x840.png', dateAdded: '2024-03-15', variants: 2, tags: ['Wireless', 'Backlit'], revenue: 346800000, profit: 52020000, profitMargin: 15.0, salesTrend: 'up' },
 ];
 
+/** Định dạng một số thành chuỗi tiền tệ Việt Nam (VND). */
 const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+/** Định dạng chuỗi ngày thành định dạng ngày Việt Nam (dd/mm/yyyy). */
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('vi-VN');
 
-// --- COMPONENT CON CHO TỪNG HÀNG SẢN PHẨM ---
+
+//================================================================================
+// COMPONENT CON: PRODUCT ROW
+//================================================================================
+
+/**
+ * @component ProductRow
+ * @description Hiển thị một hàng dữ liệu sản phẩm trong bảng, bao gồm cả phần chi tiết có thể mở rộng.
+ * @param {object} props - Props cho component.
+ * @param {object} props.product - Dữ liệu của sản phẩm.
+ * @param {boolean} props.isSelected - Trạng thái cho biết hàng có đang được chọn hay không.
+ * @param {Function} props.onSelect - Callback được gọi khi người dùng chọn/bỏ chọn hàng này.
+ */
 const ProductRow = ({ product, isSelected, onSelect }) => {
+    // State quản lý menu hành động (...)
     const [anchorEl, setAnchorEl] = useState(null);
+    // State quản lý việc mở/đóng phần thông tin chi tiết
     const [isExpanded, setIsExpanded] = useState(false);
     const openMenu = Boolean(anchorEl);
 
+    // Cấu hình màu sắc cho các trạng thái sản phẩm
     const statusConfig = {
         'Đang bán': 'bg-green-100 text-green-800',
         'Sắp hết': 'bg-yellow-100 text-yellow-800',
@@ -67,49 +61,36 @@ const ProductRow = ({ product, isSelected, onSelect }) => {
     };
     const currentStatusColor = statusConfig[product.published] || 'bg-gray-100 text-gray-800';
 
+    /**
+     * @component PerformanceTags
+     * @description Một sub-component để hiển thị các tag hiệu suất dựa trên dữ liệu sản phẩm.
+     * @returns {JSX.Element} Một nhóm các Chip component hoặc text nếu không có tag nào.
+     */
     const PerformanceTags = ({ product }) => {
         const tags = [];
-        if (product.profit < 0) {
-            tags.push(<Chip key="loss" icon={<FiDollarSign />} label="Gây lỗ" color="error" size="small" variant="outlined" />);
-        }
-        if (product.sales > 100) {
-            tags.push(<Chip key="bestseller" icon={<FiStar />} label="Bestseller" color="warning" size="small" variant="outlined" />);
-        }
-        if (product.salesTrend === 'up') {
-            tags.push(<Chip key="trending" icon={<FiTrendingUp />} label="Xu hướng tăng" color="success" size="small" variant="outlined" />);
-        }
-        if (product.profitMargin >= 15.0) {
-            tags.push(<Chip key="high-profit" icon={<FiTarget />} label="Lợi nhuận cao" color="info" size="small" variant="outlined" />);
-        }
-        if (product.stock > 0 && product.stock < 10) {
-            tags.push(<Chip key="low-stock" icon={<FiAlertTriangle />} label="Tồn kho thấp" color="error" size="small" variant="outlined" />);
-        }
-        if (tags.length === 0) {
-            return <Typography variant="caption" color="text.secondary">Không có</Typography>;
-        }
-        return (
-            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'start', flexWrap: 'wrap' }}>
-                {tags}
-            </Box>
-        );
+        if (product.profit < 0) tags.push(<Chip key="loss" icon={<FiDollarSign />} label="Gây lỗ" color="error" size="small" variant="outlined" />);
+        if (product.sales > 100) tags.push(<Chip key="bestseller" icon={<FiStar />} label="Bestseller" color="warning" size="small" variant="outlined" />);
+        if (product.salesTrend === 'up') tags.push(<Chip key="trending" icon={<FiTrendingUp />} label="Xu hướng tăng" color="success" size="small" variant="outlined" />);
+        if (product.profitMargin >= 15.0) tags.push(<Chip key="high-profit" icon={<FiTarget />} label="Lợi nhuận cao" color="info" size="small" variant="outlined" />);
+        if (product.stock > 0 && product.stock < 10) tags.push(<Chip key="low-stock" icon={<FiAlertTriangle />} label="Tồn kho thấp" color="error" size="small" variant="outlined" />);
+
+        if (tags.length === 0) return <Typography variant="caption" color="text.secondary">Không có</Typography>;
+        return <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'start', flexWrap: 'wrap' }}>{tags}</Box>;
     };
 
-    // --- HIỂN THỊ GIẢM GIÁ ---
+    // Kiểm tra xem sản phẩm có đang được giảm giá hay không
     const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 
     return (
         <>
+            {/* Hàng chính chứa thông tin tóm tắt */}
             <tr className={`bg-white border-b hover:bg-slate-50 transition-colors ${isSelected ? '!bg-indigo-50' : ''}`}>
                 <td className="p-2"><Checkbox size="small" color="primary" checked={isSelected} onChange={() => onSelect(product.id)} /></td>
                 <td className="px-3 py-2">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Link href={`/product/${product.id}`} underline="none">
-                            <Avatar src={product.image} variant="rounded" sx={{ width: 40, height: 40, cursor: 'pointer', border: '1px solid #e5e7eb' }} />
-                        </Link>
+                        <Link href={`/product/${product.id}`} underline="none"><Avatar src={product.image} variant="rounded" sx={{ width: 40, height: 40, cursor: 'pointer', border: '1px solid #e5e7eb' }} /></Link>
                         <Box>
-                            <Link href={`/product/${product.id}`} underline="hover" color="inherit">
-                                <Typography component="p" sx={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{product.name}</Typography>
-                            </Link>
+                            <Link href={`/product/${product.id}`} underline="hover" color="inherit"><Typography component="p" sx={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{product.name}</Typography></Link>
                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>ID: {product.id}</Typography>
                         </Box>
                     </Box>
@@ -117,46 +98,28 @@ const ProductRow = ({ product, isSelected, onSelect }) => {
                 <td className="px-3 py-2 text-center"><span className={`px-2 py-1 text-xs font-medium rounded-full ${currentStatusColor}`}>{product.published}</span></td>
                 <td className="px-3 py-2 text-right">
                     <Typography fontWeight="bold" variant="body2">{formatCurrency(product.price)}</Typography>
-                    {hasDiscount && (
-                        <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
-                            {formatCurrency(product.originalPrice)}
-                        </Typography>
-                    )}
+                    {hasDiscount && <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>{formatCurrency(product.originalPrice)}</Typography>}
                 </td>
                 <td className="px-3 py-2 text-center">
-                    {hasDiscount ? (
-                        <Chip
-                            label={`-${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%`}
-                            color="error"
-                            size="small"
-                        />
-                    ) : (
-                        <Typography variant="body2" color="text.secondary">—</Typography>
-                    )}
+                    {hasDiscount ? <Chip label={`-${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%`} color="error" size="small" /> : <Typography variant="body2" color="text.secondary">—</Typography>}
                 </td>
                 <td className="px-3 py-2 text-center font-semibold">{product.stock}</td>
                 <td className="px-3 py-2 text-center font-semibold">{product.sales}</td>
-                <td className={`px-3 py-2 text-right font-semibold ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(product.profit)}
-                </td>
+                <td className={`px-3 py-2 text-right font-semibold ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(product.profit)}</td>
                 <td className="px-3 py-2 text-center">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                        <FiStar className="text-yellow-500" />
-                        <Typography variant="body2" fontWeight="medium">{product.rating.toFixed(1)}</Typography>
-                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}><FiStar className="text-yellow-500" /><Typography variant="body2" fontWeight="medium">{product.rating.toFixed(1)}</Typography></Box>
                 </td>
                 <td className="px-3 py-2 text-center">
                     <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}><FiMoreVertical /></IconButton>
                     <Menu anchorEl={anchorEl} open={openMenu} onClose={() => setAnchorEl(null)} PaperProps={{ variant: 'outlined', elevation: 0 }}>
-                        <MenuItem onClick={() => { }}><FiEdit className="mr-2" />Sửa</MenuItem>
-                        <MenuItem onClick={() => { }}><FiCopy className="mr-2" />Copy</MenuItem>
-                        <MenuItem onClick={() => { }} sx={{ color: 'error.main' }}><FiTrash2 className="mr-2" />Xóa</MenuItem>
+                        <MenuItem><FiEdit className="mr-2" />Sửa</MenuItem>
+                        <MenuItem><FiCopy className="mr-2" />Copy</MenuItem>
+                        <MenuItem sx={{ color: 'error.main' }}><FiTrash2 className="mr-2" />Xóa</MenuItem>
                     </Menu>
-                    <IconButton size="small" onClick={() => setIsExpanded(!isExpanded)} title="Xem thêm">
-                        {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-                    </IconButton>
+                    <IconButton size="small" onClick={() => setIsExpanded(!isExpanded)} title="Xem thêm">{isExpanded ? <FiChevronUp /> : <FiChevronDown />}</IconButton>
                 </td>
             </tr>
+            {/* Hàng phụ chứa thông tin chi tiết, chỉ hiển thị khi isExpanded là true */}
             {isExpanded && (
                 <tr className="bg-slate-50">
                     <td colSpan={10}>
@@ -176,45 +139,49 @@ const ProductRow = ({ product, isSelected, onSelect }) => {
     );
 };
 
+//================================================================================
+// COMPONENT CHÍNH: PRODUCTS TABLE
+//================================================================================
 
-// --- COMPONENT CHÍNH ---
+/**
+ * @component ProductsTable
+ * @description Component chính hiển thị toàn bộ giao diện quản lý sản phẩm.
+ */
 const ProductsTable = () => {
-    const [selected, setSelected] = useState([]);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [actionsMenuAnchor, setActionsMenuAnchor] = useState(null);
+    // --- STATE MANAGEMENT ---
+    const [selected, setSelected] = useState([]); // Quản lý danh sách ID sản phẩm được chọn
+    const [page, setPage] = useState(0); // Quản lý trang hiện tại
+    const [rowsPerPage, setRowsPerPage] = useState(5); // Quản lý số hàng trên mỗi trang
+    const [actionsMenuAnchor, setActionsMenuAnchor] = useState(null); // Quản lý menu hành động (...)
 
+    // --- EVENT HANDLERS ---
     const handleSelectAll = (event) => {
-        if (event.target.checked) {
-            setSelected(sampleProducts.map((n) => n.id));
-        } else {
-            setSelected([]);
-        }
+        if (event.target.checked) setSelected(sampleProducts.map((n) => n.id));
+        else setSelected([]);
     };
     const handleSelectOne = (id) => {
         const index = selected.indexOf(id);
         let newSelected = [];
-        if (index === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else {
-            newSelected = selected.filter(selId => selId !== id);
-        }
+        if (index === -1) newSelected = newSelected.concat(selected, id);
+        else newSelected = selected.filter(selId => selId !== id);
         setSelected(newSelected);
     };
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+        setPage(0); // Reset về trang đầu tiên khi thay đổi số hàng
     };
-
     const handleOpenActionsMenu = (event) => setActionsMenuAnchor(event.currentTarget);
     const handleCloseActionsMenu = () => setActionsMenuAnchor(null);
 
+    // --- RENDER ---
     return (
         <div className="my-5">
             <Paper sx={{ borderRadius: 4, overflow: 'hidden' }} variant="outlined">
+                {/* Thanh công cụ: Hiển thị khác nhau tùy thuộc vào có sản phẩm nào được chọn hay không */}
                 <Box sx={{ p: 2, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, borderBottom: 1, borderColor: 'divider' }}>
                     {selected.length > 0 ? (
+                        // Giao diện khi có sản phẩm được chọn
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                             <Typography variant="subtitle1" fontWeight="bold" sx={{ flexGrow: 1 }}>{selected.length} đã chọn</Typography>
                             <Button variant="text" size="small" startIcon={<FiEye />}>Đăng bán</Button>
@@ -224,40 +191,26 @@ const ProductsTable = () => {
                             <Button variant="text" size="small" startIcon={<VscClearAll />} onClick={() => setSelected([])}>Bỏ chọn</Button>
                         </Box>
                     ) : (
+                        // Giao diện mặc định
                         <>
                             <Typography variant="h6" fontWeight="bold">Sản phẩm ({sampleProducts.length})</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <TextField
-                                    size="small"
-                                    variant="outlined"
-                                    placeholder="Tìm kiếm..."
-                                    sx={{ width: { xs: '100%', sm: 240 } }}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <IoIosSearch size={20} />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
+                                <TextField size="small" variant="outlined" placeholder="Tìm kiếm..." sx={{ width: { xs: '100%', sm: 240 } }} InputProps={{ startAdornment: (<InputAdornment position="start"><IoIosSearch size={20} /></InputAdornment>), }} />
                                 <Button variant="outlined" startIcon={<FaFilter />}>Lọc</Button>
                                 <Button variant="contained" className='!py-[5px]' startIcon={<FaPlus />}>Thêm mới</Button>
                                 <IconButton onClick={handleOpenActionsMenu}><FiMoreHorizontal /></IconButton>
-                                <Menu
-                                    anchorEl={actionsMenuAnchor}
-                                    open={Boolean(actionsMenuAnchor)}
-                                    onClose={handleCloseActionsMenu}
-                                >
-                                    <MenuItem onClick={handleCloseActionsMenu}><FiDownload className="mr-2" /> Xuất file Excel</MenuItem>
-                                    <MenuItem onClick={handleCloseActionsMenu}><FiUpload className="mr-2" /> Nhập từ file</MenuItem>
+                                <Menu anchorEl={actionsMenuAnchor} open={Boolean(actionsMenuAnchor)} onClose={handleCloseActionsMenu}>
+                                    <MenuItem><FiDownload className="mr-2" /> Xuất file Excel</MenuItem>
+                                    <MenuItem><FiUpload className="mr-2" /> Nhập từ file</MenuItem>
                                     <Divider />
-                                    <MenuItem onClick={handleCloseActionsMenu}><FiColumns className="mr-2" /> Tùy chỉnh cột</MenuItem>
+                                    <MenuItem><FiColumns className="mr-2" /> Tùy chỉnh cột</MenuItem>
                                 </Menu>
                             </Box>
                         </>
                     )}
                 </Box>
 
+                {/* Bảng dữ liệu sản phẩm */}
                 <TableContainer>
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-gray-500 uppercase bg-gray-50">
@@ -275,12 +228,15 @@ const ProductsTable = () => {
                             </tr>
                         </thead>
                         <tbody>
+                            {/* Cắt mảng dữ liệu để phân trang và render từng hàng */}
                             {sampleProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(product => (
                                 <ProductRow key={product.id} product={product} isSelected={selected.indexOf(product.id) !== -1} onSelect={handleSelectOne} />
                             ))}
                         </tbody>
                     </table>
                 </TableContainer>
+
+                {/* Component phân trang */}
                 <TablePagination rowsPerPageOptions={[5, 10, 25]} component="div" count={sampleProducts.length} rowsPerPage={rowsPerPage} page={page} onPageChange={handleChangePage} onRowsPerPageChange={handleChangeRowsPerPage} />
             </Paper>
         </div>

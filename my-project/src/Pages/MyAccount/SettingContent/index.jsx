@@ -145,5 +145,4 @@ const SettingsContent = () => {
     );
 };
 
-// --- DÒNG EXPORT ĐÃ ĐƯỢC THÊM VÀO ---
 export default SettingsContent;

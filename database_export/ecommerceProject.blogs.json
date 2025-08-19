@@ -1,0 +1,52 @@
+[{
+  "_id": {
+    "$oid": "68a22063157d348ee25d15bb"
+  },
+  "title": "Ngày Đầu Tiên Học Lập Trình - Một Hành Trình Thú Vị!",
+  "content": "Chào mọi người! Tụi em là sinh viên đang làm dự án website thương mại điện tử (TMĐT) cho siêu thị mini, nên hôm nay em muốn chia sẻ một chút về ngày đầu tiên học lập trình nha. Thật ra lúc đầu em hơi lúng túng lắm, vì không biết bắt đầu từ đâu, nhìn mấy dòng code như React hay Node.js là muốn bỏ cuộc luôn!\r\n\r\nBước Đầu Gặp Khó\r\n\r\nNgày đầu, em mở máy, cài đặt mấy thứ như Visual Studio Code, rồi học cách chạy một trang web đơn giản bằng React. Em nhớ mãi cái cảm giác bối rối khi thấy lỗi \"Module not found\" trên màn hình. Tụi bạn bảo cứ bình tĩnh, đọc lỗi rồi Google là xong, nhưng em thấy khó hiểu quá! Sau đó, em thử làm theo hướng dẫn trên YouTube, cuối cùng cũng thấy cái \"Hello World\" hiện lên. Hạnh phúc ghê luôn!\r\n\r\nPhát Hiện Thú Vị\r\n\r\nCàng học, em càng thấy lập trình vui. Ví dụ, khi làm giao diện cho website TMĐT, em dùng MUI để tạo nút \"Thêm vào giỏ hàng\", rồi Tailwind CSS để làm nó đẹp hơn trên điện thoại. Em còn học cách kết nối với MongoDB để lưu thông tin sản phẩm, kiểu như tự tay xây một siêu thị online nhỏ xíu. Thấy sản phẩm hiện lên trang web do mình làm, em vui muốn khóc luôn!\r\n\r\nLời Khuyên Nhỏ\r\n\r\nNếu bạn nào mới học lập trình, đừng sợ lỗi nha. Tụi em cũng vậy, ban đầu toàn gặp khó, nhưng cứ kiên nhẫn thử lại. Học cùng bạn bè hoặc hỏi thầy cô cũng giúp nhiều lắm. Với dự án TMĐT, em đang cố gắng làm sao để khách hàng dễ dùng, như thêm chức năng tìm kiếm nhanh. Hy vọng tụi em hoàn thành tốt!\r\n\r\nThôi, em kể vậy thôi, mai còn code tiếp đây! Ai có kinh nghiệm gì thì chia sẻ với em nha, cảm ơn mọi người! 😄",
+  "excerpt": "Chào mọi người! Tụi em là sinh viên đang làm dự án website thương mại điện tử (TMĐT) cho siêu thị mini, nên hôm nay em muốn chia sẻ một chút về ngày đầu tiên học lập trình nha. Thật ra lúc đầu em hơi lúng túng lắm, vì không biết bắt đầu từ đâu, nhìn mấy dòng code như React hay Node.js là muốn bỏ cuộc luôn!",
+  "featuredImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755455586/ac4rsdmwxp39uffmmlpv.png",
+  "author": {
+    "$oid": "6899f33ab4ae76d7acec3d9a"
+  },
+  "category": "Danh mục  8",
+  "tags": [
+    "#hahah"
+  ],
+  "isPublished": true,
+  "views": 0,
+  "slug": "ngy-u-tin-hc-lp-trnh-mt-hnh-trnh-th-v-1755455587015",
+  "createdAt": {
+    "$date": "2025-08-17T18:33:07.016Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T01:08:23.370Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a282a849b3481423a7e1cb"
+  },
+  "title": "ưerqerrrt",
+  "content": "hhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAShhahhakdAS\r\n\r\nhhahhakdAShhahhakdAS\r\nhhahhakdAShhahhakdAS\r\nhhahhakdAS\r\nhhahhakdAShhahhakdAS\r\n\r\n\r\nhhahhakdAShhahhakdAShhahhakdAShhahhakdAS",
+  "excerpt": "\r\nhhahhakdAS\r\n",
+  "featuredImage": "https://res.cloudinary.com/dokaokntx/image/upload/v1755480743/omq9qhblsk5rmlxstpqm.png",
+  "author": {
+    "$oid": "68a14142b2b2ddd8dd1a4b1e"
+  },
+  "category": "689c810b8e3a25232fbd0fa4",
+  "tags": [
+    "qưeqwe"
+  ],
+  "isPublished": true,
+  "views": 0,
+  "slug": "erqerrrt-1755480744081",
+  "createdAt": {
+    "$date": "2025-08-18T01:32:24.082Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T01:32:24.082Z"
+  },
+  "__v": 0
+}]

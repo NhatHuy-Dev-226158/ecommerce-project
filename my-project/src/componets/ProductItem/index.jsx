@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import Rating from '@mui/material/Rating';
 import Button from '@mui/material/Button';
 import { TbZoomScanFilled } from "react-icons/tb";
@@ -38,7 +38,7 @@ const ProductItem = ({ product }) => {
     const img2 = product.images?.[1] || img1;
 
     return (
-        <div className='productItem group flex flex-col bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-2xl hover:border-blue-500/50 hover:-translate-y-1'>
+        <div className='productItem !w-[220px] !h-[385px] group flex flex-col bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-2xl hover:border-blue-500/50 hover:-translate-y-1'>
             <div className="img-Wrapper w-full overflow-hidden relative">
                 <Link to={`/product-detail/${product._id}`}>
                     <div className="img h-[210px]">
@@ -71,7 +71,11 @@ const ProductItem = ({ product }) => {
             </div>
 
             <div className="info p-2 flex flex-col flex-grow">
-                <h6 className='text-sm text-gray-500 mb-1'>Thương hiệu</h6>
+                <h6 className='text-sm text-gray-500 mb-1'>Thương hiệu:
+                    <span className='font-medium text-gray-800 ml-1'>
+                        {product.brand || 'Chưa cập nhật'}
+                    </span>
+                </h6>
                 <h3 className='text-base font-semibold text-gray-800 overflow-hidden'>
                     <Link to={`/product-detail/${product.id}`} className='hover:text-red-500 transition-colors'>
                         {product.name}
@@ -79,7 +83,6 @@ const ProductItem = ({ product }) => {
                 </h3>
                 <div className="my-2 flex items-center gap-8 ">
                     <Rating name="read-only" value={product.rating} size="small" readOnly />
-                    <p className='text-[12px] text-gray-500'>Review(123)</p>
                 </div>
 
                 <div className="grid">

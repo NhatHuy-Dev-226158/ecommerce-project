@@ -8,6 +8,7 @@ import generateRefreshToken from '../utils/generateRefreshToken.js';
 import mongoose from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import { accountPendingApprovalEmail } from '../utils/emailTemplates.js';
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -18,62 +19,69 @@ cloudinary.config({
 
 export async function registerUserController(request, response) {
     try {
-        let user;
-
         const { role, name, email, password, mobile, birthday, gender } = request.body;
+
         if (!name || !email || !password) {
-            return response.status(400).json({
-                message: "Provide email, name, password",
-                error: true,
-                success: false,
-            })
+            return response.status(400).json({ message: "Vui lòng cung cấp tên, email, và mật khẩu." });
         }
 
-        user = await UserModel.findOne({ email: email });
-        if (user) {
-            return response.json({
-                message: "This email is already registered",
-                error: true,
-                success: false
-            })
+        const existingUser = await UserModel.findOne({ email: email });
+        if (existingUser) {
+            return response.status(400).json({ message: "Email này đã được đăng ký.", error: true, success: false });
+        }
+
+        // --- LOGIC PHÂN QUYỀN VÀ TRẠNG THÁI ---
+        let userStatus = "Active";
+        let successMessage = "Đăng ký thành công! Vui lòng xác thực email của bạn.";
+        let emailSubject = "Xác thực email từ Cửa hàng của bạn";
+
+        // Nếu đây là yêu cầu tạo tài khoản có vai trò đặc biệt (từ trang admin)
+        if (role === 'ADMIN' || role === 'STAFF') {
+            userStatus = "Inactive"; // Đặt trạng thái là "chờ duyệt"
+            successMessage = `Tạo tài khoản ${role} thành công! Tài khoản cần được quản trị viên kích hoạt.`;
+            emailSubject = `Tài khoản ${role} của bạn đã được tạo`;
         }
 
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-
         const salt = await bcryptjs.genSalt(10);
-        const hashPassword = await bcryptjs.hash(password, salt)
-        user = new UserModel({
-            name: name,
-            email: email,
+        const hashPassword = await bcryptjs.hash(password, salt);
+
+        const newUser = new UserModel({
+            name,
+            email,
             password: hashPassword,
-            mobile: mobile,
-            birthday: birthday,
-            gender: gender,
-            role: role,
+            mobile,
+            birthday,
+            gender,
+            role: role || 'USER',
+            status: userStatus,
             otp: verifyCode,
-            otpExpires: Date.now() + 600000
+            otpExpires: Date.now() + 600000,
         });
 
-        await user.save()
+        await newUser.save();
 
-        await sendEmailFun(
-            email,
-            "Verify email from MiniMarket",
-            "",
-            verificationEmail(name, verifyCode)
-        )
-
-        // Create a JWT token for verification purposes
-        const token = jwt.sign(
-            { email: user.email, id: user._id },
-            process.env.JSON_WEB_TOKEN_SECRET_KEY
-        );
+        // Gửi email thông báo phù hợp
+        if (userStatus === 'Active') {
+            await sendEmailFun(
+                email,
+                emailSubject,
+                "",
+                verificationEmail(name, verifyCode)
+            );
+        } else {
+            await sendEmailFun(
+                email,
+                emailSubject,
+                "",
+                accountPendingApprovalEmail(name, role)
+            );
+        }
 
         return response.status(200).json({
             success: true,
             error: false,
-            message: "User registered successfully! Please verify your email.",
-            token: token,
+            message: successMessage,
         });
 
     } catch (error) {
@@ -81,7 +89,7 @@ export async function registerUserController(request, response) {
             message: error.message || error,
             error: true,
             success: false
-        })
+        });
     }
 }
 
@@ -220,12 +228,23 @@ export async function adminLoginController(request, response) {
 
         // 2. (QUAN TRỌNG) Kiểm tra vai trò
         if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
-            return response.status(403).json({ // 403 Forbidden
+            return response.status(403).json({
                 message: "Truy cập bị từ chối. Bạn không có quyền đăng nhập vào trang quản trị.",
                 error: true,
                 success: false
             });
         }
+
+        // === BƯỚC SỬA LỖI: KIỂM TRA TRẠNG THÁI TÀI KHOẢN ===
+        // Bước này phải được thực hiện sau khi đã xác nhận họ là admin/staff
+        if (user.status !== 'Active') {
+            return response.status(403).json({ // 403 Forbidden
+                message: "Tài khoản của bạn chưa được kích hoạt hoặc đã bị khóa. Vui lòng liên hệ quản trị viên cấp cao.",
+                error: true,
+                success: false
+            });
+        }
+        // ===============================================
 
         // 3. Nếu mọi thứ hợp lệ, tạo token và trả về response
         const accesstoken = generateAccessToken(user._id);
@@ -826,5 +845,48 @@ export const updateUserByAdmin = async (request, response) => {
         });
     } catch (error) {
         return response.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// === [ADMIN] XÓA MỘT NGƯỜI DÙNG ===
+export const deleteUserByAdmin = async (req, res) => {
+    try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "ID người dùng không hợp lệ." });
+        }
+
+        const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng." });
+        }
+
+        // Xóa avatar của người dùng trên Cloudinary nếu có
+
+        res.status(200).json({ success: true, message: "Đã xóa người dùng thành công." });
+    } catch (error) {
+        res.status(500).json({ message: error.message, error: true, success: false });
+    }
+};
+
+// === [ADMIN] XÓA NHIỀU NGƯỜI DÙNG ===
+export const deleteMultipleUsersByAdmin = async (req, res) => {
+    try {
+        const { ids } = req.body; // Nhận mảng IDs
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: "Vui lòng cung cấp một mảng ID người dùng." });
+        }
+
+        // Xóa tất cả avatar của các user này trên Cloudinary
+
+        const deleteResult = await UserModel.deleteMany({ _id: { $in: ids } });
+
+        if (deleteResult.deletedCount === 0) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng nào với các ID đã cho." });
+        }
+
+        res.status(200).json({ success: true, message: `Đã xóa thành công ${deleteResult.deletedCount} người dùng.` });
+    } catch (error) {
+        res.status(500).json({ message: error.message, error: true, success: false });
     }
 };

@@ -8,11 +8,7 @@ import { Button } from '@mui/material';
 import { MyContext } from '../../App';
 import { postData } from '../../utils/api';
 
-// --- Context & API ---
-
-
 // --- CÁC COMPONENT CON TÙY CHỈNH ---
-// (Component CustomTextField cần được sửa đổi để nhận `onChange` và `value`)
 const CustomTextField = ({ id, label, type = 'text', value, onChange }) => (
     <div className="relative group">
         <input
@@ -89,9 +85,9 @@ const CheckoutPage = () => {
         phone: '',
         address: '',
         city: '',
-        country: 'Vietnam', // Mặc định
+        country: 'Vietnam',
     });
-    const [paymentMethod, setPaymentMethod] = useState('COD'); // COD = Cash on Delivery
+    const [paymentMethod, setPaymentMethod] = useState('COD'); //Cash on Delivery
 
     // --- TÍNH TOÁN DỮ LIỆU TÓM TẮT ĐƠN HÀNG ---
     const summaryData = useMemo(() => {

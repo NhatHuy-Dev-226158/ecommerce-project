@@ -1,0 +1,411 @@
+[{
+  "_id": {
+    "$oid": "68a4b2f0d3b0e2247cc1bdb1"
+  },
+  "name": "Thịt ba rọi heo VietGAP",
+  "description": "Thịt ba rọi heo tươi ngon được chăn nuôi theo tiêu chuẩn VietGAP, đảm bảo an toàn và chất lượng. Gói 500g, thích hợp cho các món kho, chiên, nướng.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624168/wi6lg1aroff7mjpsewq9.png",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624170/metpv8bciahixchn6krh.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624174/hwvurvo5zkdvfbxbvym3.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624175/hma7tticpmg60af2rcre.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624176/a5ochaloucgc9grreol2.jpg"
+  ],
+  "brand": "CP",
+  "price": 99000,
+  "oldPrice": 110000,
+  "category": {
+    "$oid": "68a4a418d3b0e2247cc1b846"
+  },
+  "countInStock": 1200,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T17:22:56.553Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T17:22:56.553Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4b3b3d3b0e2247cc1bdbb"
+  },
+  "name": "Cải bó xôi Đà Lạt",
+  "description": "Rau sạch trồng thủy canh tại Đà Lạt, không thuốc trừ sâu. Tươi, giòn và giàu dinh dưỡng. Bó 300g.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624368/ajsauo2xgsh3vhw3ub8o.png",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624369/easnbgmjokftt3ibygd3.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624370/fo4zlknccmamoyk9e8jw.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755624371/wxmzvuk6wcvowiqbbm4b.jpg"
+  ],
+  "brand": "Dalat Farm",
+  "price": 22000,
+  "oldPrice": 25000,
+  "category": {
+    "$oid": "68a4a3fad3b0e2247cc1b83f"
+  },
+  "countInStock": 1988,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T17:26:11.739Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T17:26:11.739Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4be206c093c19dce73468"
+  },
+  "name": "Thùng mì Hảo Hảo tôm chua cay",
+  "description": "Thùng 30 gói mì ăn liền Hảo Hảo hương vị tôm chua cay, lựa chọn nhanh chóng và tiện lợi cho mọi nhà.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627030/hlvcaekuxkdxskrrbxaf.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627033/lfsnhpc3pl5s8osfndec.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627036/cta271echqiqzfcqywfo.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627040/u0gsobueevxmjx8ycznp.jpg"
+  ],
+  "brand": "Acecook",
+  "price": 115000,
+  "oldPrice": 120000,
+  "category": {
+    "$oid": "68a4a8c3d3b0e2247cc1bb66"
+  },
+  "countInStock": 127,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:10:40.481Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:10:40.481Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4be986c093c19dce73472"
+  },
+  "name": "Nước mắm Nam Ngư Đệ Nhị",
+  "description": "Nước mắm Nam Ngư chai 750ml, được làm từ cá cơm tươi ngon, mang đến hương vị đậm đà cho bữa ăn gia đình.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627157/iyxjra8i55v2lizc4ach.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627158/yp8x1g4qywcqyo1r0yuk.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627160/t4wkjnqlmauskq73o6zo.jpg"
+  ],
+  "brand": "Nam Ngư",
+  "price": 28000,
+  "oldPrice": 28000,
+  "category": {
+    "$oid": "68a4a8ddd3b0e2247cc1bb74"
+  },
+  "countInStock": 872,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:12:40.589Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:12:40.589Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4bf216c093c19dce7347c"
+  },
+  "name": "Sữa tươi tiệt trùng Vinamilk 100% Sữa Tươi",
+  "description": "Lốc 4 hộp sữa tươi tiệt trùng Vinamilk có đường, dung tích 180ml/hộp. Bổ sung Canxi, Vitamin D và các dưỡng chất cần thiết.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627292/swlcl6mw6xpajoafrdei.webp",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627294/ubyxocxg0tbbox1ocor8.webp",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627295/ha6efexnndyxoiqx29oi.png",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627297/tdqevhzqrvey3jd5tvta.png"
+  ],
+  "brand": "Vinamilk",
+  "price": 32000,
+  "oldPrice": 32000,
+  "category": {
+    "$oid": "68a4a858d3b0e2247cc1bb1c"
+  },
+  "countInStock": 444,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:14:57.279Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:14:57.279Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4bfc86c093c19dce73486"
+  },
+  "name": "Lốc 6 lon Coca-Cola Original",
+  "description": "Nước giải khát có ga Coca-Cola hương vị nguyên bản, giúp giải nhiệt và sảng khoái tức thì. Lốc 6 lon x 320ml.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627442/gt29azrg6nxq2wbujaog.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627458/j0zlkrmm7fxqzeymhgpz.png",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627460/wtvo3fryvxd0huspcs8r.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627462/txxgxyxgpir6q2yjxtrv.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627465/s3u4bjrrdiztfylrjdck.jpg"
+  ],
+  "brand": "Coca-Cola",
+  "price": 15000,
+  "oldPrice": 15000,
+  "category": {
+    "$oid": "68a4a9cfd3b0e2247cc1bbbe"
+  },
+  "countInStock": 12315,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:17:44.995Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:17:44.995Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4c06b6c093c19dce73490"
+  },
+  "name": "Sữa tắm Lifebuoy Bảo vệ Vượt trội 10",
+  "description": "Sữa tắm Lifebuoy với công thức ion bạc giúp bảo vệ khỏi vi khuẩn gây bệnh. Hương thơm tươi mát, chai 850g.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627618/kekvawdpx1eszt3n24pm.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627619/ic4pytzp6dnke41jet5o.webp",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627621/vysms4yxqcxwxroas2pu.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627622/f5ukz9xxikcokaxsutkh.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627627/rcu950lqa1id2daxcmru.jpg"
+  ],
+  "brand": "Lifebuoy",
+  "price": 139000,
+  "oldPrice": 155000,
+  "category": {
+    "$oid": "68a4aa28d3b0e2247cc1bbd4"
+  },
+  "countInStock": 523,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:20:27.214Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:20:27.214Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4c1266c093c19dce7349a"
+  },
+  "name": "Nước rửa chén Sunlight Chanh",
+  "description": "Nước rửa chén Sunlight chiết xuất chanh tươi giúp đánh bay dầu mỡ hiệu quả, an toàn cho da tay. Chai 750g.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627809/auyrperfv3fcawgngrlg.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627811/hfni4duubetaejl5uejp.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627813/jg1h20c02pizx66otvvw.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627814/euaftv6pdpzqsxerxahq.jpg"
+  ],
+  "brand": "Sunlight",
+  "price": 24000,
+  "oldPrice": 23999,
+  "category": {
+    "$oid": "68a4aad9d3b0e2247cc1bc06"
+  },
+  "countInStock": 90,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:23:34.731Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:23:34.731Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4c18d6c093c19dce734a4"
+  },
+  "name": "Tã quần Bobby size L",
+  "description": "Tã quần Bobby size L cho bé từ 9-13kg, gói 68 miếng. Bề mặt 3D khô thoáng và đệm lưng thấm mồ hôi, chống hăm hiệu quả.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627915/vnncq6amjcqxw82jvvfb.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627916/arvwova4aslu7jkyxcas.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755627917/g6tsvc5xjey66fa8ni7p.jpg"
+  ],
+  "brand": "Bobby",
+  "price": 340000,
+  "oldPrice": 340000,
+  "category": {
+    "$oid": "68a4ab17d3b0e2247cc1bc15"
+  },
+  "countInStock": 100,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:25:17.747Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:25:17.747Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4c2206c093c19dce734ae"
+  },
+  "name": "Cá Hồi Fillet đông lạnh",
+  "description": "Fillet cá hồi nhập khẩu, được cấp đông sâu để giữ trọn vị tươi ngon và dinh dưỡng. Khay 300g.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628059/ajcxcrstbvr3e8dfsvmx.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628060/lldnxfoyyqltstuu2vv3.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628061/znm7r2034gzzixq4ipz3.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628062/wvvbjirrjzgn5tlz1ge0.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628063/k4t5u16xc8d2w3lhadov.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628064/artccvvqaaslyhabh9ot.jpg"
+  ],
+  "brand": "SeaFood Choice",
+  "price": 185000,
+  "oldPrice": 200000,
+  "category": {
+    "$oid": "68a4a84cd3b0e2247cc1bb15"
+  },
+  "countInStock": 1000,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:27:44.575Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:27:44.575Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4c2c86c093c19dce734b8"
+  },
+  "name": "Dầu gội Clear Bạc Hà",
+  "description": "Dầu gội Clear Bạc Hà mát lạnh với công nghệ sạch gàu 3 tác động, ngăn gàu quay trở lại. Chai 630g.",
+  "richDescription": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628225/u0ts7j0ffvffamkkmamb.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628227/do2egixaxrardmdduuia.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628228/pfjspol6q5tfsavkyj25.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628231/biu5o1efb3p7netklyo5.jpg",
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755628232/a1k4b9fuukbfim1rqr93.jpg"
+  ],
+  "brand": "Clear",
+  "price": 145000,
+  "oldPrice": 159998,
+  "category": {
+    "$oid": "68a4aa1bd3b0e2247cc1bbcd"
+  },
+  "countInStock": 12754,
+  "rating": 0,
+  "isFeatured": false,
+  "isPublished": true,
+  "sale": {
+    "discountType": "percentage",
+    "discountValue": 0
+  },
+  "variants": [],
+  "attributes": [],
+  "createdAt": {
+    "$date": "2025-08-19T18:30:32.697Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T18:30:32.697Z"
+  },
+  "__v": 0
+}]

@@ -1,0 +1,57 @@
+[{
+  "_id": {
+    "$oid": "689b31180040715430a962ba"
+  },
+  "address_line": "MYyyyyyy",
+  "city": "Bến Tre",
+  "state": "Choose...",
+  "pincode": "12",
+  "country": "Vietnam",
+  "status": false,
+  "userId": "6899f33ab4ae76d7acec3d9a",
+  "createdAt": {
+    "$date": "2025-08-12T12:18:32.820Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T00:30:50.810Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "689b31360040715430a962c0"
+  },
+  "address_line": "Xã Hương Mỹ",
+  "city": "Bến Tre",
+  "state": "An phú đông",
+  "pincode": "94043",
+  "country": "Vietnam",
+  "status": false,
+  "userId": "6899f33ab4ae76d7acec3d9a",
+  "createdAt": {
+    "$date": "2025-08-12T12:19:02.188Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T00:30:50.810Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a2743ab3cd493f770c98b9"
+  },
+  "address_line": "Xã Hương Mỹ 2",
+  "city": "Bến Tre",
+  "state": "Choose...",
+  "pincode": "123123",
+  "country": "Vietnam",
+  "status": true,
+  "userId": "6899f33ab4ae76d7acec3d9a",
+  "createdAt": {
+    "$date": "2025-08-18T00:30:50.888Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T00:30:50.888Z"
+  },
+  "__v": 0
+}]

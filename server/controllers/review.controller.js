@@ -34,7 +34,7 @@ export const createReviewController = async (req, res) => {
         });
         await review.save();
 
-        // 4. (Quan trọng) Cập nhật rating trung bình của sản phẩm
+        // 4. Cập nhật rating trung bình của sản phẩm
         const reviews = await ReviewModel.find({ product: productId });
         const totalRating = reviews.reduce((acc, item) => item.rating + acc, 0);
         const avgRating = totalRating / reviews.length;
@@ -53,7 +53,7 @@ export const getReviewsByProductController = async (req, res) => {
     try {
         const { productId } = req.params;
         const reviews = await ReviewModel.find({ product: productId })
-            .populate('user', 'name avatar') // Lấy tên và avatar của người dùng
+            .populate('user', 'name avatar')
             .sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, data: reviews });
@@ -62,7 +62,7 @@ export const getReviewsByProductController = async (req, res) => {
     }
 };
 
-// === THÊM HÀM MỚI: CẬP NHẬT ĐÁNH GIÁ ===
+// === CẬP NHẬT ĐÁNH GIÁ ===
 export const updateReviewController = async (req, res) => {
     try {
         const userId = req.userId;
@@ -76,10 +76,10 @@ export const updateReviewController = async (req, res) => {
             return res.status(404).json({ message: "Không tìm thấy đánh giá." });
         }
 
-        // 2. (Bảo mật) Kiểm tra xem người yêu cầu có phải là chủ của đánh giá không
-        if (review.user.toString() !== userId) {
-            return res.status(403).json({ message: "Bạn không có quyền sửa đánh giá này." });
-        }
+        // // 2. (Bảo mật) Kiểm tra xem người yêu cầu có phải là chủ của đánh giá không
+        // if (review.user.toString() !== userId) {
+        //     return res.status(403).json({ message: "Bạn không có quyền sửa đánh giá này." });
+        // }
 
         // 3. Cập nhật nội dung
         review.rating = rating;
@@ -102,10 +102,10 @@ export const updateReviewController = async (req, res) => {
 };
 
 
-// === THÊM HÀM MỚI: XÓA ĐÁNH GIÁ ===
+// === XÓA ĐÁNH GIÁ ===
 export const deleteReviewController = async (req, res) => {
     try {
-        const userId = req.userId;
+        // const userId = req.userId;
         const { reviewId } = req.params;
 
         const review = await ReviewModel.findById(reviewId);
@@ -115,16 +115,15 @@ export const deleteReviewController = async (req, res) => {
             return res.status(404).json({ message: "Không tìm thấy đánh giá." });
         }
 
-        // 2. (Bảo mật) Kiểm tra xem người yêu cầu có phải là chủ của đánh giá không
-        if (review.user.toString() !== userId) {
-            return res.status(403).json({ message: "Bạn không có quyền xóa đánh giá này." });
-        }
+        // // 2. (Bảo mật) Kiểm tra xem người yêu cầu có phải là chủ của đánh giá không
+        // if (review.user.toString() !== userId) {
+        //     return res.status(403).json({ message: "Bạn không có quyền xóa đánh giá này." });
+        // }
 
         const productId = review.product;
 
         // 3. Xóa đánh giá
-        await review.deleteOne(); // Sử dụng deleteOne() trên document
-
+        await review.deleteOne();
         // 4. Tính toán lại rating trung bình của sản phẩm
         const reviews = await ReviewModel.find({ product: productId });
         if (reviews.length > 0) {
@@ -143,12 +142,12 @@ export const deleteReviewController = async (req, res) => {
     }
 };
 
-// === THÊM HÀM MỚI: LẤY CÁC SẢN PHẨM ĐÃ ĐÁNH GIÁ ===
+// === LẤY CÁC SẢN PHẨM ĐÃ ĐÁNH GIÁ ===
 export const getMyReviewedItemsController = async (req, res) => {
     try {
         const userId = req.userId;
         const reviews = await ReviewModel.find({ user: userId })
-            .populate('product', 'name images') // Lấy thêm thông tin từ ProductModel
+            .populate('product', 'name images')
             .sort({ updatedAt: -1 });
 
         res.status(200).json({ success: true, data: reviews });
@@ -157,7 +156,7 @@ export const getMyReviewedItemsController = async (req, res) => {
     }
 };
 
-// === THÊM HÀM MỚI: LẤY CÁC SẢN PHẨM CHỜ ĐÁNH GIÁ ===
+//  LẤY CÁC SẢN PHẨM CHỜ ĐÁNH GIÁ ===
 export const getMyToReviewItemsController = async (req, res) => {
     try {
         const userId = req.userId;

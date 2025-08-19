@@ -8,7 +8,7 @@ import CountUp from 'react-countup'; // Thêm hiệu ứng số đếm để sin
 const cardData = [
     {
         title: 'Doanh thu',
-        value: 76000000, // Sử dụng số để CountUp hoạt động
+        value: 76000000,
         prefix: '',
         suffix: ' đ',
         percentage: 15,

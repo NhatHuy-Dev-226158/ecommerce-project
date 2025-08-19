@@ -1,0 +1,141 @@
+[{
+  "_id": {
+    "$oid": "6899f33ab4ae76d7acec3d9a"
+  },
+  "name": "Nguyễn Nhật Huy",
+  "email": "admin@gmail.com",
+  "password": "$2a$10$e9y5iXDGDDzCcQWMoYGa1uWpfTysTWBdTZvzgRPy4W0/THirL2SFO",
+  "avatar": "https://res.cloudinary.com/dokaokntx/image/upload/v1755477002/l3uayqqsy6l55rdh9hth.png",
+  "mobile": 841234522222,
+  "birthday": {
+    "$date": "2004-06-16T00:00:00.000Z"
+  },
+  "gender": "Nam",
+  "verify_email": true,
+  "access_token": "",
+  "refresh_token": "",
+  "last_login_date": {
+    "$date": "2025-08-19T11:39:22.825Z"
+  },
+  "status": "Active",
+  "address_details": [
+    {
+      "$oid": "689b31180040715430a962ba"
+    },
+    {
+      "$oid": "689b31360040715430a962c0"
+    },
+    {
+      "$oid": "68a2743ab3cd493f770c98b9"
+    }
+  ],
+  "shopping_cart": [],
+  "orderHistory": [],
+  "otp": null,
+  "otpExpires": null,
+  "role": "ADMIN",
+  "createdAt": {
+    "$date": "2025-08-11T13:42:18.290Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T11:39:22.826Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a14142b2b2ddd8dd1a4b1e"
+  },
+  "name": "Nguyễn Nhật Huy",
+  "email": "staff@gmail.com",
+  "password": "$2a$10$VnUqmaAZoeUA5ugYOKqe3u4KO7OYDEHuSU7SdoA3BseqrtmG/lMZa",
+  "avatar": "https://res.cloudinary.com/dokaokntx/image/upload/v1755403985/turcy0sf6i4lzettrjd6.png",
+  "mobile": null,
+  "verify_email": true,
+  "access_token": "",
+  "refresh_token": "",
+  "last_login_date": {
+    "$date": "2025-08-18T01:28:24.860Z"
+  },
+  "status": "Active",
+  "address_details": [],
+  "shopping_cart": [],
+  "orderHistory": [],
+  "otp": null,
+  "otpExpires": null,
+  "role": "STAFF",
+  "createdAt": {
+    "$date": "2025-08-17T02:41:06.696Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T01:32:43.635Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a27fd949b3481423a7de4d"
+  },
+  "name": "Huy",
+  "email": "nhathuyzxyr007@gmail.com",
+  "password": "$2a$10$Ca/CCcRu9cKlLg4rk4/Xiu09w8HO1q1c4ouvIYRCJrA4KW01eXf/C",
+  "avatar": "https://res.cloudinary.com/dokaokntx/image/upload/v1755480076/a3l4hkkerzwijxnwjxj2.png",
+  "mobile": 22222222222,
+  "verify_email": true,
+  "access_token": "",
+  "refresh_token": "",
+  "last_login_date": {
+    "$date": "2025-08-19T09:33:19.732Z"
+  },
+  "status": "Active",
+  "address_details": [],
+  "shopping_cart": [],
+  "orderHistory": [],
+  "otp": null,
+  "otpExpires": null,
+  "role": "USER",
+  "createdAt": {
+    "$date": "2025-08-18T01:20:25.285Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T09:33:19.733Z"
+  },
+  "__v": 0,
+  "birthday": {
+    "$date": {
+      "$numberLong": "-1905206400000"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68a282d149b3481423a7e20a"
+  },
+  "name": "Nguyễn Nhật Huy",
+  "email": "nguyennhathuy280604@gmail.com",
+  "password": "$2a$10$mE4eYBke3nDV4uAVpEYVf.qVa8kOjZOgDaxEOdisld6NVqR.OA2Jm",
+  "avatar": "",
+  "mobile": null,
+  "verify_email": false,
+  "access_token": "",
+  "refresh_token": "",
+  "last_login_date": {
+    "$date": "2025-08-18T01:34:07.725Z"
+  },
+  "status": "Active",
+  "address_details": [],
+  "shopping_cart": [],
+  "orderHistory": [],
+  "otp": "852482",
+  "otpExpires": {
+    "$date": "2025-08-18T01:43:05.090Z"
+  },
+  "role": "ADMIN",
+  "createdAt": {
+    "$date": "2025-08-18T01:33:05.092Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-18T03:22:23.300Z"
+  },
+  "__v": 0
+}]

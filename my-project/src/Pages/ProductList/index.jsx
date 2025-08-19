@@ -26,7 +26,7 @@ const ProductList = () => {
 
     // State này giờ đây chỉ có một nguồn duy nhất là `productFilters` từ Context
     const [filters, setFilters] = useState({
-        search: '',
+        search: productFilters.search || '',
         category: productFilters.category || '',
         brand: productFilters.brand || [],
         price: productFilters.price || [0, 5000000],
@@ -38,6 +38,7 @@ const ProductList = () => {
     useEffect(() => {
         setFilters(prev => ({
             ...prev,
+            search: productFilters.search,
             category: productFilters.category,
             brand: productFilters.brand,
             price: productFilters.price,

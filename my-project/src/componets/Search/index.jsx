@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import Button from '@mui/material/Button';
 import { FiSearch } from "react-icons/fi";
-import { MyContext } from '../../App'; // Import context
+import { MyContext } from '../../App';
 import '../Search/style.css';
 
 const Search = () => {
@@ -9,15 +9,12 @@ const Search = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleSearch = () => {
-        // Chỉ thực hiện tìm kiếm nếu có từ khóa
         if (searchTerm.trim() !== '') {
-            // Gọi hàm từ context để cập nhật bộ lọc và điều hướng
             applyFilterAndNavigate('search', searchTerm.trim());
         }
     };
 
     const handleKeyDown = (event) => {
-        // Thực hiện tìm kiếm khi người dùng nhấn phím "Enter"
         if (event.key === 'Enter') {
             handleSearch();
         }

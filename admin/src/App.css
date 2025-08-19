@@ -1,11 +1,55 @@
+/*================================================================================
+ * GLOBAL & BODY STYLES
+ * Cài đặt font chữ chung cho toàn bộ trang.
+ *================================================================================*/
 body {
     font-family: "Montserrat", sans-serif;
 }
 
+
+/*================================================================================
+ * LIBRARY OVERRIDES (Ghi đè CSS của thư viện)
+ *================================================================================*/
+
+/* --- React Collapse --- */
+/* Tùy chỉnh hiệu ứng chuyển động cho component Collapse. */
 .ReactCollapse--collapse {
     transition: height 400ms;
 }
 
+/* --- Material-UI (MUI) --- */
+/* Ghi đè padding cho một class Paper cụ thể của MUI. */
+/* Ghi chú: Ghi đè các class được tạo tự động như thế này có thể không ổn định
+   nếu phiên bản MUI thay đổi. Nên ưu tiên sử dụng `sx` prop hoặc styled-components. */
+.css-1r0fybh-MuiPaper-root {
+    padding: 24px !important;
+}
+
+/* Tăng kích thước mặc định cho các icon bên trong MuiButton. */
+.MuiButton-icon svg {
+    font-size: 22px !important;
+}
+
+/* --- React International Phone --- */
+/* Tùy chỉnh kích thước cho component nhập số điện thoại. */
+.react-international-phone-input {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 16px !important;
+}
+
+.react-international-phone-country-selector-button {
+    width: 55px !important;
+    height: 50px !important;
+}
+
+
+/*================================================================================
+ * CUSTOM UTILITY CLASSES (Các lớp tiện ích tùy chỉnh)
+ *================================================================================*/
+
+/* --- Custom Blue Button --- */
+/* Định nghĩa một lớp button màu xanh tùy chỉnh. */
 .btn-blue {
     background: #004cff !important;
     color: #fff !important;
@@ -16,26 +60,8 @@ body {
     background: #0044e2 !important;
 }
 
-.MuiButton-icon svg {
-    font-size: 22px !important;
-}
-
+/* --- Social Buttons --- */
+/* Tùy chỉnh màu icon cho button Facebook. */
 .fb .MuiButton-icon svg {
     color: #0044e2 !important;
-}
-
-
-.css-1r0fybh-MuiPaper-root {
-    padding: 24px !important;
-}
-
-.react-international-phone-input {
-    width: 100% !important;
-    height: 50px !important;
-    font-size: 16px !important;
-}
-
-.react-international-phone-country-selector-button {
-    width: 55px !important;
-    height: 50px !important;
 }

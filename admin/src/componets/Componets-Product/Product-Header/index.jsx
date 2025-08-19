@@ -1,24 +1,53 @@
-import React, { } from 'react';
-import { Typography, Button, Breadcrumbs, TextField, IconButton, InputAdornment } from '@mui/material';
+import React from 'react';
+import {
+    Typography,
+    Button,
+    Breadcrumbs,
+    TextField,
+    IconButton,
+    InputAdornment
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import { FaAngleRight } from "react-icons/fa6";
 
+/**
+ * @component PageHeader
+ * @description Component tiêu đề của trang, bao gồm tiêu đề chính, breadcrumbs, thanh tìm kiếm và nút hành động.
+ * @param {object} props - Props cho component.
+ * @param {Function} props.onSearchChange - Hàm callback được gọi khi giá trị của ô tìm kiếm thay đổi.
+ */
 const PageHeader = ({ onSearchChange }) => {
+
+    // Hàm xử lý sự kiện khi nhấn nút "Thêm Sản Phẩm"
     const handleAddProductClick = () => {
         console.log("Redirecting to Add Product page...");
     };
 
     return (
         <div className="flex flex-wrap justify-between items-center mb-4">
+            {/* Phần tiêu đề và breadcrumbs */}
             <div>
-                <Typography variant="h5" component="h1" fontWeight="bold" color="text.primary">Product List</Typography>
-                <Breadcrumbs separator={<FaAngleRight className='text-[13px]' />} aria-label="breadcrumb" sx={{ mt: 0.5 }}>
-                    <Link to='/' className="text-sm font-medium text-gray-500 hover:underline">Dashboard</Link>
-                    <Typography color="text.primary" className="text-sm font-medium">Product List</Typography>
+                <Typography variant="h5" component="h1" fontWeight="bold" color="text.primary">
+                    Product List
+                </Typography>
+                <Breadcrumbs
+                    separator={<FaAngleRight className='text-[13px]' />}
+                    aria-label="breadcrumb"
+                    sx={{ mt: 0.5 }}
+                >
+                    <Link to='/' className="text-sm font-medium text-gray-500 hover:underline">
+                        Dashboard
+                    </Link>
+                    <Typography color="text.primary" className="text-sm font-medium">
+                        Product List
+                    </Typography>
                 </Breadcrumbs>
             </div>
+
+            {/* Phần tìm kiếm và các nút hành động */}
             <div className='flex items-center gap-2'>
+                {/* Thanh tìm kiếm */}
                 <TextField
                     onChange={onSearchChange}
                     className='w-[495px]'
@@ -55,12 +84,23 @@ const PageHeader = ({ onSearchChange }) => {
                         ),
                     }}
                 />
+
+                {/* Nút thêm sản phẩm mới */}
                 <Link to='/product-upload'>
                     <Button
                         variant="contained"
                         startIcon={<FiPlus />}
                         onClick={handleAddProductClick}
-                        sx={{ bgcolor: '#1A202C', color: 'white', textTransform: 'none', fontWeight: '600', borderRadius: '14px', px: 3, py: 1, '&:hover': { bgcolor: '#2D3748' } }}
+                        sx={{
+                            bgcolor: '#1A202C',
+                            color: 'white',
+                            textTransform: 'none',
+                            fontWeight: '600',
+                            borderRadius: '14px',
+                            px: 3,
+                            py: 1,
+                            '&:hover': { bgcolor: '#2D3748' }
+                        }}
                     >
                         Thêm Sản Phẩm
                     </Button>

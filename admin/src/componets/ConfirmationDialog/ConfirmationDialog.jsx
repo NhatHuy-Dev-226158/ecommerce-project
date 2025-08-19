@@ -6,45 +6,84 @@ import {
     Button,
     Typography,
     Box,
-    CircularProgress
 } from '@mui/material';
 import { FiAlertTriangle } from 'react-icons/fi';
-import { keyframes } from '@emotion/react';
+
+// Hằng số cho thời gian đếm ngược (tính bằng giây)
 const COUNTDOWN_SECONDS = 5;
 
+/**
+ * @component ConfirmationDialog
+ * @description Một hộp thoại xác nhận hành động nguy hiểm, yêu cầu người dùng chờ một khoảng thời gian đếm ngược
+ * trước khi hành động được thực thi để tránh nhấn nhầm.
+ * @param {object} props - Props cho component.
+ * @param {boolean} props.open - Cờ để điều khiển việc hiển thị/ẩn hộp thoại.
+ * @param {Function} props.onClose - Callback được gọi khi người dùng đóng hộp thoại mà không xác nhận.
+ * @param {Function} props.onConfirm - Callback được gọi khi quá trình đếm ngược hoàn tất.
+ * @param {string} props.title - Tiêu đề của hộp thoại.
+ * @param {string} props.message - Thông điệp chi tiết giải thích hành động.
+ * @example
+ * <ConfirmationDialog
+ *   open={isOpen}
+ *   onClose={() => setIsOpen(false)}
+ *   onConfirm={handleDelete}
+ *   title="Xóa sản phẩm?"
+ *   message="Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn."
+ * />
+ */
 const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
+    // State để theo dõi trạng thái đếm ngược
     const [isCountingDown, setIsCountingDown] = useState(false);
+    // State để lưu trữ số giây đếm ngược còn lại
     const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
 
+    // Effect này quản lý logic đếm ngược
     useEffect(() => {
         let timerId;
         let intervalId;
+
+        // Chỉ chạy khi isCountingDown là true
         if (isCountingDown) {
-            intervalId = setInterval(() => setCountdown(prev => prev - 1), 1000);
+            // Cập nhật số giây hiển thị mỗi giây
+            intervalId = setInterval(() => {
+                setCountdown(prev => prev - 1);
+            }, 1000);
+
+            // Sau khi hết thời gian đếm ngược, thực thi hành động onConfirm
             timerId = setTimeout(() => {
                 onConfirm();
-                resetState();
+                resetState(); // Đặt lại trạng thái sau khi hoàn tất
             }, COUNTDOWN_SECONDS * 1000);
         }
+
+        // Hàm dọn dẹp (cleanup function): Rất quan trọng!
+        // Nó sẽ được gọi khi component unmount hoặc khi isCountingDown thay đổi.
+        // Giúp ngăn chặn memory leak và các lỗi không mong muốn.
         return () => {
             clearTimeout(timerId);
             clearInterval(intervalId);
         };
     }, [isCountingDown, onConfirm]);
 
-    useEffect(() => { if (!open) resetState(); }, [open]);
+    // Effect để reset trạng thái mỗi khi hộp thoại được đóng từ bên ngoài
+    useEffect(() => {
+        if (!open) {
+            resetState();
+        }
+    }, [open]);
 
+    // Hàm tiện ích để đưa các state về giá trị ban đầu
     const resetState = () => {
         setIsCountingDown(false);
         setCountdown(COUNTDOWN_SECONDS);
     };
 
-    // Khi nhấn nút "Xác nhận"
+    // Bắt đầu quá trình đếm ngược khi người dùng nhấn "Xác nhận"
     const handleConfirmClick = () => {
         setIsCountingDown(true);
     };
 
-    // Khi đang đếm ngược và nhấn nút "Hủy"
+    // Hủy quá trình đếm ngược và reset lại state
     const handleCancelCountdown = () => {
         resetState();
     };
@@ -64,12 +103,13 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
         >
             <DialogContent sx={{ padding: '8px' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                    {/* Icon cảnh báo */}
                     <Box
                         sx={{
                             width: 48,
                             height: 48,
                             borderRadius: '50%',
-                            backgroundColor: '#fee2e2',
+                            backgroundColor: '#fee2e2', // Màu nền đỏ nhạt
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -79,6 +119,7 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
                         <FiAlertTriangle size={24} className="text-red-600" />
                     </Box>
 
+                    {/* Tiêu đề và nội dung */}
                     <div>
                         <Typography variant="h6" component="h1" sx={{ fontWeight: 'bold' }}>
                             {title}
@@ -91,17 +132,16 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
             </DialogContent>
 
             <DialogActions sx={{ justifyContent: 'flex-end', gap: 1, padding: '16px 8px 8px' }}>
+                {/* Hiển thị các nút dựa trên trạng thái đếm ngược */}
                 {!isCountingDown ? (
+                    // Trạng thái ban đầu: Hiển thị nút Hủy và Xác nhận
                     <>
                         <Button
                             onClick={onClose}
                             variant="text"
                             sx={{
-                                textTransform: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                color: 'grey.700',
-                                padding: '8px 16px',
+                                textTransform: 'none', borderRadius: '8px', fontWeight: 600,
+                                color: 'grey.700', padding: '8px 16px',
                                 '&:hover': { backgroundColor: 'grey.100' }
                             }}
                         >
@@ -113,13 +153,9 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
                             color="error"
                             autoFocus
                             sx={{
-                                textTransform: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                padding: '8px 16px',
-                                boxShadow: 'none',
+                                textTransform: 'none', borderRadius: '8px', fontWeight: 600,
+                                padding: '8px 16px', boxShadow: 'none',
                                 '&:hover': {
-                                    // Hiệu ứng đổ bóng màu đỏ khi hover
                                     boxShadow: '0 4px 12px -2px rgba(239, 68, 68, 0.4)'
                                 }
                             }}
@@ -128,61 +164,28 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
                         </Button>
                     </>
                 ) : (
-
-                    // <Button
-                    //     onClick={handleCancelCountdown}
-                    //     variant="contained"
-                    //     color="inherit"
-                    //     sx={{
-                    //         textTransform: 'none',
-                    //         borderRadius: '8px',
-                    //         fontWeight: 600,
-                    //         padding: '8px 16px',
-                    //         position: 'relative'
-                    //     }}
-                    // >
-                    //     Hủy ({countdown})
-
-                    //     <CircularProgress
-                    //         variant="determinate"
-                    //         value={(countdown / COUNTDOWN_SECONDS) * 100}
-                    //         size={32}
-                    //         sx={{
-                    //             color: 'error.main',
-                    //             position: 'absolute',
-                    //             top: '50%',
-                    //             left: '50%',
-                    //             marginTop: '-16px',
-                    //             marginLeft: '-16px',
-                    //         }}
-                    //     />
-                    // </Button>
-
-                    //=============================================================
-
+                    // Trạng thái đang đếm ngược: Hiển thị nút Hủy với hiệu ứng timer
                     <Button
                         onClick={handleCancelCountdown}
                         variant="outlined"
                         color="inherit"
                         sx={{
-                            textTransform: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            padding: '8px 16px',
-                            position: 'relative',
-                            overflow: 'hidden',
+                            textTransform: 'none', borderRadius: '8px', fontWeight: 600,
+                            padding: '8px 16px', position: 'relative', overflow: 'hidden',
+                            // Sử dụng pseudo-element ::before để tạo hiệu ứng vòng tròn đếm ngược
                             '&::before': {
                                 content: '""',
                                 position: 'absolute',
                                 top: 0, left: 0,
                                 width: '100%', height: '100%',
                                 zIndex: -1,
-                                background: `conic-gradient(
-                                #ef4444 ${(countdown / COUNTDOWN_SECONDS) * 360}deg, 
-                                transparent 0deg
-                            )`,
+                                // `conic-gradient` tạo ra một dải màu hình nón.
+                                // Góc của màu đỏ được tính toán dựa trên thời gian đếm ngược,
+                                // tạo hiệu ứng lấp đầy vòng tròn.
+                                background: `conic-gradient(#ef4444 ${(countdown / COUNTDOWN_SECONDS) * 360}deg, transparent 0deg)`,
+                                // `mask` được dùng để tạo hình dạng vòng tròn (donut shape)
                                 mask: 'radial-gradient(transparent, transparent 92%, black 92%)',
-                                transition: 'background 1s linear', // Hiệu ứng chuyển động mượt mà
+                                transition: 'background 1s linear', // Đảm bảo hiệu ứng mượt mà
                             }
                         }}
                     >

@@ -16,7 +16,7 @@ const allVouchers = [
 const formatExpiryDate = (date) => `HSD: ${new Intl.DateTimeFormat('vi-VN').format(date)}`;
 const isExpiringSoon = (date) => (date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) < 4;
 
-// --- COMPONENT CON CHO CARD VOUCHER (THIẾT KẾ LẠI HOÀN TOÀN) ---
+// --- COMPONENT CON CHO CARD VOUCHER ---
 const VoucherCard = ({ voucher }) => {
     const [copied, setCopied] = useState(false);
 

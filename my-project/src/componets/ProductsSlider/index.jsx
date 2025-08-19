@@ -1,13 +1,10 @@
-// src/componets/ProductsSlider/index.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import ProductItem from '../ProductItem';
-import { fetchDataFromApi } from '../../utils/api'; // Import hàm API
-import { Skeleton } from '@mui/material'; // Import Skeleton cho loading
+import { fetchDataFromApi } from '../../utils/api';
 
 const ProductsSlider = ({ categoryId, items = 6 }) => {
     const [products, setProducts] = useState([]);
@@ -16,7 +13,7 @@ const ProductsSlider = ({ categoryId, items = 6 }) => {
     useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
-            let url = `/api/products/?limit=10`; // Lấy 10 sản phẩm
+            let url = `/api/products/?limit=10`;
             if (categoryId) {
                 url = `/api/products/?categories=${categoryId}&limit=10`;
             }

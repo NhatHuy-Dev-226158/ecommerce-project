@@ -7,7 +7,7 @@ import { FiClock, FiUser } from 'react-icons/fi';
 import { fetchDataFromApi } from '../../utils/api';
 
 const BlogDetailPage = () => {
-    const { slug } = useParams(); // Lấy slug từ URL
+    const { slug } = useParams();
     const [blog, setBlog] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 

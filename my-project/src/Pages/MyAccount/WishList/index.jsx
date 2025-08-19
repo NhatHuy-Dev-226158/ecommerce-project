@@ -115,7 +115,6 @@ const WishlistPage = () => {
                                                 Thêm vào giỏ
                                             </Button>
                                             <Tooltip title="Xóa khỏi danh sách yêu thích">
-                                                {/* Sửa lại hàm xóa để dùng productId */}
                                                 <IconButton onClick={() => removeFromWishlist(item.productId)} color="error"><FiTrash2 /></IconButton>
                                             </Tooltip>
                                         </div>

@@ -6,20 +6,39 @@ import {
 } from '@mui/material';
 import { FiEdit, FiTrash2, FiMoreVertical, FiCopy, FiStar, FiEye, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
-// === COMPONENT CON: MENU DROPDOWN ===
+/**
+ * @component CollapsibleRow
+ * @description Một hàng trong bảng sản phẩm có thể mở rộng để xem chi tiết.
+ * @param {object} props - Props cho component.
+ * @param {object} props.product - Dữ liệu của sản phẩm để hiển thị.
+ * @param {boolean} props.isSelected - Trạng thái cho biết hàng có đang được chọn hay không.
+ * @param {Function} props.onSelectClick - Callback được gọi khi người dùng click vào hàng để chọn/bỏ chọn.
+ * @param {Function} props.onEditClick - Callback được gọi khi nhấn nút "Sửa".
+ * @param {Function} props.onDeleteClick - Callback được gọi khi nhấn nút "Xóa".
+ * @param {Function} props.onDuplicateClick - Callback được gọi khi nhấn nút "Nhân bản".
+ * @param {Function} props.onToggleFeaturedClick - Callback được gọi khi nhấn nút "Nổi bật" hoặc "Bỏ nổi bật".
+ */
 const CollapsibleRow = ({
     product, isSelected, onSelectClick,
     onEditClick, onDeleteClick, onDuplicateClick, onToggleFeaturedClick
 }) => {
+    // State quản lý việc mở/đóng phần chi tiết (collapse) của hàng
     const [open, setOpen] = useState(false);
+    // State quản lý việc mở/đóng menu hành động (...)
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const labelId = `product-row-${product._id}`;
 
-    const handleMenuOpen = (event) => { event.stopPropagation(); setAnchorEl(event.currentTarget); };
+    // Mở menu tại vị trí của nút được click
+    const handleMenuOpen = (event) => {
+        event.stopPropagation(); // Ngăn sự kiện click lan ra toàn bộ hàng, tránh trigger onSelectClick
+        setAnchorEl(event.currentTarget);
+    };
+
+    // Đóng menu
     const handleMenuClose = () => setAnchorEl(null);
 
-    // Các hàm wrapper để đóng menu sau khi click
+    // Các hàm bao bọc (wrapper) để tự động đóng menu sau khi một hành động được thực hiện
     const handleEdit = () => { handleMenuClose(); onEditClick(product._id); };
     const handleDelete = () => { handleMenuClose(); onDeleteClick(product._id); };
     const handleDuplicate = () => { handleMenuClose(); onDuplicateClick(product._id); };
@@ -27,18 +46,24 @@ const CollapsibleRow = ({
 
     return (
         <React.Fragment>
+            {/* Hàng chính chứa thông tin cơ bản của sản phẩm */}
             <TableRow
                 hover
                 selected={isSelected}
                 onClick={(event) => onSelectClick(event, product._id)}
-                sx={{ '& > *': { borderBottom: 'unset' } }}
+                sx={{ '& > *': { borderBottom: 'unset' } }} // Bỏ border dưới để hàng collapse liền mạch
             >
                 <TableCell padding="checkbox">
                     <Checkbox color="primary" checked={isSelected} inputProps={{ 'aria-labelledby': labelId }} />
                 </TableCell>
                 <TableCell>
                     <div className="flex items-center gap-3">
-                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
+                        {/* Nút để mở/đóng phần chi tiết */}
+                        <IconButton
+                            aria-label="expand row"
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+                        >
                             {open ? <FiChevronUp /> : <FiChevronDown />}
                         </IconButton>
                         <Avatar variant="rounded" src={product.images?.[0] || '/placeholder.png'} sx={{ width: 48, height: 48 }} />
@@ -52,6 +77,7 @@ const CollapsibleRow = ({
                 <TableCell align="center">{product.countInStock.toLocaleString()}</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: 'success.main' }}>{product.price.toLocaleString('vi-VN')} đ</TableCell>
                 <TableCell align="right">
+                    {/* Menu hành động */}
                     <Tooltip title="Tùy chọn">
                         <IconButton onClick={handleMenuOpen}><FiMoreVertical /></IconButton>
                     </Tooltip>
@@ -65,6 +91,8 @@ const CollapsibleRow = ({
                     </Menu>
                 </TableCell>
             </TableRow>
+
+            {/* Hàng phụ chứa thông tin chi tiết, chỉ hiển thị khi 'open' là true */}
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
@@ -99,19 +127,40 @@ const CollapsibleRow = ({
     );
 };
 
-
-// === COMPONENT BẢNG CHÍNH ===
+/**
+ * @component ProductListTable
+ * @description Component chính để hiển thị bảng danh sách sản phẩm.
+ * @description Nó xử lý trạng thái loading, trạng thái rỗng và render danh sách các `CollapsibleRow`.
+ * @param {object} props - Props cho component.
+ * @param {Array<object>} props.products - Mảng các đối tượng sản phẩm để hiển thị.
+ * @param {boolean} props.isLoading - Cờ cho biết dữ liệu có đang được tải hay không.
+ * @param {Function} props.onDeleteClick - Callback được truyền xuống `CollapsibleRow`.
+ * @param {Function} props.onEditClick - Callback được truyền xuống `CollapsibleRow`.
+ * @param {Function} props.onDuplicateClick - Callback được truyền xuống `CollapsibleRow`.
+ * @param {Function} props.onToggleFeaturedClick - Callback được truyền xuống `CollapsibleRow`.
+ * @param {Array<string>} props.selected - Mảng chứa ID của các sản phẩm đang được chọn.
+ * @param {Function} props.onSelectAllClick - Callback được gọi khi click vào checkbox "chọn tất cả".
+ * @param {Function} props.onSelectClick - Callback được gọi khi một hàng được chọn.
+ * @param {Function} props.isSelected - Hàm để kiểm tra xem một sản phẩm có đang được chọn hay không.
+ */
 const ProductListTable = ({
     products, isLoading, onDeleteClick, onEditClick, onDuplicateClick, onToggleFeaturedClick,
     selected, onSelectAllClick, onSelectClick, isSelected,
-    count, page, rowsPerPage, onPageChange, onRowsPerPageChange
 }) => (
     <React.Fragment>
         <TableContainer>
             <Table>
+                {/* Tiêu đề của bảng */}
                 <TableHead sx={{ bgcolor: 'grey.50' }}>
                     <TableRow>
-                        <TableCell padding="checkbox"><Checkbox color="primary" indeterminate={selected.length > 0 && selected.length < products.length} checked={products.length > 0 && selected.length === products.length} onChange={onSelectAllClick} /></TableCell>
+                        <TableCell padding="checkbox">
+                            <Checkbox
+                                color="primary"
+                                indeterminate={selected.length > 0 && selected.length < products.length}
+                                checked={products.length > 0 && selected.length === products.length}
+                                onChange={onSelectAllClick}
+                            />
+                        </TableCell>
                         <TableCell>Sản phẩm</TableCell>
                         <TableCell>Thương hiệu</TableCell>
                         <TableCell align="center">Tồn kho</TableCell>
@@ -119,11 +168,23 @@ const ProductListTable = ({
                         <TableCell align="right">Hành động</TableCell>
                     </TableRow>
                 </TableHead>
+                {/* Thân bảng */}
                 <TableBody>
+                    {/* Trường hợp: Đang tải dữ liệu */}
                     {isLoading && products.length === 0 ? (
-                        <TableRow><TableCell colSpan={6} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
+                        <TableRow>
+                            <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
+                                <CircularProgress />
+                            </TableCell>
+                        </TableRow>
+                        // Trường hợp: Không có sản phẩm nào
                     ) : products.length === 0 ? (
-                        <TableRow><TableCell colSpan={6} align="center" sx={{ py: 5 }}><Typography>Không tìm thấy sản phẩm nào.</Typography></TableCell></TableRow>
+                        <TableRow>
+                            <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
+                                <Typography>Không tìm thấy sản phẩm nào.</Typography>
+                            </TableCell>
+                        </TableRow>
+                        // Trường hợp: Có dữ liệu sản phẩm
                     ) : (
                         products.map(item => (
                             <CollapsibleRow

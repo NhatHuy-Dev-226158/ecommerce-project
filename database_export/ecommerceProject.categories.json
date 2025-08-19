@@ -1,0 +1,736 @@
+[{
+  "_id": {
+    "$oid": "68a4a3a0d3b0e2247cc1b811"
+  },
+  "name": "Thực phẩm tươi sống",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755620256/1755620245284-409851695-rau-cu-qua-thuc-pham-tuoi-song-e1601448803331.png"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:17:36.519Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:17:36.519Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a3fad3b0e2247cc1b83f"
+  },
+  "name": "Rau củ quả",
+  "description": "",
+  "images": [],
+  "parentCatName": "Thực phẩm tươi sống",
+  "parentId": {
+    "$oid": "68a4a3a0d3b0e2247cc1b811"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:19:06.318Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:37:23.772Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a418d3b0e2247cc1b846"
+  },
+  "name": "Thịt & Hải sản",
+  "description": "",
+  "images": [],
+  "parentCatName": "Thực phẩm tươi sống",
+  "parentId": {
+    "$oid": "68a4a3a0d3b0e2247cc1b811"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:19:36.380Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:37:17.924Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a616d3b0e2247cc1b9db"
+  },
+  "name": "Thực phẩm đông lạnh & Mát",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755620887/1755620884165-848701410-banner2.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:28:06.845Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:28:06.845Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a84cd3b0e2247cc1bb15"
+  },
+  "name": "Đồ đông lạnh",
+  "description": "",
+  "images": [],
+  "parentCatName": "Thực phẩm đông lạnh & Mát",
+  "parentId": {
+    "$oid": "68a4a616d3b0e2247cc1b9db"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:37:32.777Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:37:57.109Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a858d3b0e2247cc1bb1c"
+  },
+  "name": "Hàng mát & Bơ sữa",
+  "description": "",
+  "images": [],
+  "parentCatName": "Thực phẩm đông lạnh & Mát",
+  "parentId": {
+    "$oid": "68a4a616d3b0e2247cc1b9db"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:37:44.832Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:37:44.832Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a899d3b0e2247cc1bb2c"
+  },
+  "name": "Hàng khô & Gia vị",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755621529/1755621525828-902929346-gia-vi.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:38:49.692Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:38:49.692Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a8c3d3b0e2247cc1bb66"
+  },
+  "name": "Gạo, Mì, Ngũ cốc",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hàng khô & Gia vị",
+  "parentId": {
+    "$oid": "68a4a899d3b0e2247cc1bb2c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:39:31.606Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:39:31.606Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a8cfd3b0e2247cc1bb6d"
+  },
+  "name": "Đồ hộp & Thực phẩm đóng gói",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hàng khô & Gia vị",
+  "parentId": {
+    "$oid": "68a4a899d3b0e2247cc1bb2c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:39:43.572Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:41:19.546Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a8ddd3b0e2247cc1bb74"
+  },
+  "name": "Gia vị & Sốt",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hàng khô & Gia vị",
+  "parentId": {
+    "$oid": "68a4a899d3b0e2247cc1bb2c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:39:57.454Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:41:38.814Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a914d3b0e2247cc1bb7c"
+  },
+  "name": "Đồ uống & Giải khát",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755621652/1755621643818-737333835-Do-Uong-Co-Duong-4.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:40:52.689Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:40:52.689Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a95ed3b0e2247cc1bb93"
+  },
+  "name": "Nước giải khát",
+  "description": "",
+  "images": [],
+  "parentCatName": "Đồ uống & Giải khát",
+  "parentId": {
+    "$oid": "68a4a914d3b0e2247cc1bb7c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:42:06.978Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:42:06.978Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a96ad3b0e2247cc1bb9a"
+  },
+  "name": "Sữa & Đồ uống dinh dưỡng",
+  "description": "",
+  "images": [],
+  "parentCatName": "Đồ uống & Giải khát",
+  "parentId": {
+    "$oid": "68a4a914d3b0e2247cc1bb7c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:42:18.219Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:42:18.219Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a975d3b0e2247cc1bba1"
+  },
+  "name": "Trà, Cà phê, Cacao",
+  "description": "",
+  "images": [],
+  "parentCatName": "Đồ uống & Giải khát",
+  "parentId": {
+    "$oid": "68a4a914d3b0e2247cc1bb7c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:42:29.564Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:42:29.564Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a981d3b0e2247cc1bba8"
+  },
+  "name": "Đồ uống có cồn (tùy chọn)",
+  "description": "",
+  "images": [],
+  "parentCatName": "Đồ uống & Giải khát",
+  "parentId": {
+    "$oid": "68a4a914d3b0e2247cc1bb7c"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:42:41.253Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:42:41.253Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a9b2d3b0e2247cc1bbb0"
+  },
+  "name": "Bánh kẹo & Đồ ăn vặt",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755621811/1755621808179-145982801-anVat.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:43:30.845Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:43:30.845Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a9c5d3b0e2247cc1bbb7"
+  },
+  "name": "Bánh kẹo",
+  "description": "",
+  "images": [],
+  "parentCatName": "Bánh kẹo & Đồ ăn vặt",
+  "parentId": {
+    "$oid": "68a4a9b2d3b0e2247cc1bbb0"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:43:49.412Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:43:49.412Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4a9cfd3b0e2247cc1bbbe"
+  },
+  "name": "Snack & Đồ ăn vặt",
+  "description": "",
+  "images": [],
+  "parentCatName": "Bánh kẹo & Đồ ăn vặt",
+  "parentId": {
+    "$oid": "68a4a9b2d3b0e2247cc1bbb0"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:43:59.450Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:43:59.450Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "name": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755621906/1755621902894-662189625-hoa-my-pham.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:45:06.094Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:45:06.094Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa1bd3b0e2247cc1bbcd"
+  },
+  "name": "Chăm sóc tóc",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "parentId": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:45:15.576Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:45:15.576Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa28d3b0e2247cc1bbd4"
+  },
+  "name": "Chăm sóc cơ thể",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "parentId": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:45:28.086Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:45:28.086Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa3ad3b0e2247cc1bbdb"
+  },
+  "name": "Chăm sóc răng miệng",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "parentId": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:45:46.357Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:45:46.357Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa46d3b0e2247cc1bbe2"
+  },
+  "name": "Chăm sóc da mặt",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "parentId": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:45:58.178Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:45:58.178Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aa54d3b0e2247cc1bbe9"
+  },
+  "name": "Sản phẩm cho nam/nữ",
+  "description": "",
+  "images": [],
+  "parentCatName": "Hóa mỹ phẩm & Chăm sóc cá nhân",
+  "parentId": {
+    "$oid": "68a4aa12d3b0e2247cc1bbc6"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:46:12.535Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:46:12.535Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aaafd3b0e2247cc1bbf1"
+  },
+  "name": "Chăm sóc nhà cửa & Gia đình",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755622063/1755622060894-416427243-dung-cu-nau-an.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:47:43.322Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:47:43.322Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aabed3b0e2247cc1bbf8"
+  },
+  "name": "Đồ dùng gia đình",
+  "description": "",
+  "images": [],
+  "parentCatName": "Chăm sóc nhà cửa & Gia đình",
+  "parentId": {
+    "$oid": "68a4aaafd3b0e2247cc1bbf1"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:47:58.378Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:47:58.378Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aaccd3b0e2247cc1bbff"
+  },
+  "name": "Giặt giũ",
+  "description": "",
+  "images": [],
+  "parentCatName": "Chăm sóc nhà cửa & Gia đình",
+  "parentId": {
+    "$oid": "68a4aaafd3b0e2247cc1bbf1"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:48:12.269Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:48:12.269Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4aad9d3b0e2247cc1bc06"
+  },
+  "name": "Vệ sinh nhà cửa",
+  "description": "",
+  "images": [],
+  "parentCatName": "Chăm sóc nhà cửa & Gia đình",
+  "parentId": {
+    "$oid": "68a4aaafd3b0e2247cc1bbf1"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:48:25.201Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:48:25.201Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4ab0bd3b0e2247cc1bc0e"
+  },
+  "name": "Mẹ và Bé",
+  "description": "",
+  "images": [
+    "https://res.cloudinary.com/dokaokntx/image/upload/v1755622155/1755622152727-346860005-hinh-anh-me-va-be.jpg"
+  ],
+  "parentCatName": "",
+  "parentId": null,
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:49:15.071Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:49:15.071Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4ab17d3b0e2247cc1bc15"
+  },
+  "name": "Tã & Bỉm",
+  "description": "",
+  "images": [],
+  "parentCatName": "Mẹ và Bé",
+  "parentId": {
+    "$oid": "68a4ab0bd3b0e2247cc1bc0e"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:49:27.881Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:49:27.881Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4ab23d3b0e2247cc1bc1c"
+  },
+  "name": "Sữa & Dinh dưỡng cho bé",
+  "description": "",
+  "images": [],
+  "parentCatName": "Mẹ và Bé",
+  "parentId": {
+    "$oid": "68a4ab0bd3b0e2247cc1bc0e"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:49:39.056Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:49:39.056Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68a4ab2ed3b0e2247cc1bc23"
+  },
+  "name": "Vệ sinh & Chăm sóc bé",
+  "description": "",
+  "images": [],
+  "parentCatName": "Mẹ và Bé",
+  "parentId": {
+    "$oid": "68a4ab0bd3b0e2247cc1bc0e"
+  },
+  "isPublished": true,
+  "seoTitle": "",
+  "seoDescription": "",
+  "slug": "",
+  "createdAt": {
+    "$date": "2025-08-19T16:49:50.089Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-19T16:49:50.089Z"
+  },
+  "__v": 0
+}]

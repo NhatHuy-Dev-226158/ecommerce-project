@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
-    Typography, Button, Breadcrumbs, TextField, Select, FormControl,
-    InputLabel, MenuItem, CircularProgress
+    Typography, Button, Breadcrumbs, MenuItem, TextField, Select, FormControl,
+    InputLabel, CircularProgress
 } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FaAngleRight } from "react-icons/fa6";
+import { format } from 'date-fns';
 import { MyContext } from '../../App';
 import { fetchDataFromApi, updateData } from '../../utils/api';
-import { format } from 'date-fns';
 
-// --- COMPONENT GIAO DIỆN CON ---
+//================================================================================
+// SUB-COMPONENT
+//================================================================================
+
+// Component con để tạo section cho form
 const FormSection = ({ title, children }) => (
     <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-lg font-bold text-gray-800 mb-4">{title}</h2>
@@ -17,8 +21,17 @@ const FormSection = ({ title, children }) => (
     </div>
 );
 
-// === COMPONENT TRANG CHÍNH ===
+
+//================================================================================
+// MAIN EDIT USER PAGE COMPONENT
+//================================================================================
+
+/**
+ * @component EditUserPage
+ * @description Trang cho phép Admin chỉnh sửa thông tin của một người dùng.
+ */
 const EditUserPage = () => {
+    // --- Hooks & State ---
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const { userId } = useParams();
@@ -26,18 +39,17 @@ const EditUserPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingData, setIsFetchingData] = useState(true);
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        role: 'USER',
-        status: 'Active',
-        avatar: '',
-        createdAt: ''
+        name: '', email: '', role: 'USER', status: 'Active',
+        avatar: '', createdAt: ''
     });
 
+    // --- Logic & Effects ---
+
+    // Tải dữ liệu người dùng khi component được mount hoặc userId thay đổi
     useEffect(() => {
-        console.log("Fetching data for user ID:", userId);
         const fetchUserData = async () => {
             setIsFetchingData(true);
+
             try {
                 const result = await fetchDataFromApi(`/api/user/${userId}`);
                 if (result.success) {
@@ -60,25 +72,34 @@ const EditUserPage = () => {
                 setIsFetchingData(false);
             }
         };
+
         fetchUserData();
     }, [userId, navigate, context]);
 
+    // --- Event Handlers ---
+
+    // Cập nhật state của form khi người dùng nhập liệu
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Xử lý logic khi submit form
     const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
+
         try {
-            // Chỉ gửi đi các trường admin được phép sửa
+            // Chỉ gửi đi các trường mà admin được phép sửa đổi
             const dataToUpdate = {
                 name: formData.name,
                 role: formData.role,
                 status: formData.status
             };
-            const result = await updateData(`/api/user/updateUserByAdmin/${userId}`, dataToUpdate); if (result.success) {
+
+            const result = await updateData(`/api/user/updateUserByAdmin/${userId}`, dataToUpdate);
+
+            if (result.success) {
                 context.openAlerBox("success", "Cập nhật người dùng thành công!");
                 navigate('/users');
             } else {
@@ -91,12 +112,16 @@ const EditUserPage = () => {
         }
     };
 
+    // --- Render ---
+
+    // Dữ liệu breadcrumbs động
     const breadcrumbsData = [
         { name: 'Dashboard', link: '/' },
         { name: 'Người dùng', link: '/users' },
         { name: isFetchingData ? 'Đang tải...' : `Sửa: ${formData.name}` }
     ];
 
+    // Trạng thái loading ban đầu
     if (isFetchingData) {
         return <div className="flex justify-center items-center h-screen"><CircularProgress /></div>;
     }
@@ -104,6 +129,7 @@ const EditUserPage = () => {
     return (
         <section className="bg-gray-50 p-4 md:p-6">
             <form onSubmit={handleSubmit} noValidate>
+                {/* Header của trang */}
                 <div className="flex flex-wrap justify-between items-center mb-6">
                     <div>
                         <Typography variant="h5" component="h1" fontWeight="bold">Sửa thông tin người dùng</Typography>
@@ -119,17 +145,25 @@ const EditUserPage = () => {
                     </div>
                 </div>
 
+                {/* Layout chính của form */}
                 <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Cột trái: Ảnh đại diện */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                         <FormSection title="Ảnh đại diện">
                             <div className="flex flex-col items-center">
-                                <img src={formData.avatar || `https://i.pravatar.cc/150?u=${formData.email}`} alt="avatar" className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg" />
+                                <img
+                                    src={formData.avatar || `https://i.pravatar.cc/150?u=${formData.email}`}
+                                    alt="avatar"
+                                    className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg"
+                                />
                                 <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
                                     Ngày tham gia: {formData.createdAt ? format(new Date(formData.createdAt), 'dd/MM/yyyy') : 'N/A'}
                                 </Typography>
                             </div>
                         </FormSection>
                     </div>
+
+                    {/* Cột phải: Thông tin tài khoản */}
                     <div className="w-full lg:w-2/3 flex flex-col gap-6">
                         <FormSection title="Thông tin tài khoản">
                             <TextField fullWidth label="Họ và tên" name="name" value={formData.name} onChange={handleInputChange} required />
